@@ -20,60 +20,54 @@ bool Interpreter::interpretFile(std::string &errorMessage) {
 		return false;
 	}
 
-	std::string line;
-	std::getline(this->file, line);
-	bool error = true;
-	int lineNumber = 0;
-	std::vector<Token> tokens;
-	while (!error && !this->file.eof()) {
-		lineNumber ++;
-		error = Token::tokenize(lineNumber, line, tokens, errorMessage);
-		if (error)
-			continue;
-		error = this->interpret(tokens, errorMessage);
-		if (error)
-			continue;
-		std::getline(this->file, line);
-	}
+	// std::string line;
+	// std::getline(this->file, line);
+	// bool error = true;
+	// int lineNumber = 0;
+	// std::vector<Token> tokens;
+	// while (!error && !this->file.eof()) {
+	// 	lineNumber ++;
+	// 	error = Token::tokenize(lineNumber, line, tokens, errorMessage);
+	// 	if (error)
+	// 		continue;
+	// 	error = this->interpret(tokens, errorMessage);
+	// 	if (error)
+	// 		continue;
+	// 	std::getline(this->file, line);
+	// }
 
-	return error;
-}
-
-bool Interpreter::interpret(std::string line, std::string &errorMessage) {
-	std::vector<Token> result;
-	if (!Token::tokenize(0, line, result, errorMessage)) return false;
-	if (!this->interpret(result, errorMessage)) return false;
-
+	// return error;
 	return true;
 }
 
-bool Interpreter::interpret(std::vector<Token> &tokens, std::string &errorMessage) {
+ExpressionResult Interpreter::interpret(std::string line) {
+	std::vector<Token> tokens;
+	std::string errorMessage;
+	ExpressionResult result = Token::tokenize(0, line, tokens);
+	if (result.error()) return result.setErrorredLine(line);
+
+	result = this->interpret(tokens).setErrorredLine(line);
+
+	return result;
+}
+
+ExpressionResult Interpreter::interpret(std::vector<Token> &tokens) {
 	std::stack<Value> memory;
 	std::cout<<tokens<<std::endl;
 
 	for (const Token &tok : tokens) {
 		if (tok.isNumber() || tok.getType() == TOKEN_TYPE_LITERAL || tok.getType() == TOKEN_TYPE_STRING) {
-			memory.push(Value(tok.getValue(), tok.getType()));
+			memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
 		} else if (tok.getType() == TOKEN_TYPE_OPERATOR) {
 			if (memory.size() < 2) {
-				errorMessage = "Expression error";
-				return false;
+				ExpressionResult("Error : Not enough arguments for operator " + tok.getValue(), tok.getRange());
 			}
 			Value second = memory.top();
-			if (second.getType() == VARIABLE) {
-				if (!second.setVariable(this->variables)) {
-					errorMessage = "Variable " + second.getValue() + " not defined";
-					return false;
-				}
-			}
+			ExpressionResult result = second.setVariable(this->variables);
+			if (result.error()) return result;
 			memory.pop();
-			if (memory.top().getType() == VARIABLE) {
-				if (!memory.top().setVariable(this->variables)) {
-					errorMessage = "Variable " + memory.top().getValue() + " not defined";
-					return false;
-				}
-			}
-			bool result;
+			result = memory.top().setVariable(this->variables);
+			if (result.error()) return result;
 			switch (tok.getValue()[0]) {
 				case '+':
 					result = memory.top().add(second);
@@ -88,44 +82,37 @@ bool Interpreter::interpret(std::vector<Token> &tokens, std::string &errorMessag
 					result = memory.top().divide(second);
 					break;
 			}
-			if (!result) {
-				errorMessage = "Arithmetic expression error";
-				return false;
-			}
+			if (result.error()) return result;
 		} else if (tok.getType() == TOKEN_TYPE_AFFECT) {
 			if (memory.size() < 2) {
-				errorMessage = "Expression error";
-				return false;
+				return ExpressionResult("Error : Not enough arguments for affectation", tok.getRange());
 			}
-			Value affectVariable = memory.top();
-			if (affectVariable.getType() == VARIABLE) {
-				if (!affectVariable.setVariable(this->variables)) {
-					errorMessage = "Variable " + affectVariable.getValue() + " not defined";
-					return false;
-				}
-			}
+			Value second = memory.top();
+			ExpressionResult result = second.setVariable(this->variables);
+			if (result.error()) return result;
 			memory.pop();
 
 			if (memory.top().getType() != VARIABLE) {
-				errorMessage = "Expression error";
-				return false;
+				return ExpressionResult("Expression error", tok.getRange());
 			}
 
-			this->variables[memory.top().getValue()] = affectVariable;
+			this->variables[memory.top().getValue()] = second;
 			memory.pop();
-			memory.push(Value(affectVariable.getValue(), affectVariable.getType()));
+			memory.push(second);
 		} else {
-			errorMessage = "Invalid token";
-			return false;
+			return ExpressionResult("Invalid token" + tok.getValue(), tok.getRange());
 		}
 	}
 	
 	if (memory.size() != 1) {
-		errorMessage = "To much end values 1 expected but got "+std::to_string(memory.size());
-		return false;
+		if (memory.size() == 0) {
+			return ExpressionResult("No result", TextRange(0, 0, 0));
+		}
+		return ExpressionResult("To much remaining arguments", TextRange(0, 0, 0));
 	}
-
+	ExpressionResult result = memory.top().setVariable(this->variables);
+	if (result.error()) return result;
 	std::cout<<memory.top().getValue()<<std::endl;
 
-	return true;
+	return ExpressionResult();
 }

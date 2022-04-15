@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include "expressionresult/expressionresult.hpp"
 #include "interpreter/interpreter.hpp"
 
 void readLine(std::string &line) {
@@ -16,8 +17,9 @@ int main() {
 	std::string instruction;
 	readLine(instruction);
 	while (instruction != "exit") {
-		if (!i.interpret(instruction, errorMessage)) {
-			std::cout<<"Error : "<<errorMessage<<std::endl;
+		ExpressionResult result = i.interpret(instruction);
+		if (result.error()) {
+			std::cout<< result << std::endl;
 		}
 
 		readLine(instruction);

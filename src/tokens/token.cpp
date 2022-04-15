@@ -16,7 +16,7 @@ Token::Token(const Token &other) :
 {
 }
 
-bool Token::tokenize(int line, std::string lineString, std::vector<Token> &tokens, std::string &error) {
+ExpressionResult Token::tokenize(int line, std::string lineString, std::vector<Token> &tokens) {
 	std::stringstream ss(lineString);
 	std::string token;
 	int column = 0;
@@ -36,12 +36,11 @@ bool Token::tokenize(int line, std::string lineString, std::vector<Token> &token
 		} else if (std::regex_match(token, affectToken)) {
 			tokens.push_back(Token(line, column, TOKEN_TYPE_AFFECT, token));
 		} else {
-			error = "Invalid token: " + token;
-			return false;
+			return ExpressionResult("Unknown token: " + token, TextRange(line, column, column + token.size()));
 		}
 		column += token.size() + 1;
 	}
-	return true;
+	return ExpressionResult();
 }
 
 bool Token::isNumber() const{
@@ -54,6 +53,17 @@ std::string Token::getValue() const {
 
 TokenType Token::getType() const {
 	return this->type;
+}
+
+int Token::getLine() const {
+	return this->line;
+}
+int Token::getColumn() const {
+	return this->column;
+}
+
+TextRange Token::getRange() const {
+	return TextRange(this->line, this->column, this->column + this->value.size());
 }
 
 std::string Token::stringType(TokenType type) {

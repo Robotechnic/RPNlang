@@ -3,15 +3,11 @@
 #include <sstream>
 #include <vector>
 #include <regex>
+#include "tokens/tokentypes.hpp"
+#include "textrange/textrange.hpp"
+#include "expressionresult/expressionresult.hpp"
 
-enum TokenType {
-	TOKEN_TYPE_INT,
-	TOKEN_TYPE_FLOAT,
-	TOKEN_TYPE_STRING,
-	TOKEN_TYPE_OPERATOR,
-	TOKEN_TYPE_LITERAL,
-	TOKEN_TYPE_AFFECT
-};
+
 
 const std::regex intRegex("^[0-9]+");
 const std::regex floatRegex("^([0-9]+)?(\\.[0-9]+)?");
@@ -29,11 +25,14 @@ class Token {
 		TokenType getType() const;
 		std::string getStringType() const;
 
+		int getLine() const;
+		int getColumn() const;
 		bool isNumber() const;
+		TextRange getRange() const;
 
 		static std::string stringType(TokenType type);
 
-		static bool tokenize(int line, std::string lineString, std::vector<Token> &tokens, std::string &error);
+		static ExpressionResult tokenize(int line, std::string lineString, std::vector<Token> &tokens);
 
 	private:
 		std::string value;

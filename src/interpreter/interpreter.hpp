@@ -6,7 +6,8 @@
 #include <stack>
 #include <iostream>
 #include "tokens/token.hpp"
-#include "interpreter/value.hpp"
+#include "value/value.hpp"
+#include "expressionresult/expressionresult.hpp"
 
 class Interpreter {
 	public:
@@ -16,8 +17,8 @@ class Interpreter {
 
 		bool interpretFile(std::string &errorMessage);
 
-		bool interpret(std::string line, std::string &errorMessage);
-		bool interpret(std::vector<Token> &tokens, std::string &errorMessage);
+		ExpressionResult interpret(std::string line);
+		ExpressionResult interpret(std::vector<Token> &tokens);
 
 	private:
 		std::string fileName;

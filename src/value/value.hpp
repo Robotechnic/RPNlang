@@ -1,27 +1,26 @@
 #pragma once
 
+class ExpressionResult;
+
 #include <string>
 #include <stdexcept>
+#include <tuple>
+#include "tokens/tokentypes.hpp"
 #include "tokens/token.hpp"
-#include "interpreter/expressionresult.hpp"
+#include "textrange/textrange.hpp"
+#include "value/valuetype.hpp"
 
-enum ValueType {
-	INT,
-	FLOAT,
-	STRING,
-	VARIABLE
-};
-
-class ExpressionResult;
 
 class Value {
 	public:
 		Value();
+		Value(const Value &other);
 		Value(std::string value, ValueType type, int line, int column);
 		Value(std::string value, TokenType type, int line, int column);
 
 		ValueType getType() const;
 		std::string getValue() const;
+		TextRange getRange() const;
 
 		static std::string stringType(ValueType type);
 
@@ -34,8 +33,8 @@ class Value {
 
 
 	private:
-		ExpressionResult stringTest(const Value &other);
-		int line, column;
+		void concatValueRange(const Value &other);
+		TextRange valueRange;
 		std::string value;
 		ValueType type;
 };
