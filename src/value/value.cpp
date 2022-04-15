@@ -12,6 +12,10 @@ Value::Value(std::string value, ValueType type, int line, int column) :
 		this->value = "0" + this->value;
 	}
 	this->valueRange = TextRange(line, column, value.length());
+
+	if (this->type == STRING) {
+		this->value = this->value.substr(1, this->value.length() - 2);
+	}
 };
 Value::Value(std::string value, TokenType type, int line, int column) : 
 	value(value)
@@ -35,6 +39,10 @@ Value::Value(std::string value, TokenType type, int line, int column) :
 	}
 	if (this->value[0] == '.') {
 		this->value = "0" + this->value;
+	}
+
+	if (this->type == STRING) {
+		this->value = this->value.substr(1, this->value.length() - 2);
 	}
 }
 

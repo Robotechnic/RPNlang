@@ -1,6 +1,10 @@
 #include "interpreter/interpreter.hpp"
 
 Interpreter::Interpreter() {}
+Interpreter::Interpreter(std::map<std::string, Value> variables, std::map<std::string, RPNFunction> functions) {
+	this->variables = variables;
+	this->functions = functions;
+}
 Interpreter::Interpreter(std::string fileName) : fileName(fileName){}
 Interpreter::~Interpreter() {
 	if (this->file.is_open()) {
@@ -56,14 +60,15 @@ ExpressionResult Interpreter::interpret(std::vector<Token> &tokens) {
 	std::cout<<tokens<<std::endl;
 
 	for (const Token &tok : tokens) {
-		if (tok.isNumber() || tok.getType() == TOKEN_TYPE_LITERAL || tok.getType() == TOKEN_TYPE_STRING) {
+		if (tok.isNumber() || tok.getType() == TOKEN_TYPE_STRING || tok.getType() == TOKEN_TYPE_LITERAL) {
 			memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
 		} else if (tok.getType() == TOKEN_TYPE_OPERATOR) {
 			if (memory.size() < 2) {
-				ExpressionResult("Error : Not enough arguments for operator " + tok.getValue(), tok.getRange());
+				return ExpressionResult("Not enough arguments for operator " + tok.getValue(), tok.getRange());
 			}
+			ExpressionResult result;
 			Value second = memory.top();
-			ExpressionResult result = second.setVariable(this->variables);
+			result = second.setVariable(this->variables);
 			if (result.error()) return result;
 			memory.pop();
 			result = memory.top().setVariable(this->variables);
@@ -85,7 +90,7 @@ ExpressionResult Interpreter::interpret(std::vector<Token> &tokens) {
 			if (result.error()) return result;
 		} else if (tok.getType() == TOKEN_TYPE_AFFECT) {
 			if (memory.size() < 2) {
-				return ExpressionResult("Error : Not enough arguments for affectation", tok.getRange());
+				return ExpressionResult("Not enough arguments for affectation", tok.getRange());
 			}
 			Value second = memory.top();
 			ExpressionResult result = second.setVariable(this->variables);

@@ -9,9 +9,14 @@
 #include "value/value.hpp"
 #include "expressionresult/expressionresult.hpp"
 
+class RPNFunction;
+
+#include "rpnfunctions/rpnfunction.hpp"
+
 class Interpreter {
 	public:
 		Interpreter();
+		Interpreter(std::map<std::string, Value> variables, std::map<std::string, RPNFunction> functions);
 		Interpreter(std::string fileName);
 		~Interpreter();
 
@@ -24,8 +29,5 @@ class Interpreter {
 		std::string fileName;
 		std::ifstream file;
 		std::map<std::string, Value> variables;
-
-		bool checkVariable();
-
-		// std::map<std::string, Function> functions; 
+		std::map<std::string, RPNFunction> functions; 
 };

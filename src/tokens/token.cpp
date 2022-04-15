@@ -17,28 +17,29 @@ Token::Token(const Token &other) :
 }
 
 ExpressionResult Token::tokenize(int line, std::string lineString, std::vector<Token> &tokens) {
-	std::stringstream ss(lineString);
-	std::string token;
 	int column = 0;
-	while (ss >> token) {
-		if (std::regex_match(token, intRegex)) {
-			tokens.push_back(Token(line, column, TOKEN_TYPE_INT, token));
-		} else if (std::regex_match(token, floatRegex)) {
-			tokens.push_back(Token(line, column, TOKEN_TYPE_FLOAT, token));
-		} else if (std::regex_match(token, stringRegex)) {
-			token.pop_back();
-			token.erase(0, 1);
-			tokens.push_back(Token(line, column, TOKEN_TYPE_STRING, token));
-		} else if (std::regex_match(token, operatorRegex)) {
-			tokens.push_back(Token(line, column, TOKEN_TYPE_OPERATOR, token));
-		} else if (std::regex_match(token, literalRegex)) {
-			tokens.push_back(Token(line, column, TOKEN_TYPE_LITERAL, token));
-		} else if (std::regex_match(token, affectToken)) {
-			tokens.push_back(Token(line, column, TOKEN_TYPE_AFFECT, token));
-		} else {
-			return ExpressionResult("Unknown token: " + token, TextRange(line, column, column + token.size()));
+	std::smatch match;
+	while (lineString.size() > 0) {
+		int i = 0;
+		match = std::smatch();
+		while (match.size() == 0 && i < TOKEN_TYPES) {
+			std::regex regex = std::get<0>(tokenRegexes[i]);
+			if (std::regex_search(lineString, match, regex)) {
+				TokenType type = std::get<1>(tokenRegexes[i]);
+				std::string value = match.str();
+				tokens.push_back(Token(line, column, type, value));
+			}
+			i++;
 		}
-		column += token.size() + 1;
+		if (match.size() == 0) {
+			return ExpressionResult("Unexpected character", TextRange(line, column, 1), lineString);
+		}
+		column += match.str().size();
+		lineString = lineString.substr(match.str().size(), lineString.size() - 1);
+		if (lineString[0] == ' ') {
+			lineString = lineString.substr(1, lineString.size() - 1);
+			column++;
+		}
 	}
 	return ExpressionResult();
 }
