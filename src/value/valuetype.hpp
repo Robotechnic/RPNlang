@@ -4,5 +4,8 @@ enum ValueType {
 	INT,
 	FLOAT,
 	STRING,
-	VARIABLE
+	VARIABLE,
+	FUNCTION,
+	BOOL,
+	NONE
 };

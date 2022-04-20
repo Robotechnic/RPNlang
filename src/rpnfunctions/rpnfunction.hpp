@@ -5,6 +5,7 @@ class Interpreter;
 #include <string>
 #include <vector>
 #include <map>
+#include <tuple>
 #include "value/value.hpp"
 #include "value/valuetype.hpp"
 #include "tokens/token.hpp"
@@ -23,15 +24,15 @@ class RPNFunction {
 
 		ExpressionResult tokenize();
 
-		ExpressionResult call(
+		std::tuple<ExpressionResult, Value> call(
 			std::vector<Value> args,
 			std::map<std::string, Value> variables,
 			std::map<std::string, RPNFunction> functions
 		);
 
 	private:
-		ExpressionResult checkArgs(const std::vector<Value> &args);
 		ExpressionResult checkTypes(const std::vector<Value> &args);
+		ExpressionResult checkArgs(const std::vector<Value> &args);
 		void addParameters(const std::vector<Value> &args, std::map<std::string, Value> &variables);
 
 		std::string name;

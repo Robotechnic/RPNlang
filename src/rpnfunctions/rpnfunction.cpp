@@ -19,6 +19,8 @@ ExpressionResult RPNFunction::tokenize() {
 }
 
 ExpressionResult RPNFunction::checkArgs(const std::vector<Value> &args) {
+	ExpressionResult result = this->checkTypes(args);
+	if (result.error()) return result;
 	if (args.size() != this->parameters.size()) {
 		TextRange range(0, 0, 0);
 		if (args.size() != 0) {
@@ -55,20 +57,18 @@ void RPNFunction::addParameters(const std::vector<Value> &args, std::map<std::st
 	}
 }
 
-ExpressionResult RPNFunction::call(
+std::tuple<ExpressionResult, Value> RPNFunction::call(
 	std::vector<Value> args,
 	std::map<std::string, Value> variables,
 	std::map<std::string, RPNFunction> functions
 ) {
 	ExpressionResult result = this->checkArgs(args);
-	if (result.error()) return result;
-	
-	result = this->checkTypes(args);
-	if (result.error()) return result;
+	if (result.error()) return std::make_tuple(result, Value());
 
 	this->addParameters(args, variables);
 
-	
+	Interpreter interpreter(variables, functions);
+	result = interpreter.interpret(this->tokens, 0);
 
-	return ExpressionResult();
+	return std::make_tuple(result, interpreter.getLastValue());;
 }

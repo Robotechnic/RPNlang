@@ -2,25 +2,23 @@
 
 #include <iostream>
 #include <string>
-#include "textrange/textrange.hpp"
+#include "textutilities/textrange.hpp"
 
 class ExpressionResult {
 	public:
 		ExpressionResult();
-		ExpressionResult(std::string errorMessage, TextRange errorRange, std::string erroredLine = "");
-
-		ExpressionResult setErrorredLine(std::string erroredLine);
+		ExpressionResult(std::string errorMessage, TextRange errorRange);
 
 		bool error() const;
 		bool success() const;
 		std::string getErrorMessage() const;
 		TextRange getRange() const;
-		std::string getErroredLine() const;
+
+		void display(std::string code);
+		static void display(ExpressionResult result, std::string code);
 
 	private:
 		bool isError;
-		std::string errorMessage, erroredLine;
+		std::string errorMessage;
 		TextRange errorRange;
 };
-
-std::ostream &operator<<(std::ostream &os, const ExpressionResult &result);

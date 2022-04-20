@@ -1,53 +1,134 @@
 #include "value/value.hpp"
 
-Value::Value() : value(""), type(VARIABLE) {}
 
-Value::Value(const Value &other) : valueRange(other.valueRange), value(other.value), type(other.type) {}
+Value::Value() : type(NONE), value(0) {}
+
+Value::Value(const Value &other) : valueRange(other.valueRange), type(other.type), value(other.value) {}
 
 Value::Value(std::string value, ValueType type, int line, int column) : 
-	value(value),
-	type(type)
+	type(type),
+	valueRange(line, column, value.length())
 {
-	if (this->value[0] == '.') {
-		this->value = "0" + this->value;
+	if (type == FLOAT && value[0] == '.') {
+		value = "0" + value;
 	}
-	this->valueRange = TextRange(line, column, value.length());
 
-	if (this->type == STRING) {
-		this->value = this->value.substr(1, this->value.length() - 2);
+	switch (type) {
+		case INT:
+			this->value = (int)std::stoi(value);
+			break;
+		case FLOAT:
+			this->value = (float)std::stof(value);
+			break;
+		case BOOL:
+			this->value = (bool)(value == "true");
+			break;
+		case STRING:
+			this->value = (std::string)value;
+			break;
+		default:
+			throw std::runtime_error("Invalid value type");
 	}
 };
-Value::Value(std::string value, TokenType type, int line, int column) : 
-	value(value)
-{
+
+Value::Value(std::string value, TokenType type, int line, int column) {
 	this->valueRange = TextRange(line, column, value.length());
-	switch(type) {
+	if (value[0] == '.') {
+		value = "0" + value;
+	}
+	
+	switch (type) {
 		case TOKEN_TYPE_INT:
+			this->value = (int)std::stoi(value);
 			this->type = INT;
 			break;
 		case TOKEN_TYPE_FLOAT:
+			this->value = (float)std::stof(value);
 			this->type = FLOAT;
 			break;
-		case TOKEN_TYPE_STRING:
+		case TOKEN_TYPE_BOOL:
+			this->value = (bool)(value == "true");
+			this->type = BOOL;
+			break;
+		case TOKEN_TYPE_STRING: 
+			this->value = (std::string)value;
 			this->type = STRING;
 			break;
 		case TOKEN_TYPE_LITERAL:
+			this->value = (std::string)value;
 			this->type = VARIABLE;
 			break;
 		default:
-			throw std::runtime_error("Value::Value : Invalid token type" + Token::stringType(type));
-	}
-	if (this->value[0] == '.') {
-		this->value = "0" + this->value;
-	}
-
-	if (this->type == STRING) {
-		this->value = this->value.substr(1, this->value.length() - 2);
+			throw std::runtime_error("Invalid value type");
 	}
 }
 
-std::string Value::getValue() const {
-	return this->value;
+
+float Value::getFloatValue() const {
+	switch (this->type) {
+		case INT:
+			return (float)std::get<int>(this->value);
+		case FLOAT:
+			return std::get<float>(this->value);
+		case BOOL:
+			return (float)std::get<bool>(this->value);
+		case STRING:
+			try {
+				return std::stod(std::get<std::string>(this->value));
+			} catch (std::invalid_argument &e) {
+				throw std::runtime_error("Value::getFloatValue : Invalid string value");
+			}
+		default:
+			throw std::runtime_error("This value is not convertible to float");
+	}
+}
+
+int Value::getIntValue() const {
+	switch (this->type) {
+		case INT:
+			return std::get<int>(this->value);
+		case FLOAT:
+			return (int)std::get<float>(this->value);
+		case BOOL:
+			return (int)std::get<bool>(this->value);
+		case STRING:
+			try {
+				return std::stoi(std::get<std::string>(this->value));
+			} catch (std::invalid_argument &e) {
+				throw std::runtime_error("Value::getIntValue : Invalid string value");
+			}
+		default:
+			throw std::runtime_error("This value is not convertible to integer");
+	}
+}
+
+bool Value::getBoolValue() const {
+	switch (this->type) {
+		case INT:
+			return std::get<int>(this->value) != 0;
+		case FLOAT:
+			return std::get<float>(this->value) != 0;
+		case BOOL:
+			return std::get<bool>(this->value);
+		case STRING:
+			return std::get<std::string>(this->value) != "";
+		default:
+			throw std::runtime_error("This value is not convertible to boolean");
+	}
+}
+
+std::string Value::getStringValue() const {
+	switch (this->type) {
+		case INT:
+			return std::to_string(std::get<int>(this->value));
+		case FLOAT:
+			return std::to_string(std::get<float>(this->value));
+		case BOOL:
+			return std::get<bool>(this->value) ? "true" : "false";
+		case STRING:
+		case VARIABLE:
+			return std::get<std::string>(this->value);
+	}
 }
 
 ValueType Value::getType() const {
@@ -56,6 +137,10 @@ ValueType Value::getType() const {
 
 TextRange Value::getRange() const {
 	return this->valueRange;
+}
+
+ValueStorage Value::getValue() const {
+	return this->value;
 }
 
 std::string Value::stringType(ValueType type) {
@@ -68,13 +153,16 @@ std::string Value::stringType(ValueType type) {
 			return "STRING";
 		case VARIABLE:
 			return "VARIABLE";
+		case FUNCTION:
+			return "FUNCTION";
+		case NONE:
+			return "NONE";
 		default:
 			return "UNKNOWN";
 	}
 }
 
-void Value::concatValueRange(const Value &other) {
-	TextRange otherRange = other.getRange();
+void Value::concatValueRange(const TextRange &otherRange) {
 	if (otherRange.columnStart < this->valueRange.columnStart) {
 		this->valueRange.columnStart = otherRange.columnStart;
 	}
@@ -84,122 +172,196 @@ void Value::concatValueRange(const Value &other) {
 	}
 }
 
+void Value::concatValueRange(const Value &other) {
+	this->concatValueRange(other.getRange());
+}
+
+void Value::concatValueRange(const Token &other) {
+	std::cout<<other.getRange()<<std::endl;
+	this->concatValueRange(other.getRange());
+}
+
 ExpressionResult Value::setVariable(std::map<std::string, Value> &variables) {
 	if (this->type != VARIABLE) return ExpressionResult();
 
-	if (variables.find(this->value) == variables.end()) {
+	std::string varName = this->getStringValue();
+	if (variables.find(varName) == variables.end()) {
 		return ExpressionResult(
-			"Variable " + this->value + " not found",
+			"Variable " + varName + " not found",
 			this->valueRange
 		);
 	}
-	this->type = variables[this->value].getType();
-	this->value = variables[this->value].getValue();
+	this->type = variables[varName].getType();
+	this->value = variables[varName].getValue();
 	return ExpressionResult();
 }
 
-ExpressionResult Value::add(const Value &other) {
-	this->concatValueRange(other);
-	if (this->type == STRING || other.getType() == STRING) {
-		if (this->type == STRING && other.getType() == STRING) {
-			this->value += other.getValue();
-			return ExpressionResult();
-		}
+ExpressionResult Value::applyOperator(const Value &other, const Token &operatorToken, std::map<std::string, Value> &variables) {
+	std::string op = operatorToken.getValue();
+
+	if (this->type == NONE) {
 		return ExpressionResult(
-			"Cannot add " + Value::stringType(this->type) + " and " + Value::stringType(other.getType()),
-			this->valueRange
+			"Invalid operator " + op + " on NONE value",
+			this->getRange()
 		);
 	}
 
-	if (this->type == FLOAT || other.getType() == FLOAT) {
-		this->value = std::to_string(
-			std::stof(this->value) + std::stof(other.getValue())
+	if (other.getType() == NONE) {
+		return ExpressionResult(
+			"Invalid operator " + op + " on NONE value",
+			other.getRange()
 		);
-		return ExpressionResult();
 	}
 
-	this->value = std::to_string(
-		std::stoi(this->value) + std::stoi(other.getValue())
+	if (this->type == VARIABLE) {
+		ExpressionResult result = this->setVariable(variables);
+		if (result.error()) return result;
+	}
+
+	Value otherValue = other;
+
+	if (other.getType() == VARIABLE) {
+		ExpressionResult result = otherValue.setVariable(variables);
+		if (result.error()) return result;
+	}
+
+	this->concatValueRange(other);
+	this->concatValueRange(operatorToken);
+
+	if (op == "/")
+		return this->opdiv(other);
+	if (op == "%")
+		return this->opmod(other);
+	if (op == "+")
+		return this->opadd(other);
+	if (op == "-")
+		return this->opsub(other);
+	if (op == "*")
+		return this->opmul(other);
+	if (op == "^")
+		return this->oppow(other);
+
+	return ExpressionResult(
+		"Invalid operator " + op,
+		this->getRange()
 	);
+}
+
+ExpressionResult Value::opadd(const Value &other) {
+	if (this->type == STRING && other.getType() == STRING) {
+		this->value = this->getStringValue() + other.getStringValue();
+	} else if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator + between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
+		);
+	} else if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->value = this->getFloatValue() + other.getFloatValue();
+	} else {
+		this->value = this->getIntValue() + other.getIntValue();
+	}
+
 	return ExpressionResult();
 }
 
-ExpressionResult Value::substract(const Value &other) {
-	this->concatValueRange(other);
+ExpressionResult Value::opsub(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
-			"Cannot substract " + Value::stringType(this->type) + " and " + Value::stringType(other.getType()),
+			"Invalid operator - between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
 			this->valueRange
 		);
 	}
 	if (this->type == FLOAT || other.getType() == FLOAT) {
-		this->value = std::to_string(
-			std::stof(this->value) - std::stof(other.getValue())
-		);
-		return ExpressionResult();
+		this->type = FLOAT;
+		this->value = this->getFloatValue() - other.getFloatValue();
+	} else {
+		this->value = this->getIntValue() - other.getIntValue();
 	}
-
-	this->value = std::to_string(
-		std::stoi(this->value) - std::stoi(other.getValue())
-	);
 	return ExpressionResult();
 }
 
-ExpressionResult Value::multiply(const Value &other) {
-	this->concatValueRange(other);
-	if (other.getType() == STRING) {
-		return ExpressionResult(
-			"Cannot multiply " + Value::stringType(this->type) + " and " + Value::stringType(other.getType()),
-			this->valueRange
-		);
-	}
+ExpressionResult Value::opmul(const Value &other) {
 	if (this->type == STRING && other.getType() == INT) {
 		std::string result = "";
-		for (int i = 0; i < std::stoi(other.getValue()); i++) {
-			result += this->value;
+		for (int i = 0; i < other.getIntValue(); i++) {
+			result += std::get<std::string>(this->value);
 		}
-		this->value = result;
-		return ExpressionResult();
-	}
-
-	if (this->type == FLOAT || other.getType() == FLOAT) {
-		this->value = std::to_string(
-			std::stof(this->value) * std::stof(other.getValue())
+		this->type = STRING;
+	} else if (other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator * between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
 		);
-		return ExpressionResult();
 	}
-
-	this->value = std::to_string(
-		std::stoi(this->value) * std::stoi(other.getValue())
-	);
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->type = FLOAT;
+		this->value = this->getFloatValue() * other.getFloatValue();
+	} else {
+		this->value = this->getIntValue() * other.getIntValue();
+	}
 	return ExpressionResult();
 }
 
-ExpressionResult Value::divide(const Value &other) {
-	this->concatValueRange(other);
+ExpressionResult Value::opdiv(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
-			"Cannot divide " + Value::stringType(this->type) + " and " + Value::stringType(other.getType()),
+			"Invalid operator / between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
 			this->valueRange
 		);
 	}
 
-	if (stof(other.getValue()) == 0.0) {
+	if (other.getFloatValue() == 0.0) {
 		return ExpressionResult(
-			"Cannot divide by 0",
-			other.valueRange
+			"Division by zero",
+			other.getRange()
 		);
 	}
 
 	if (this->type == FLOAT || other.getType() == FLOAT) {
-		this->value = std::to_string(
-			std::stof(this->value) / std::stof(other.getValue())
+		this->type = FLOAT;
+		this->value = this->getFloatValue() / other.getFloatValue();
+	} else {
+		this->value = this->getIntValue() / other.getIntValue();
+	}
+	return ExpressionResult();
+}
+
+ExpressionResult Value::opmod(const Value &other) {
+	if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator % between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
 		);
-		return ExpressionResult();
 	}
 
-	this->value = std::to_string(
-		std::stoi(this->value) / std::stoi(other.getValue())
-	);
+	if (other.getFloatValue() == 0.0) {
+		return ExpressionResult(
+			"Division by zero",
+			other.getRange()
+		);
+	}
+
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->type = FLOAT;
+		this->value = std::fmod(this->getFloatValue(), other.getFloatValue());
+	} else {
+		this->value = this->getIntValue() % other.getIntValue();
+	}
 	return ExpressionResult();
+}
+
+ExpressionResult Value::oppow(const Value &other) {
+	if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator ^ between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
+		);
+	}
+
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->type = FLOAT;
+		this->value = std::pow(this->getFloatValue(), other.getFloatValue());
+	} else {
+		this->value = (int)std::pow(this->getIntValue(), other.getIntValue());
+	}
 }

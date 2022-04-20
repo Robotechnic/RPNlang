@@ -3,17 +3,11 @@
 
 ExpressionResult::ExpressionResult() : isError(false) {}
 
-ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange, std::string erroredLine) :
+ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange) :
 	isError(true),
 	errorMessage(errorMessage),
-	erroredLine(erroredLine),
 	errorRange(errorRange)
 {}
-
-ExpressionResult ExpressionResult::setErrorredLine(std::string erroredLine) {
-	this->erroredLine = erroredLine;
-	return *this;
-}
 
 bool ExpressionResult::error() const {
 	return this->isError;
@@ -31,19 +25,21 @@ TextRange ExpressionResult::getRange() const {
 	return this->errorRange;
 }
 
-std::string ExpressionResult::getErroredLine() const {
-	return this->erroredLine;
+void ExpressionResult::display(std::string code) {
+	ExpressionResult::display(*this, code);
 }
 
-std::ostream &operator<<(std::ostream &os, const ExpressionResult &result) {
+void ExpressionResult::display(ExpressionResult result, std::string code) {
 	TextRange range = result.getRange();
-	os << "Error : " << result.getErrorMessage()<<std::endl;
-	os << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
-	os << result.getErroredLine() << std::endl;
-	for (int i = 0; i < range.columnStart; i++)
-		os << " ";
-	for (int i = 0; i < range.columnEnd - range.columnStart; i++)
-		os << "~";
-	os << std::endl;
-	return os;
+	std::cout << "Error : " << result.getErrorMessage()<<std::endl;
+	std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
+	std::cout << range.getLine(code) << std::endl;
+	for (long unsigned int i = 0; i < range.columnEnd; i++) {
+		if (i < range.columnStart) {
+			std::cout << " ";
+		} else {
+			std::cout << "^";
+		}
+	}
+	std::cout << std::endl;
 }

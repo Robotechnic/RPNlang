@@ -26,17 +26,17 @@ ExpressionResult Token::tokenize(int line, std::string lineString, std::vector<T
 			std::regex regex = std::get<0>(tokenRegexes[i]);
 			if (std::regex_search(lineString, match, regex)) {
 				TokenType type = std::get<1>(tokenRegexes[i]);
-				std::string value = match.str();
+				std::string value = match.str(1);
 				tokens.push_back(Token(line, column, type, value));
 			}
 			i++;
 		}
 		if (match.size() == 0) {
-			return ExpressionResult("Unexpected character", TextRange(line, column, 1), lineString);
+			return ExpressionResult("Unexpected char", TextRange(line, column, 1));
 		}
 		column += match.str().size();
 		lineString = lineString.substr(match.str().size(), lineString.size() - 1);
-		if (lineString[0] == ' ') {
+		while (lineString[0] == ' ') {
 			lineString = lineString.substr(1, lineString.size() - 1);
 			column++;
 		}

@@ -5,11 +5,15 @@ class ExpressionResult;
 #include <string>
 #include <stdexcept>
 #include <tuple>
+#include <functional>
+#include <variant>
+#include <cmath>
 #include "tokens/tokentypes.hpp"
 #include "tokens/token.hpp"
-#include "textrange/textrange.hpp"
+#include "textutilities/textrange.hpp"
 #include "value/valuetype.hpp"
 
+typedef std::variant<int, float, bool, std::string> ValueStorage;
 
 class Value {
 	public:
@@ -19,22 +23,34 @@ class Value {
 		Value(std::string value, TokenType type, int line, int column);
 
 		ValueType getType() const;
-		std::string getValue() const;
+
+		float getFloatValue() const;
+		int getIntValue() const;
+		bool getBoolValue() const;
+		std::string getStringValue() const;
+
+		ValueStorage getValue() const;
+
 		TextRange getRange() const;
 
 		static std::string stringType(ValueType type);
 
 		ExpressionResult setVariable(std::map<std::string, Value> &variables);
 
-		ExpressionResult add(const Value &other);
-		ExpressionResult substract(const Value &other);
-		ExpressionResult multiply(const Value &other);
-		ExpressionResult divide(const Value &other);
-
+		ExpressionResult applyOperator(const Value &other, const Token &operatorToken, std::map<std::string, Value> &variables);
 
 	private:
+		void concatValueRange(const TextRange &otherRange);
 		void concatValueRange(const Value &other);
+		void concatValueRange(const Token &other);
+		ExpressionResult opadd(const Value &other);
+		ExpressionResult opsub(const Value &other);
+		ExpressionResult opmul(const Value &other);
+		ExpressionResult opdiv(const Value &other);
+		ExpressionResult opmod(const Value &other);
+		ExpressionResult oppow(const Value &other);
+
+		ValueStorage value;
 		TextRange valueRange;
-		std::string value;
 		ValueType type;
 };
