@@ -177,7 +177,6 @@ void Value::concatValueRange(const Value &other) {
 }
 
 void Value::concatValueRange(const Token &other) {
-	std::cout<<other.getRange()<<std::endl;
 	this->concatValueRange(other.getRange());
 }
 

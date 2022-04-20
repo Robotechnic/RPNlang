@@ -8,6 +8,7 @@ class ExpressionResult {
 	public:
 		ExpressionResult();
 		ExpressionResult(std::string errorMessage, TextRange errorRange);
+		~ExpressionResult();
 
 		bool error() const;
 		bool success() const;

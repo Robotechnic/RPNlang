@@ -9,6 +9,10 @@ ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRang
 	errorRange(errorRange)
 {}
 
+ExpressionResult::~ExpressionResult() {
+	this->errorMessage.clear();
+}
+
 bool ExpressionResult::error() const {
 	return this->isError;
 }

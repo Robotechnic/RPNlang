@@ -5,16 +5,14 @@ Token::Token(int line, int column, TokenType type, std::string value) :
 	type(type),
 	line(line),
 	column(column)
-{
-}
+{}
 
 Token::Token(const Token &other) : 
 	value(other.value),
 	type(other.type),
 	line(other.line),
 	column(other.column)
-{
-}
+{}
 
 ExpressionResult Token::tokenize(int line, std::string lineString, std::vector<Token> &tokens) {
 	int column = 0;
@@ -64,7 +62,7 @@ int Token::getColumn() const {
 }
 
 TextRange Token::getRange() const {
-	return TextRange(this->line, this->column, this->column + this->value.size());
+	return TextRange(this->line, this->column, this->value.size());
 }
 
 std::string Token::stringType(TokenType type) {
