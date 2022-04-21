@@ -11,19 +11,25 @@
 #include "expressionresult/expressionresult.hpp"
 
 
-const std::regex intRegex("^([0-9]+)");
 const std::regex floatRegex("^((?:[0-9]+)?\\.(?:[0-9]+)?)");
+const std::regex intRegex("^([0-9]+)");
 const std::regex boolRegex("^(true|false)");
+const std::regex defineToken("^(->)");
 const std::regex stringRegex("^(?:\")([^\"]*)(?:\")");
 const std::regex operatorRegex("^([+-/*^])");
 const std::regex literalRegex("^([a-zA-Z]+)");
 const std::regex affectToken("^(=)");
-const std::regex defineToken("^(->)");
+const std::regex lineSeparator("^(\\n|;)");
 
 #define TOKEN_TYPES 8
+/* order matter because some tokens can be substrings of others
+ * exemple: an int can be a substring of a float
+ * - is a substring of ->
+ * ...
+ */
 const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
+	std::make_tuple(floatRegex, TOKEN_TYPE_FLOAT), 
 	std::make_tuple(intRegex, TOKEN_TYPE_INT),
-	std::make_tuple(floatRegex, TOKEN_TYPE_FLOAT),
 	std::make_tuple(boolRegex, TOKEN_TYPE_BOOL),
 	std::make_tuple(stringRegex, TOKEN_TYPE_STRING),
 	std::make_tuple(operatorRegex, TOKEN_TYPE_OPERATOR),

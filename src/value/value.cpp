@@ -63,6 +63,11 @@ Value::Value(std::string value, TokenType type, int line, int column) {
 	}
 }
 
+Value::Value(std::string value, int line, int column) :
+	value(value),
+	valueRange(line, column, value.size()),
+	type(STRING) {}
+
 Value::Value(int value, int line, int column) : 
 	value(value),
 	valueRange(line, column, std::to_string(value).length()),
