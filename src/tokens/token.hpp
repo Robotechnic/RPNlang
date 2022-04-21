@@ -12,7 +12,7 @@
 
 
 const std::regex intRegex("^([0-9]+)");
-const std::regex floatRegex("^((?:[0-9]+)?\\.[0-9]+)");
+const std::regex floatRegex("^((?:[0-9]+)?\\.(?:[0-9]+)?)");
 const std::regex boolRegex("^(true|false)");
 const std::regex stringRegex("^(?:\")([^\"]*)(?:\")");
 const std::regex operatorRegex("^([+-/*^])");

@@ -4,12 +4,6 @@
 #include "expressionresult/expressionresult.hpp"
 #include "interpreter/interpreter.hpp"
 
-#include "rpnfunctions/builtinrpnfunction.cpp"
-
-BuiltInRPNFunction<void(int, int)> function("Display line", std::vector<std::string>(2, std::string("ARG")), std::vector<ValueType>(2, ValueType::INT), ValueType::NONE, [](int line, int column) {
-	std::cout << "Line " << line << " column " << column << std::endl;
-});
-
 void readLine(std::string &line) {
 	line.clear();
 	std::cout<<">>> ";

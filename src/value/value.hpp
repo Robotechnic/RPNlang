@@ -21,6 +21,9 @@ class Value {
 		Value(const Value &other);
 		Value(std::string value, ValueType type, int line, int column);
 		Value(std::string value, TokenType type, int line, int column);
+		Value(int value, int line, int column);
+		Value(float value, int line, int column);
+		Value(bool value, int line, int column);
 
 		ValueType getType() const;
 
@@ -28,6 +31,11 @@ class Value {
 		int getIntValue() const;
 		bool getBoolValue() const;
 		std::string getStringValue() const;
+
+		void setValue(std::string value);
+		void setValue(float value);
+		void setValue(int value);
+		void setValue(bool value);
 
 		ValueStorage getValue() const;
 
@@ -53,4 +61,10 @@ class Value {
 		ValueStorage value;
 		TextRange valueRange;
 		ValueType type;
+};
+
+
+std::ostream &operator<<(std::ostream &os, const Value &value);
+namespace std {
+	std::string to_string(const Value &value);
 };

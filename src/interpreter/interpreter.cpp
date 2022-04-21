@@ -1,7 +1,7 @@
 #include "interpreter/interpreter.hpp"
 
 Interpreter::Interpreter() {}
-Interpreter::Interpreter(std::map<std::string, Value> variables, std::map<std::string, RPNFunction> functions) {
+Interpreter::Interpreter(std::map<std::string, Value> variables, std::map<std::string, RPNFunction*> functions) {
 	this->variables = variables;
 	this->functions = functions;
 }
@@ -72,9 +72,10 @@ ExpressionResult Interpreter::checkMemory(int line) {
 		if (memory.size() == 0) {
 			return ExpressionResult("No result", TextRange(line, 0, 0));
 		}
-		unsigned int columnEnd = memory.top().getRange().columnEnd;
-		return ExpressionResult("To much remaining arguments", TextRange(line, 0, columnEnd));
+		unsigned int columnEnd = memory.top().getRange().columnEnd - 1;
+		return ExpressionResult("To much remaining arguments: " + std::to_string(memory.size()), TextRange(line, 0, columnEnd));
 	}
+
 	ExpressionResult result = memory.top().setVariable(this->variables);
 	if (result.error()) return result;
 	this->lastValue = memory.top();
@@ -82,7 +83,7 @@ ExpressionResult Interpreter::checkMemory(int line) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::applyOperator(Token mathOperator) {
+ExpressionResult Interpreter::applyOperator(const Token &mathOperator) {
 	if (memory.size() < 2) {
 		return ExpressionResult("Not enough arguments for operator " + mathOperator.getValue(), mathOperator.getRange());
 	}
@@ -92,7 +93,7 @@ ExpressionResult Interpreter::applyOperator(Token mathOperator) {
 	return this->memory.top().applyOperator(second, mathOperator, this->variables);
 }
 
-ExpressionResult Interpreter::affectVariable(Token affectToken) {
+ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 	if (memory.size() < 2) {
 		return ExpressionResult("Not enough arguments for affectation", affectToken.getRange());
 	}
@@ -102,12 +103,55 @@ ExpressionResult Interpreter::affectVariable(Token affectToken) {
 	memory.pop();
 
 	if (memory.top().getType() != VARIABLE) {
-		return ExpressionResult("Expression error", affectToken.getRange());
+		return ExpressionResult("Expected variable name but got (" + std::to_string(memory.top()) + ")", affectToken.getRange());
 	}
 
 	this->variables[memory.top().getStringValue()] = second;
 	memory.pop();
 	memory.push(second);
+
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::checkLiteral(const Token &literalToken) {
+	// check if literal is a function name
+	ExpressionResult result;
+	int argCount = 0;
+	std::string name = literalToken.getValue();
+	bool builtin = true;
+
+	if (this->functions.find(name) != this->functions.end()) {
+		builtin = false;
+		argCount = this->functions[name]->getArgumentsCount();
+	} else if (BuiltinRPNFunction::builtinFunctions.find(name) != BuiltinRPNFunction::builtinFunctions.end()) {
+		argCount = BuiltinRPNFunction::builtinFunctions.at(name).getArgumentsCount();
+	} else {
+		memory.push(Value(name, literalToken.getType(), literalToken.getLine(), literalToken.getColumn()));
+		return ExpressionResult();
+	}
+
+	if (memory.size() < argCount) {
+		return ExpressionResult("Not enough arguments for function " + name, literalToken.getRange());
+	}
+
+	RPNFunctionArgs args;
+	for (int i = 0; i < argCount; i++) {
+		args.insert(args.begin(), this->memory.top());
+		memory.pop();
+	}
+
+	RPNFunctionResult functionResult;
+	if (builtin) {
+		functionResult = BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->variables, this->functions);
+	} else {
+		functionResult = this->functions[name]->call(args, this->variables, this->functions);
+	}
+
+	result = std::get<0>(functionResult);
+	if (result.error()) return result;
+	
+	this->memory.push(std::get<1>(functionResult));
+	return ExpressionResult();
 }
 
 ExpressionResult Interpreter::createFunction(std::vector<Token> &tokens, Token affectToken, std::string body) {
@@ -126,16 +170,22 @@ ExpressionResult Interpreter::interpret(std::vector<Token> tokens, int line) {
 
 	while (tokens.size() > 0) {
 		Token tok = tokens[0];
-		if (tok.isNumber() || tok.getType() == TOKEN_TYPE_STRING || tok.getType() == TOKEN_TYPE_LITERAL) {
+		if (
+			tok.isNumber() || 
+			tok.getType() == TOKEN_TYPE_STRING ||
+			tok.getType() == TOKEN_TYPE_BOOL
+		) {
 			memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
+		} else if (tok.getType() == TOKEN_TYPE_LITERAL) {
+			result = this->checkLiteral(tok);
 		} else if (tok.getType() == TOKEN_TYPE_OPERATOR) {
 			result = this->applyOperator(tok);
-			if (result.error()) return result;
 		} else if (tok.getType() == TOKEN_TYPE_AFFECT) {
 			result = this->affectVariable(tok);
 		} else {
-			return ExpressionResult("Invalid token" + tok.getValue(), tok.getRange());
+			return ExpressionResult("Invalid token " + tok.getValue(), tok.getRange());
 		}
+		if (result.error()) return result;
 		tokens.erase(tokens.begin());
 	}
 	
