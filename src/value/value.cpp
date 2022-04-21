@@ -338,6 +338,7 @@ ExpressionResult Value::opmul(const Value &other) {
 			result += std::get<std::string>(this->value);
 		}
 		this->setValue(result);
+		return ExpressionResult();
 	} else if (other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator * between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
