@@ -135,8 +135,12 @@ ExpressionResult Interpreter::checkLiteral(const Token &literalToken) {
 	}
 
 	RPNFunctionArgs args;
+	Value arg;
 	for (int i = 0; i < argCount; i++) {
-		args.insert(args.begin(), this->memory.top());
+		arg = memory.top();
+		result = arg.setVariable(this->variables);
+		if (result.error()) return result;
+		args.insert(args.begin(), arg);
 		memory.pop();
 	}
 
@@ -154,12 +158,18 @@ ExpressionResult Interpreter::checkLiteral(const Token &literalToken) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::createFunction(std::vector<Token> &tokens, Token affectToken, std::string body) {
-	TextRange range = tokens[0].getRange();
-	range.columnEnd = affectToken.getRange().columnEnd;
-	if (tokens.size() < 1) {
-		return ExpressionResult("No function name provided", tokens[0].getRange());
+ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::vector<Token> &tokens) {
+	std::string keyword = keywordToken.getValue();
+
+	if (keyword == "def") {
+		return this->createFunction(keywordToken, tokens);
 	}
+
+	return ExpressionResult("Not implemented yet", keywordToken.getRange());
+}
+
+ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::vector<Token> &tokens) {
+	
 
 	return ExpressionResult();
 }
@@ -169,24 +179,31 @@ ExpressionResult Interpreter::interpret(std::vector<Token> tokens, int line) {
 	ExpressionResult result;
 
 	while (tokens.size() > 0) {
-		Token tok = tokens[0];
-		if (
-			tok.isNumber() || 
-			tok.getType() == TOKEN_TYPE_STRING ||
-			tok.getType() == TOKEN_TYPE_BOOL
-		) {
-			memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
-		} else if (tok.getType() == TOKEN_TYPE_LITERAL) {
-			result = this->checkLiteral(tok);
-		} else if (tok.getType() == TOKEN_TYPE_OPERATOR) {
-			result = this->applyOperator(tok);
-		} else if (tok.getType() == TOKEN_TYPE_AFFECT) {
-			result = this->affectVariable(tok);
-		} else {
-			return ExpressionResult("Invalid token " + tok.getValue(), tok.getRange());
+		Token tok = *tokens.begin();
+		tokens.erase(tokens.begin());
+		switch (tok.getType()) {
+			case TOKEN_TYPE_FLOAT:
+			case TOKEN_TYPE_INT:
+			case TOKEN_TYPE_STRING:
+			case TOKEN_TYPE_BOOL:
+				this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
+				break;
+			case TOKEN_TYPE_OPERATOR:
+				result = this->applyOperator(tok);
+				break;
+			case TOKEN_TYPE_LITERAL:
+				result = this->checkLiteral(tok);
+				break;
+			case TOKEN_TYPE_AFFECT:
+				result = this->affectVariable(tok);
+				break;
+			case TOKEN_TYPE_KEYWORD:
+				result = this->parseKeyword(tok, tokens);
+				break;
+			default:
+				result = ExpressionResult("Invalid token " + tok.getValue(), tok.getRange());
 		}
 		if (result.error()) return result;
-		tokens.erase(tokens.begin());
 	}
 	
 	return this->checkMemory(line);

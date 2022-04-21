@@ -33,7 +33,8 @@ class Interpreter {
 		ExpressionResult applyOperator(const Token &mathOperator);
 		ExpressionResult affectVariable(const Token &affectToken);
 		ExpressionResult checkLiteral(const Token &literalToken);
-		ExpressionResult createFunction(std::vector<Token> &tokens, Token affectToken, std::string body);
+		ExpressionResult parseKeyword(const Token &keywordToken, std::vector<Token> &tokens);
+		ExpressionResult createFunction(const Token &keywordToken, std::vector<Token> &tokens);
 		std::string fileName;
 		std::ifstream file;
 		Value lastValue;

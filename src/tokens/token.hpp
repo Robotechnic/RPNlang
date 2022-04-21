@@ -7,35 +7,50 @@
 #include <regex>
 #include <tuple>
 #include "tokens/tokentypes.hpp"
+#include "tokens/keywords.hpp"
 #include "textutilities/textrange.hpp"
 #include "expressionresult/expressionresult.hpp"
 
-
+// values types
 const std::regex floatRegex("^((?:[0-9]+)?\\.(?:[0-9]+)?)");
 const std::regex intRegex("^([0-9]+)");
 const std::regex boolRegex("^(true|false)");
-const std::regex defineToken("^(->)");
 const std::regex stringRegex("^(?:\")([^\"]*)(?:\")");
-const std::regex operatorRegex("^([+-/*^])");
-const std::regex literalRegex("^([a-zA-Z]+)");
-const std::regex affectToken("^(=)");
-const std::regex lineSeparator("^(\\n|;)");
 
-#define TOKEN_TYPES 8
+// control structures
+const std::regex indentBlockRegex("^(\t)");
+const std::regex defineTokenRegex("^(->)");
+const std::regex controlEndRegex("^(:)");
+
+// variables
+const std::regex affectTokenRegex("^(=)");
+const std::regex literalRegex("^([a-zA-Z]+)");
+
+// math operators
+const std::regex operatorRegex("^([+-/*^])");
+
+// multi lines statements
+const std::regex lineSeparatorRegex("^(\\n|;)");
+
+#define TOKEN_TYPES 12
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * - is a substring of ->
  * ...
  */
 const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
-	std::make_tuple(floatRegex, TOKEN_TYPE_FLOAT), 
+	std::make_tuple(floatRegex, TOKEN_TYPE_FLOAT),
 	std::make_tuple(intRegex, TOKEN_TYPE_INT),
 	std::make_tuple(boolRegex, TOKEN_TYPE_BOOL),
+	std::make_tuple(indentBlockRegex, TOKEN_TYPE_INDENT),
+	std::make_tuple(keywordsRegex, TOKEN_TYPE_KEYWORD),
 	std::make_tuple(stringRegex, TOKEN_TYPE_STRING),
 	std::make_tuple(operatorRegex, TOKEN_TYPE_OPERATOR),
 	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL),
-	std::make_tuple(affectToken, TOKEN_TYPE_AFFECT),
-	std::make_tuple(defineToken, TOKEN_TYPE_DEFINE)
+	std::make_tuple(affectTokenRegex, TOKEN_TYPE_AFFECT),
+	std::make_tuple(controlEndRegex,TOKEN_TYPE_CONTROL_END),
+	std::make_tuple(defineTokenRegex, TOKEN_TYPE_DEFINE),
+	std::make_tuple(lineSeparatorRegex, TOKEN_TYPE_END_OF_LINE)
 };
 
 class Token {
