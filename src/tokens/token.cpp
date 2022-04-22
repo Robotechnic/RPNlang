@@ -29,11 +29,14 @@ ExpressionResult Token::tokenize(int line, std::string lineString, std::vector<T
 			}
 			i++;
 		}
+		
 		if (match.size() == 0) {
 			return ExpressionResult("Unexpected char", TextRange(line, column, 1));
 		}
+
 		column += match.str().size();
 		lineString = lineString.substr(match.str().size(), lineString.size() - 1);
+		
 		while (lineString[0] == ' ') {
 			lineString = lineString.substr(1, lineString.size() - 1);
 			column++;
