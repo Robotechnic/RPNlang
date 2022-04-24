@@ -1,6 +1,7 @@
 #pragma once
 
 class ExpressionResult;
+class RPNFunction;
 
 #include <string>
 #include <stdexcept>
@@ -12,8 +13,9 @@ class ExpressionResult;
 #include "tokens/token.hpp"
 #include "textutilities/textrange.hpp"
 #include "value/valuetype.hpp"
+#include "rpnfunctions/rpnfunction.hpp"
 
-typedef std::variant<int, float, bool, std::string> ValueStorage;
+typedef std::variant<int, float, bool, std::string, RPNFunction *> ValueStorage;
 
 class Value {
 	public:
@@ -25,6 +27,7 @@ class Value {
 		Value(int value, int line, int column);
 		Value(float value, int line, int column);
 		Value(bool value, int line, int column);
+		Value(RPNFunction * function, int line, int column);
 
 		ValueType getType() const;
 
@@ -32,6 +35,8 @@ class Value {
 		int getIntValue() const;
 		bool getBoolValue() const;
 		std::string getStringValue() const;
+		const RPNFunction * getFunctionValue() const;
+
 
 		void setValue(std::string value);
 		void setValue(float value);
@@ -42,7 +47,8 @@ class Value {
 
 		TextRange getRange() const;
 
-		static std::string stringType(ValueType type);
+		static std::string stringType(const ValueType type);
+		static ValueType valueType(const std::string type);
 
 		ExpressionResult setVariable(std::map<std::string, Value> &variables);
 

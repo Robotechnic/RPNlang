@@ -20,9 +20,10 @@ class BuiltinRPNFunction : public RPNFunction {
 
 		RPNFunctionResult call(
 			RPNFunctionArgs args,
-			std::map<std::string, Value> variables,
-			std::map<std::string, RPNFunction *> functions
+			std::map<std::string, Value> variables
 		) const;
+
+		TextRange getRange() const;
 
 		static const std::map<std::string, BuiltinRPNFunction> builtinFunctions;
 

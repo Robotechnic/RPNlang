@@ -4,6 +4,9 @@
 #include <vector>
 #include <map>
 #include <tuple>
+
+class Value;
+
 #include "value/value.hpp"
 #include "value/valuetype.hpp"
 #include "tokens/token.hpp"
@@ -23,11 +26,12 @@ class RPNFunction {
 
 		virtual RPNFunctionResult call(
 			RPNFunctionArgs args,
-			std::map<std::string, Value> variables,
-			std::map<std::string, RPNFunction*> functions
-		) const = 0;
+			std::map<std::string, Value> variables
+		) const;
 
 		int getArgumentsCount() const;
+		std::string getName() const;
+		virtual TextRange getRange() const;
 
 	protected:
 		ExpressionResult checkTypes(const RPNFunctionArgs &args) const;

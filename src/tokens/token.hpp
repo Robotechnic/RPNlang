@@ -6,6 +6,7 @@
 #include <vector>
 #include <regex>
 #include <tuple>
+#include <queue>
 #include "tokens/tokentypes.hpp"
 #include "tokens/keywords.hpp"
 #include "textutilities/textrange.hpp"
@@ -20,9 +21,9 @@ const std::regex typeRegex("^(int|float|bool|string)");
 
 // control structures
 const std::regex indentBlockRegex("^(\t)");
-const std::regex defineTokenRegex("^(->)");
-const std::regex controlEndRegex("^(:)");
-const std::regex functionReferenceRegex("^(:[a-z][a-zA-Z]*)");
+const std::regex functionReturnRegex("^(->)");
+const std::regex controlEndRegex("^([:])");
+const std::regex functionCallRegex("^(?:[:])([a-z][a-zA-Z]*)");
 
 // variables
 const std::regex affectTokenRegex("^(=)");
@@ -34,7 +35,7 @@ const std::regex operatorRegex("^([+-/*^])");
 // multi lines statements
 const std::regex lineSeparatorRegex("^(\\n|;)");
 
-#define TOKEN_TYPES 13
+#define TOKEN_TYPES 14
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
@@ -47,14 +48,15 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 	std::make_tuple(typeRegex, TOKEN_TYPE_VALUE_TYPE),
 
 	std::make_tuple(indentBlockRegex, TOKEN_TYPE_INDENT),
-	std::make_tuple(operatorRegex, TOKEN_TYPE_OPERATOR),
-	std::make_tuple(functionReferenceRegex, TOKEN_TYPE_FUNCTION_REF),
-	std::make_tuple(defineTokenRegex, TOKEN_TYPE_DEFINE),
+	std::make_tuple(functionCallRegex, TOKEN_TYPE_FUNCTION_CALL),
+	std::make_tuple(functionReturnRegex, TOKEN_TYPE_RETURN),
 	std::make_tuple(controlEndRegex,TOKEN_TYPE_CONTROL_END),
+	std::make_tuple(operatorRegex, TOKEN_TYPE_OPERATOR),
 
 	std::make_tuple(lineSeparatorRegex, TOKEN_TYPE_END_OF_LINE),
 	std::make_tuple(keywordsRegex, TOKEN_TYPE_KEYWORD),
-	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL)
+	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL),
+	std::make_tuple(affectTokenRegex, TOKEN_TYPE_AFFECT),
 };
 
 class Token {
@@ -73,7 +75,7 @@ class Token {
 
 		static std::string stringType(TokenType type);
 
-		static ExpressionResult tokenize(int line, std::string lineString, std::vector<Token> &tokens);
+		static ExpressionResult tokenize(int line, std::string lineString, std::queue<Token> &tokens);
 
 	private:
 		std::string value;

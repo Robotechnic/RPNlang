@@ -10,12 +10,15 @@ BuiltinRPNFunction::BuiltinRPNFunction(
 
 RPNFunctionResult BuiltinRPNFunction::call(
 	RPNFunctionArgs args,
-	std::map<std::string, Value> variables,
-	std::map<std::string, RPNFunction *> functions
+	std::map<std::string, Value> variables
 ) const {
 	ExpressionResult result = this->checkArgs(args);
 	if (result.error()) return std::make_tuple(result, Value());
 	return this->function(args);
+}
+
+TextRange BuiltinRPNFunction::getRange() const {
+	return TextRange(0, 0, 0);
 }
 
 

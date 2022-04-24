@@ -83,6 +83,11 @@ Value::Value(bool value, int line, int column) :
 	valueRange(line, column, std::to_string(value).length()),
 	type(BOOL) {}
 
+Value::Value(RPNFunction * function, int line, int column) :
+	value(function),
+	valueRange(function->getRange()),
+	type(FUNCTION) {}
+
 float Value::getFloatValue() const {
 	switch (this->type) {
 		case INT:
@@ -150,11 +155,21 @@ std::string Value::getStringValue() const {
 		case NONE:
 			return "";
 		case FUNCTION:
-			return "<function>";
-			// return "<function" + this->value<RPNFunction *>()->getName() + ">";
-		default:
-			throw std::runtime_error("This value is not convertible to string");
+			const RPNFunction* function = std::get<RPNFunction *>(this->value);
+			if (function->getName() == "") {
+				return "<anonymous function>";
+			}
+			return "<function " + function->getName() + ">";
 	}
+	return "";
+}
+
+const RPNFunction* Value::getFunctionValue() const {
+	if (this->type == FUNCTION) {
+		return std::get<RPNFunction*>(this->value);
+	}
+
+	throw std::runtime_error("This value is not a function");
 }
 
 ValueType Value::getType() const {
@@ -169,23 +184,40 @@ ValueStorage Value::getValue() const {
 	return this->value;
 }
 
-std::string Value::stringType(ValueType type) {
+std::string Value::stringType(const ValueType type) {
 	switch(type) {
 		case INT:
-			return "INT";
+			return "int";
 		case FLOAT:
-			return "FLOAT";
+			return "float";
 		case STRING:
-			return "STRING";
+			return "string";
 		case VARIABLE:
-			return "VARIABLE";
+			return "variable";
 		case FUNCTION:
-			return "FUNCTION";
+			return "function";
 		case NONE:
-			return "NONE";
+			return "none";
 		default:
-			return "UNKNOWN";
+			return "<Invalid value type>";
 	}
+}
+
+ValueType Value::valueType(const std::string type) {
+	if (type == "int")
+		return INT;
+	if (type == "float")
+		return FLOAT;
+	if (type == "string")
+		return STRING;
+	if (type == "variable")
+		return VARIABLE;
+	if (type == "function")
+		return FUNCTION;
+	if (type == "none")
+		return NONE;
+	
+	throw std::runtime_error("This type doesn't exist");
 }
 
 void Value::concatValueRange(const TextRange &otherRange) {

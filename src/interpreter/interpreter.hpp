@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <stack>
+#include <queue>
 #include <fstream>
 #include <map>
 #include <iostream>
@@ -19,7 +20,7 @@ class UserRPNFunction;
 class Interpreter {
 	public:
 		Interpreter();
-		Interpreter(std::map<std::string, Value> variables, std::map<std::string, RPNFunction*> functions);
+		Interpreter(std::map<std::string, Value> variables);
 		Interpreter(std::string fileName);
 		~Interpreter();
 
@@ -27,14 +28,17 @@ class Interpreter {
 		Value getLastValue() const;
 
 		ExpressionResult interpret(std::string line);
-		ExpressionResult interpret(std::vector<Token> tokens, int line);
+		ExpressionResult interpret(std::queue<Token> tokens, int line);
 
 	private:
 		ExpressionResult applyOperator(const Token &mathOperator);
 		ExpressionResult affectVariable(const Token &affectToken);
 		ExpressionResult checkLiteral(const Token &literalToken);
-		ExpressionResult parseKeyword(const Token &keywordToken, std::vector<Token> &tokens);
-		ExpressionResult createFunction(const Token &keywordToken, std::vector<Token> &tokens);
+		ExpressionResult isFunction(const Token &functionName, std::string name, bool &builtin, int &argCount);
+		ExpressionResult checkArgs(const Token &literalToken, int argCount, RPNFunctionArgs &args);
+		ExpressionResult callFunction(const Token &functionName);
+		ExpressionResult parseKeyword(const Token &keywordToken, std::queue<Token> &tokens);
+		ExpressionResult createFunction(const Token &keywordToken, std::queue<Token> &tokens);
 		std::string fileName;
 		std::ifstream file;
 		Value lastValue;
@@ -44,5 +48,4 @@ class Interpreter {
 
 		std::stack<Value> memory;
 		std::map<std::string, Value> variables;
-		std::map<std::string, RPNFunction*> functions; 
 };

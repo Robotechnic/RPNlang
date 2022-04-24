@@ -14,7 +14,7 @@ Token::Token(const Token &other) :
 	column(other.column)
 {}
 
-ExpressionResult Token::tokenize(int line, std::string lineString, std::vector<Token> &tokens) {
+ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<Token> &tokens) {
 	int column = 0;
 	std::smatch match;
 	while (lineString.size() > 0) {
@@ -25,7 +25,7 @@ ExpressionResult Token::tokenize(int line, std::string lineString, std::vector<T
 			if (std::regex_search(lineString, match, regex)) {
 				TokenType type = std::get<1>(tokenRegexes[i]);
 				std::string value = match.str(1);
-				tokens.push_back(Token(line, column, type, value));
+				tokens.push(Token(line, column, type, value));
 			}
 			i++;
 		}
@@ -42,6 +42,7 @@ ExpressionResult Token::tokenize(int line, std::string lineString, std::vector<T
 			column++;
 		}
 	}
+
 	return ExpressionResult();
 }
 
@@ -76,14 +77,28 @@ std::string Token::stringType(TokenType type) {
 			return "float";
 		case TOKEN_TYPE_STRING:
 			return "string";
+		case TOKEN_TYPE_BOOL:
+			return "boolean";
 		case TOKEN_TYPE_OPERATOR:
-			return "operator";
+			return "math operator";
 		case TOKEN_TYPE_LITERAL:
 			return "literal";
 		case TOKEN_TYPE_AFFECT:
 			return "effectation";
-		default:
-			return "unknown";
+		case TOKEN_TYPE_CONTROL_END:
+			return "control sequence end";
+		case TOKEN_TYPE_INDENT:
+			return "indentation";
+		case TOKEN_TYPE_VALUE_TYPE:
+			return "value type";
+		case TOKEN_TYPE_RETURN:
+			return "return value";
+		case TOKEN_TYPE_END_OF_LINE:
+			return "end of line";
+		case TOKEN_TYPE_FUNCTION_CALL:
+			return "function call";
+		case TOKEN_TYPE_KEYWORD:
+			return "language keyword";
 	}
 }
 

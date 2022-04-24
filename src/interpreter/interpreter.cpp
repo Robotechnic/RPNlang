@@ -1,9 +1,8 @@
 #include "interpreter/interpreter.hpp"
 
 Interpreter::Interpreter() {}
-Interpreter::Interpreter(std::map<std::string, Value> variables, std::map<std::string, RPNFunction*> functions) {
+Interpreter::Interpreter(std::map<std::string, Value> variables) {
 	this->variables = variables;
-	this->functions = functions;
 }
 Interpreter::Interpreter(std::string fileName) : fileName(fileName){}
 Interpreter::~Interpreter() {
@@ -11,7 +10,6 @@ Interpreter::~Interpreter() {
 		this->file.close();
 	}
 	this->variables.clear();
-	this->functions.clear();
 }
 
 bool Interpreter::interpretFile(std::string &errorMessage) {
@@ -51,7 +49,7 @@ Value Interpreter::getLastValue() const {
 }
 
 ExpressionResult Interpreter::interpret(std::string line) {
-	std::vector<Token> tokens;
+	std::queue<Token> tokens;
 	std::string errorMessage;
 	ExpressionResult result = Token::tokenize(0, line, tokens);
 	if (result.error()) return result;
@@ -113,28 +111,36 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::checkLiteral(const Token &literalToken) {
-	// check if literal is a function name
-	ExpressionResult result;
-	int argCount = 0;
-	std::string name = literalToken.getValue();
-	bool builtin = true;
-
-	if (this->functions.find(name) != this->functions.end()) {
+ExpressionResult Interpreter::isFunction(const Token &functionName, std::string name, bool &builtin, int &argCount) {
+	if (this->variables.find(name) != this->variables.end()) {
 		builtin = false;
-		argCount = this->functions[name]->getArgumentsCount();
+		if (this->variables[name].getType() != FUNCTION) {
+			return ExpressionResult(
+				name + " of value " + this->variables[name].getStringValue() + " with type " +
+				this->variables[name].getStringValue() + " is not callable", 
+				functionName.getRange()
+			);
+		}
+		argCount = this->variables[name].getFunctionValue()->getArgumentsCount();
 	} else if (BuiltinRPNFunction::builtinFunctions.find(name) != BuiltinRPNFunction::builtinFunctions.end()) {
 		argCount = BuiltinRPNFunction::builtinFunctions.at(name).getArgumentsCount();
 	} else {
-		memory.push(Value(name, literalToken.getType(), literalToken.getLine(), literalToken.getColumn()));
-		return ExpressionResult();
+		return ExpressionResult(
+			"Function " + name + "not found",
+			functionName.getRange()
+		);
 	}
 
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::checkArgs(const Token &literalToken, int argCount, RPNFunctionArgs &args) {
 	if (memory.size() < argCount) {
-		return ExpressionResult("Not enough arguments for function " + name, literalToken.getRange());
+		return ExpressionResult("Not enough arguments for function " + literalToken.getValue(), literalToken.getRange());
 	}
 
-	RPNFunctionArgs args;
+	ExpressionResult result;
+
 	Value arg;
 	for (int i = 0; i < argCount; i++) {
 		arg = memory.top();
@@ -144,12 +150,26 @@ ExpressionResult Interpreter::checkLiteral(const Token &literalToken) {
 		memory.pop();
 	}
 
-	RPNFunctionResult functionResult;
-	if (builtin) {
-		functionResult = BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->variables, this->functions);
-	} else {
-		functionResult = this->functions[name]->call(args, this->variables, this->functions);
-	}
+	return result;
+}
+
+ExpressionResult Interpreter::callFunction(const Token &functionName) {
+	// check if literal is a function name
+	ExpressionResult result;
+	std::string name = functionName.getValue();
+	int argCount = 0;
+	bool builtin = true;
+
+	result = this->isFunction(functionName, name, builtin, argCount);
+	if (result.error()) return result;
+
+	RPNFunctionArgs args;
+	result = this->checkArgs(functionName, argCount, args);
+	if (result.error()) return result;
+
+	RPNFunctionResult functionResult = builtin ? 
+		BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->variables):
+		this->variables.at(name).getFunctionValue()->call(args, this->variables);
 
 	result = std::get<0>(functionResult);
 	if (result.error()) return result;
@@ -158,8 +178,24 @@ ExpressionResult Interpreter::checkLiteral(const Token &literalToken) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::vector<Token> &tokens) {
+ExpressionResult Interpreter::checkLiteral(const Token &literalToken) {
+	std::string name = literalToken.getValue();
+	memory.push(Value(
+		name,
+		literalToken.getType(),
+		literalToken.getLine(),
+		literalToken.getColumn()
+	));
+
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue<Token> &tokens) {
 	std::string keyword = keywordToken.getValue();
+
+	if (tokens.size() == 0) {
+		return ExpressionResult("Expected expression after keyword " + keyword, keywordToken.getRange());
+	}
 
 	if (keyword == "def") {
 		return this->createFunction(keywordToken, tokens);
@@ -168,19 +204,86 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::vecto
 	return ExpressionResult("Not implemented yet", keywordToken.getRange());
 }
 
-ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::vector<Token> &tokens) {
-	
+ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::queue<Token> &tokens) {
+	Token currentToken = tokens.front();
+		tokens.pop();
+	std::string name;
 
+	if (currentToken.getType() == TOKEN_TYPE_LITERAL) {
+		name = currentToken.getValue();
+		currentToken = tokens.front();
+		tokens.pop();
+	}
+
+	std::vector<std::string> args;
+	std::vector<ValueType> types;
+	ValueType returnType = NONE;
+	while (
+		tokens.size() > 0 && 
+		currentToken.getType() != TOKEN_TYPE_CONTROL_END &&
+		currentToken.getType() != TOKEN_TYPE_RETURN
+	) {
+		if (args.size() < types.size()) {
+			if (currentToken.getType() == TOKEN_TYPE_LITERAL) {
+				args.push_back(currentToken.getValue());
+			} else {
+				return ExpressionResult("Missing argument name", currentToken.getRange());
+			}
+		} else if (currentToken.getType() == TOKEN_TYPE_VALUE_TYPE) {
+			types.push_back(Value::valueType(currentToken.getValue()));
+		} else {
+			return ExpressionResult("Expected argument name or type", currentToken.getRange());
+		}
+
+		currentToken = tokens.front();
+		tokens.pop();
+	}
+
+	if (currentToken.getType() == TOKEN_TYPE_RETURN) {
+		currentToken = tokens.front();
+		tokens.pop();
+		if (currentToken.getType() != TOKEN_TYPE_VALUE_TYPE) {
+			return ExpressionResult("Expected return type", currentToken.getRange());
+		}
+		returnType = Value::valueType(currentToken.getValue());
+		currentToken = tokens.front();
+		tokens.pop();
+	}
+
+	if (currentToken.getType() != TOKEN_TYPE_CONTROL_END) {
+		return ExpressionResult(
+			"Missing : at the end of the function",
+			currentToken.getRange()
+		);
+	}
+
+	std::queue<Token> functionBody;
+	while (!tokens.empty() && tokens.front().getType() != TOKEN_TYPE_END_OF_LINE) {
+		functionBody.emplace(tokens.front());
+		tokens.pop();
+	}
+
+	if (tokens.front().getType() == TOKEN_TYPE_END_OF_LINE) tokens.pop();
+
+	UserRPNFunction *function = new UserRPNFunction(name, args, types, returnType, functionBody);
+	Value functionValue(function, keywordToken.getLine(), keywordToken.getLine());
+
+
+	if (name.size() > 0) {
+		this->variables[name] = functionValue;
+	}
+
+	this->memory.push(functionValue);
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpret(std::vector<Token> tokens, int line) {
+ExpressionResult Interpreter::interpret(std::queue<Token> tokens, int line) {
 	this->clearMemory();
 	ExpressionResult result;
 
 	while (tokens.size() > 0) {
-		Token tok = *tokens.begin();
-		tokens.erase(tokens.begin());
+		Token tok = tokens.front();
+		tokens.pop();
 		switch (tok.getType()) {
 			case TOKEN_TYPE_FLOAT:
 			case TOKEN_TYPE_INT:
@@ -190,6 +293,9 @@ ExpressionResult Interpreter::interpret(std::vector<Token> tokens, int line) {
 				break;
 			case TOKEN_TYPE_OPERATOR:
 				result = this->applyOperator(tok);
+				break;
+			case TOKEN_TYPE_FUNCTION_CALL:
+				result = this->callFunction(tok);
 				break;
 			case TOKEN_TYPE_LITERAL:
 				result = this->checkLiteral(tok);

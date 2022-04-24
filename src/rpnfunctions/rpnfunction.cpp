@@ -12,6 +12,21 @@ RPNFunction::RPNFunction(
 	returnType(returnType)
 {}
 
+RPNFunctionResult RPNFunction::call(
+	RPNFunctionArgs args,
+	std::map<std::string, Value> variables
+) const {
+	TextRange range(0, 0, 0);
+	if (args.size() != 0) {
+		range = args[0].getRange();
+		if (args.size() > 1) {
+			range.columnEnd = args[args.size() - 1].getRange().columnEnd;
+		}
+	}
+
+	return std::make_tuple(ExpressionResult("Function is not callable", range), Value());
+}
+
 ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args) const{
 	ExpressionResult result = this->checkTypes(args);
 	if (result.error()) return result;
@@ -47,4 +62,12 @@ ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args) const{
 
 int RPNFunction::getArgumentsCount() const {
 	return this->argsName.size();
+}
+
+std::string RPNFunction::getName() const {
+	return this->name;
+}
+
+TextRange RPNFunction::getRange() const {
+	return TextRange(0, 0, 0);
 }
