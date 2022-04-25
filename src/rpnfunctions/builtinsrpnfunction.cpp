@@ -83,5 +83,32 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		[](RPNFunctionArgs args) {
 			return std::make_tuple(ExpressionResult(), Value(static_cast<float>(args[0].getIntValue()), 0, 0));
 		}
+	)},
+	{"and", BuiltinRPNFunction(
+		"and",
+		{"value1", "value2"},
+		{ValueType::BOOL, ValueType::BOOL},
+		ValueType::BOOL,
+		[](RPNFunctionArgs args) {
+			return std::make_tuple(ExpressionResult(), Value(args[0].getBoolValue() && args[1].getBoolValue(), 0, 0));
+		}
+	)},
+	{"or", BuiltinRPNFunction(
+		"or",
+		{"value1", "value2"},
+		{ValueType::BOOL, ValueType::BOOL},
+		ValueType::BOOL,
+		[](RPNFunctionArgs args) {
+			return std::make_tuple(ExpressionResult(), Value(args[0].getBoolValue() || args[1].getBoolValue(), 0, 0));
+		}
+	)},
+	{"not", BuiltinRPNFunction(
+		"not",
+		{"value"},
+		{ValueType::BOOL},
+		ValueType::BOOL,
+		[](RPNFunctionArgs args) {
+			return std::make_tuple(ExpressionResult(), Value(!args[0].getBoolValue(), 0, 0));
+		}
 	)}
 };

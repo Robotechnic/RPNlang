@@ -172,6 +172,31 @@ const RPNFunction* Value::getFunctionValue() const {
 	throw std::runtime_error("This value is not a function");
 }
 
+bool Value::isCastableTo(ValueType type) const {
+	switch (type) {
+		case INT:
+		case FLOAT:
+		case BOOL:
+			return this->isNumber();
+		case STRING:
+			return true;
+		default:
+			return false;
+	}
+}
+
+bool Value::isNumber() const {
+	if (this->type == INT || this->type == FLOAT || this->type == BOOL) {
+		return true;
+	}
+
+	if (this->type == STRING && std::regex_match(std::get<std::string>(this->value), std::regex("^[0-9]+$"))) {
+		return true;
+	}
+
+	return false;
+}
+
 ValueType Value::getType() const {
 	return this->type;
 }
@@ -319,6 +344,18 @@ ExpressionResult Value::applyOperator(const Value &other, const Token &operatorT
 		return this->opmul(otherValue);
 	if (op == "^")
 		return this->oppow(otherValue);
+	if (op == "==")
+		return this->opeq(otherValue);
+	if (op == "!=")
+		return this->opne(otherValue);
+	if (op == "<")
+		return this->oplt(otherValue);
+	if (op == "<=")
+		return this->ople(otherValue);
+	if (op == ">")
+		return this->opgt(otherValue);
+	if (op == ">=")
+		return this->opge(otherValue);
 
 	return ExpressionResult(
 		"Invalid operator " + op,
@@ -465,6 +502,140 @@ ExpressionResult Value::oppow(const Value &other) {
 	} else {
 		this->setValue(
 			(int)std::pow(this->getIntValue(), other.getIntValue())
+		);
+	}
+
+	return ExpressionResult();
+}
+
+ExpressionResult Value::opgt(const Value &other) {
+	if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator > between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
+		);
+	}
+
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->setValue(
+			this->getFloatValue() > other.getFloatValue()
+		);
+	} else {
+		this->setValue(
+			this->getIntValue() > other.getIntValue()
+		);
+	}
+
+	return ExpressionResult();
+}
+
+ExpressionResult Value::opge(const Value &other) {
+	if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator >= between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
+		);
+	}
+
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->setValue(
+			this->getFloatValue() >= other.getFloatValue()
+		);
+	} else {
+		this->setValue(
+			this->getIntValue() >= other.getIntValue()
+		);
+	}
+
+	return ExpressionResult();
+}
+
+ExpressionResult Value::oplt(const Value &other) {
+	if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator < between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
+		);
+	}
+
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->setValue(
+			this->getFloatValue() < other.getFloatValue()
+		);
+	} else {
+		this->setValue(
+			this->getIntValue() < other.getIntValue()
+		);
+	}
+
+	return ExpressionResult();
+}
+
+ExpressionResult Value::ople(const Value &other) {
+	if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator <= between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
+		);
+	}
+
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->setValue(
+			this->getFloatValue() <= other.getFloatValue()
+		);
+	} else {
+		this->setValue(
+			this->getIntValue() <= other.getIntValue()
+		);
+	}
+
+	return ExpressionResult();
+}
+
+ExpressionResult Value::opne(const Value &other) {
+	if (this->type == STRING && other.getType() == STRING) {
+		this->setValue(
+			this->getStringValue() != other.getStringValue()
+		);
+	} else if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator != between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
+		);
+	}
+
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->setValue(
+			this->getFloatValue() != other.getFloatValue()
+		);
+	} else {
+		this->setValue(
+			this->getIntValue() != other.getIntValue()
+		);
+	}
+
+	return ExpressionResult();
+}
+
+ExpressionResult Value::opeq(const Value &other) {
+	if (this->type == STRING && other.getType() == STRING) {
+		this->setValue(
+			this->getStringValue() == other.getStringValue()
+		);
+	} else if (this->type == STRING || other.getType() == STRING) {
+		return ExpressionResult(
+			"Invalid operator == between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
+			this->valueRange
+		);
+	}
+
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		this->setValue(
+			this->getFloatValue() == other.getFloatValue()
+		);
+	} else {
+		this->setValue(
+			this->getIntValue() == other.getIntValue()
 		);
 	}
 

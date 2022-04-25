@@ -292,6 +292,7 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens, int line) {
 				this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
 				break;
 			case TOKEN_TYPE_OPERATOR:
+			case TOKEN_TYPE_BOOLEAN_OPERATOR:
 				result = this->applyOperator(tok);
 				break;
 			case TOKEN_TYPE_FUNCTION_CALL:

@@ -40,7 +40,11 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args) const{
 		}
 
 		return ExpressionResult(
-			"Function call arguments count mismatch," + std::to_string(this->argsName.size()) + " arguents expected but got " + std::to_string(args.size()) + " arguments",
+			"Function call arguments count mismatch," + 
+			std::to_string(this->argsName.size()) + 
+			" arguents expected but got " + 
+			std::to_string(args.size()) + 
+			" arguments",
 			range
 		);
 	}
@@ -51,10 +55,14 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args) const{
 ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args) const{
 	for (size_t i = 0; i < args.size(); i++) {
 		if (args[i].getType() != this->parameterTypes[i]) {
-			return ExpressionResult(
-				"Function call argument type mismatch (got " + Value::stringType(args[i].getType()) + " but expected " + Value::stringType(this->parameterTypes[i]) + ")",
-				args[i].getRange()
-			);
+			if (!args[i].isCastableTo(this->parameterTypes[i])) {
+				return ExpressionResult(
+					"Function call argument type mismatch, expected " + 
+					Value::stringType(this->parameterTypes[i]) + 
+					" but got " + Value::stringType(args[i].getType()),
+					args[i].getRange()
+				);
+			}
 		}
 	}
 	return ExpressionResult();

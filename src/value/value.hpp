@@ -36,6 +36,8 @@ class Value {
 		bool getBoolValue() const;
 		std::string getStringValue() const;
 		const RPNFunction * getFunctionValue() const;
+		bool isCastableTo(ValueType type) const;
+		bool isNumber() const;
 
 
 		void setValue(std::string value);
@@ -48,7 +50,7 @@ class Value {
 		TextRange getRange() const;
 
 		static std::string stringType(const ValueType type);
-		static ValueType valueType(const std::string type);
+		static ValueType valueType(const std::string type); 
 
 		ExpressionResult setVariable(std::map<std::string, Value> &variables);
 
@@ -64,6 +66,12 @@ class Value {
 		ExpressionResult opdiv(const Value &other);
 		ExpressionResult opmod(const Value &other);
 		ExpressionResult oppow(const Value &other);
+		ExpressionResult opgt(const Value &other);
+		ExpressionResult opge(const Value &other);
+		ExpressionResult oplt(const Value &other);
+		ExpressionResult ople(const Value &other);
+		ExpressionResult opne(const Value &other);
+		ExpressionResult opeq(const Value &other);
 
 		ValueStorage value;
 		TextRange valueRange;

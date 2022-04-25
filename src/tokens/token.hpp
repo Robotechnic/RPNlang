@@ -31,11 +31,12 @@ const std::regex literalRegex("^([a-z][a-zA-Z]*)");
 
 // math operators
 const std::regex operatorRegex("^([+-/*^])");
+const std::regex booleanOperatorRegex("^([<>=!]{1,2})");
 
 // multi lines statements
 const std::regex lineSeparatorRegex("^(\\n|;)");
 
-#define TOKEN_TYPES 14
+#define TOKEN_TYPES 15
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
@@ -51,6 +52,7 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 	std::make_tuple(functionCallRegex, TOKEN_TYPE_FUNCTION_CALL),
 	std::make_tuple(functionReturnRegex, TOKEN_TYPE_RETURN),
 	std::make_tuple(controlEndRegex,TOKEN_TYPE_CONTROL_END),
+	std::make_tuple(booleanOperatorRegex, TOKEN_TYPE_BOOLEAN_OPERATOR),
 	std::make_tuple(operatorRegex, TOKEN_TYPE_OPERATOR),
 
 	std::make_tuple(lineSeparatorRegex, TOKEN_TYPE_END_OF_LINE),
