@@ -31,20 +31,29 @@ class Interpreter {
 		ExpressionResult interpret(std::queue<Token> tokens, int line);
 
 	private:
+		ExpressionResult interpretToken(const Token &tok, std::queue<Token> &tokens, int line);
+
 		ExpressionResult applyOperator(const Token &mathOperator);
 		ExpressionResult affectVariable(const Token &affectToken);
-		ExpressionResult checkLiteral(const Token &literalToken);
 		ExpressionResult isFunction(const Token &functionName, std::string name, bool &builtin, int &argCount);
 		ExpressionResult checkArgs(const Token &literalToken, int argCount, RPNFunctionArgs &args);
 		ExpressionResult callFunction(const Token &functionName);
 		ExpressionResult parseKeyword(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult createFunction(const Token &keywordToken, std::queue<Token> &tokens);
+		ExpressionResult parseIf(const Token &keywordToken, std::queue<Token> &tokens);
+		ExpressionResult parseElse(std::queue<Token> &tokens);
+
 		std::string fileName;
 		std::ifstream file;
 		Value lastValue;
 
+		void skipSeparators(std::queue<Token> &tokens);
 		void clearMemory();
 		ExpressionResult checkMemory(int line);
+
+
+		ExpressionResult extractExpressionArguments(std::queue<Token> &tokens, std::queue<Token> &expressionArguments);
+		ExpressionResult extractExpressionBody(std::queue<Token> &tokens, std::queue<Token> &expressionBody);
 
 		std::stack<Value> memory;
 		std::map<std::string, Value> variables;

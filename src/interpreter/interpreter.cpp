@@ -59,6 +59,15 @@ ExpressionResult Interpreter::interpret(std::string line) {
 	return result;
 }
 
+void Interpreter::skipSeparators(std::queue<Token> &tokens) {
+	while (
+		tokens.front().getType() == TOKEN_TYPE_END_OF_LINE || 
+		tokens.front().getType() == TOKEN_TYPE_EXPRESSION_SEPARATOR
+	) {
+		tokens.pop();
+	}
+}
+
 void Interpreter::clearMemory() {
 	while (!this->memory.empty()) {
 		this->memory.pop();
@@ -95,6 +104,7 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 	if (memory.size() < 2) {
 		return ExpressionResult("Not enough arguments for affectation", affectToken.getRange());
 	}
+
 	Value second = memory.top();
 	ExpressionResult result = second.setVariable(this->variables);
 	if (result.error()) return result;
@@ -135,7 +145,7 @@ ExpressionResult Interpreter::isFunction(const Token &functionName, std::string 
 }
 
 ExpressionResult Interpreter::checkArgs(const Token &literalToken, int argCount, RPNFunctionArgs &args) {
-	if (memory.size() < argCount) {
+	if ((int)memory.size() < argCount) {
 		return ExpressionResult("Not enough arguments for function " + literalToken.getValue(), literalToken.getRange());
 	}
 
@@ -178,102 +188,70 @@ ExpressionResult Interpreter::callFunction(const Token &functionName) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::checkLiteral(const Token &literalToken) {
-	std::string name = literalToken.getValue();
-	memory.push(Value(
-		name,
-		literalToken.getType(),
-		literalToken.getLine(),
-		literalToken.getColumn()
-	));
+ExpressionResult Interpreter::extractExpressionBody(std::queue<Token> &tokens, std::queue<Token> &expressionBody) {
+	if (tokens.empty()) {
+		return ExpressionResult("Unexpected end of line", TextRange(0, 0, 0));
+	}
+	while ( // expression body can only be one line for now
+		!tokens.empty() &&
+		tokens.front().getType() != TOKEN_TYPE_END_OF_LINE && 
+		tokens.front().getType() != TOKEN_TYPE_EXPRESSION_SEPARATOR
+	) {
+		expressionBody.emplace(tokens.front());
+		tokens.pop();
+	}
+
+	this->skipSeparators(tokens);
+
+	if (expressionBody.size() == 0) {
+		return ExpressionResult(
+			"Missing expression after control sequence",
+			tokens.front().getRange()
+		);
+	}
 
 	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::extractExpressionArguments(std::queue<Token> &tokens, std::queue<Token> &expressionArguments) {
+	if (tokens.empty()) {
+		return ExpressionResult("Unexpected end of line", TextRange(0, 0, 0));
+	}
+	while (
+		!tokens.empty() &&
+		tokens.front().getType() != TOKEN_TYPE_CONTROL_END &&
+		tokens.front().getType() != TOKEN_TYPE_END_OF_LINE && 
+		tokens.front().getType() != TOKEN_TYPE_EXPRESSION_SEPARATOR
+	) {
+		expressionArguments.emplace(tokens.front());
+		tokens.pop();
+	}
+
+	if (tokens.front().getType() == TOKEN_TYPE_CONTROL_END) {
+		tokens.pop();
+		return ExpressionResult();
+	}
+
+	this->skipSeparators(tokens);
+	
+	return ExpressionResult("Missing : at end of expression line", tokens.front().getRange());
 }
 
 ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue<Token> &tokens) {
 	std::string keyword = keywordToken.getValue();
 
-	if (tokens.size() == 0) {
-		return ExpressionResult("Expected expression after keyword " + keyword, keywordToken.getRange());
-	}
-
-	if (keyword == "def") {
-		return this->createFunction(keywordToken, tokens);
-	}
-
 	return ExpressionResult("Not implemented yet", keywordToken.getRange());
 }
 
 ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::queue<Token> &tokens) {
-	Token currentToken = tokens.front();
-		tokens.pop();
-	std::string name;
+	return ExpressionResult();
+}
 
-	if (currentToken.getType() == TOKEN_TYPE_LITERAL) {
-		name = currentToken.getValue();
-		currentToken = tokens.front();
-		tokens.pop();
-	}
+ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Token> &tokens) {
+	return ExpressionResult();
+}
 
-	std::vector<std::string> args;
-	std::vector<ValueType> types;
-	ValueType returnType = NONE;
-	while (
-		tokens.size() > 0 && 
-		currentToken.getType() != TOKEN_TYPE_CONTROL_END &&
-		currentToken.getType() != TOKEN_TYPE_RETURN
-	) {
-		if (args.size() < types.size()) {
-			if (currentToken.getType() == TOKEN_TYPE_LITERAL) {
-				args.push_back(currentToken.getValue());
-			} else {
-				return ExpressionResult("Missing argument name", currentToken.getRange());
-			}
-		} else if (currentToken.getType() == TOKEN_TYPE_VALUE_TYPE) {
-			types.push_back(Value::valueType(currentToken.getValue()));
-		} else {
-			return ExpressionResult("Expected argument name or type", currentToken.getRange());
-		}
-
-		currentToken = tokens.front();
-		tokens.pop();
-	}
-
-	if (currentToken.getType() == TOKEN_TYPE_RETURN) {
-		currentToken = tokens.front();
-		tokens.pop();
-		if (currentToken.getType() != TOKEN_TYPE_VALUE_TYPE) {
-			return ExpressionResult("Expected return type", currentToken.getRange());
-		}
-		returnType = Value::valueType(currentToken.getValue());
-		currentToken = tokens.front();
-		tokens.pop();
-	}
-
-	if (currentToken.getType() != TOKEN_TYPE_CONTROL_END) {
-		return ExpressionResult(
-			"Missing : at the end of the function",
-			currentToken.getRange()
-		);
-	}
-
-	std::queue<Token> functionBody;
-	while (!tokens.empty() && tokens.front().getType() != TOKEN_TYPE_END_OF_LINE) {
-		functionBody.emplace(tokens.front());
-		tokens.pop();
-	}
-
-	if (tokens.front().getType() == TOKEN_TYPE_END_OF_LINE) tokens.pop();
-
-	UserRPNFunction *function = new UserRPNFunction(name, args, types, returnType, functionBody);
-	Value functionValue(function, keywordToken.getLine(), keywordToken.getLine());
-
-
-	if (name.size() > 0) {
-		this->variables[name] = functionValue;
-	}
-
-	this->memory.push(functionValue);
+ExpressionResult Interpreter::parseElse(std::queue<Token> &tokens) {
 	return ExpressionResult();
 }
 
@@ -284,34 +262,34 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens, int line) {
 	while (tokens.size() > 0) {
 		Token tok = tokens.front();
 		tokens.pop();
-		switch (tok.getType()) {
-			case TOKEN_TYPE_FLOAT:
-			case TOKEN_TYPE_INT:
-			case TOKEN_TYPE_STRING:
-			case TOKEN_TYPE_BOOL:
-				this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
-				break;
-			case TOKEN_TYPE_OPERATOR:
-			case TOKEN_TYPE_BOOLEAN_OPERATOR:
-				result = this->applyOperator(tok);
-				break;
-			case TOKEN_TYPE_FUNCTION_CALL:
-				result = this->callFunction(tok);
-				break;
-			case TOKEN_TYPE_LITERAL:
-				result = this->checkLiteral(tok);
-				break;
-			case TOKEN_TYPE_AFFECT:
-				result = this->affectVariable(tok);
-				break;
-			case TOKEN_TYPE_KEYWORD:
-				result = this->parseKeyword(tok, tokens);
-				break;
-			default:
-				result = ExpressionResult("Invalid token " + tok.getValue(), tok.getRange());
-		}
+		result = this->interpretToken(tok, tokens, line);
 		if (result.error()) return result;
 	}
 	
 	return this->checkMemory(line);
+}
+
+ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token> &tokens, int line) {
+	switch (tok.getType()) {
+		case TOKEN_TYPE_FLOAT:
+		case TOKEN_TYPE_INT:
+		case TOKEN_TYPE_STRING:
+		case TOKEN_TYPE_BOOL:
+		case TOKEN_TYPE_LITERAL:
+			this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
+			return ExpressionResult();
+		case TOKEN_TYPE_OPERATOR:
+		case TOKEN_TYPE_BOOLEAN_OPERATOR:
+			return this->applyOperator(tok);
+		case TOKEN_TYPE_FUNCTION_CALL:
+			return this->callFunction(tok);
+		case TOKEN_TYPE_AFFECT:
+			return this->affectVariable(tok);
+		case TOKEN_TYPE_KEYWORD:
+			return this->parseKeyword(tok, tokens);
+		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
+			return ExpressionResult();
+		default:
+			return ExpressionResult("Invalid token " + tok.getValue(), tok.getRange());
+	}
 }

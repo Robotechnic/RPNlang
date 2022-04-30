@@ -21,8 +21,9 @@ const std::regex typeRegex("^(int|float|bool|string)");
 
 // control structures
 const std::regex indentBlockRegex("^(\t)");
-const std::regex functionReturnRegex("^(->)");
+const std::regex functionArrowRegex("^(->)");
 const std::regex controlEndRegex("^([:])");
+const std::regex expressionSeparatorRegex("^(\\|)");
 const std::regex functionCallRegex("^(?:[:])([a-z][a-zA-Z]*)");
 
 // variables
@@ -31,12 +32,12 @@ const std::regex literalRegex("^([a-z][a-zA-Z]*)");
 
 // math operators
 const std::regex operatorRegex("^([+-/*^])");
-const std::regex booleanOperatorRegex("^([<>=!]{1,2})");
+const std::regex booleanOperatorRegex("^([<>]=?|==|!=)");
 
 // multi lines statements
-const std::regex lineSeparatorRegex("^(\\n|;)");
+const std::regex lineSeparatorRegex("^(\\n)");
 
-#define TOKEN_TYPES 15
+#define TOKEN_TYPES 16
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
@@ -50,15 +51,16 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 
 	std::make_tuple(indentBlockRegex, TOKEN_TYPE_INDENT),
 	std::make_tuple(functionCallRegex, TOKEN_TYPE_FUNCTION_CALL),
-	std::make_tuple(functionReturnRegex, TOKEN_TYPE_RETURN),
+	std::make_tuple(functionArrowRegex, TOKEN_TYPE_ARROW),
 	std::make_tuple(controlEndRegex,TOKEN_TYPE_CONTROL_END),
 	std::make_tuple(booleanOperatorRegex, TOKEN_TYPE_BOOLEAN_OPERATOR),
+	std::make_tuple(affectTokenRegex, TOKEN_TYPE_AFFECT),
 	std::make_tuple(operatorRegex, TOKEN_TYPE_OPERATOR),
+	std::make_tuple(expressionSeparatorRegex, TOKEN_TYPE_EXPRESSION_SEPARATOR),
 
 	std::make_tuple(lineSeparatorRegex, TOKEN_TYPE_END_OF_LINE),
 	std::make_tuple(keywordsRegex, TOKEN_TYPE_KEYWORD),
-	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL),
-	std::make_tuple(affectTokenRegex, TOKEN_TYPE_AFFECT),
+	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL)
 };
 
 class Token {

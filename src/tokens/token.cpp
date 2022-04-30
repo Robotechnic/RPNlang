@@ -91,14 +91,16 @@ std::string Token::stringType(TokenType type) {
 			return "indentation";
 		case TOKEN_TYPE_VALUE_TYPE:
 			return "value type";
-		case TOKEN_TYPE_RETURN:
-			return "return value";
+		case TOKEN_TYPE_ARROW:
+			return "arrow token";
 		case TOKEN_TYPE_END_OF_LINE:
 			return "end of line";
 		case TOKEN_TYPE_FUNCTION_CALL:
 			return "function call";
 		case TOKEN_TYPE_KEYWORD:
 			return "language keyword";
+		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
+			return "expression separator";
 	}
 }
 
