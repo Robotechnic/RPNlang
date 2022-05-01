@@ -248,19 +248,20 @@ ExpressionResult Interpreter::callFunction(const Token &functionName) {
 }
 
 /**
- * @brief parse a given fstring and replace all {} by the values in the memory
+ * @brief Extract text between each placeholder for values
  * 
  * @param fStringToken the token which represent the fstring
- * @return ExpressionResult result of the parsing
+ * @param substrings the vector of string to store the substrings
+ * @return ExpressionResult if each placeholder is valid
  */
-ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
+ExpressionResult Interpreter::extractFStringSubstrings(const Token &fStringToken, std::vector<std::string> &substrings) {
 	std::string fString = fStringToken.getValue();
 	TextRange range = fStringToken.getRange();
 
-	std::vector<std::string> substrings(1, "");
+	substrings.clear();
+	substrings.push_back("");
 
 	char c;
-	int argCount = 0;
 	int column = 0;
 	while (fString.size() > 0) {
 		c = fString.at(0);
@@ -275,7 +276,6 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 			}
 			fString.erase(fString.begin());
 			column++;
-			argCount ++;
 			substrings.push_back("");
 		} else if (c == '}') {
 			return ExpressionResult(
@@ -286,10 +286,25 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 			substrings.at(substrings.size() - 1) += c;
 		}
 	}
+	return ExpressionResult();
+}
 
+/**
+ * @brief parse a given fstring and replace all {} by the values in the memory
+ * 
+ * @param fStringToken the token which represent the fstring
+ * @return ExpressionResult result of the parsing
+ */
+ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
+	std::vector<std::string> substrings;
+
+	ExpressionResult result = this->extractFStringSubstrings(fStringToken, substrings);
+	if (result.error()) return result;
+
+	int argCount = substrings.size() - 1;
 
 	if (argCount > (int)memory.size()) {
-		return ExpressionResult("Not enough arguments for fstring", range);
+		return ExpressionResult("Not enough arguments for fstring", fStringToken.getRange());
 	}
 
 	std::vector<Value> args(argCount);
@@ -298,14 +313,14 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 		memory.pop();
 	}
 
-	std::stringstream result;
+	std::stringstream formatedResult;
 	for (size_t i = 0; i < substrings.size(); i++) {
-		result << substrings.at(i);
+		formatedResult << substrings.at(i);
 		if (i < args.size())
-			result << args.at(i).getStringValue();
+			formatedResult << args.at(i).getStringValue();
 	}
 
-	memory.push(Value(result.str(), this->mergeRanges(args).merge(fStringToken.getRange())));
+	memory.push(Value(formatedResult.str(), this->mergeRanges(args).merge(fStringToken.getRange())));
 
 	return ExpressionResult();
 }
