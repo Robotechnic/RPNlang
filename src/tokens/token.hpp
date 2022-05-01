@@ -38,7 +38,10 @@ const std::regex booleanOperatorRegex("^([<>]=?|==|!=)");
 // multi lines statements
 const std::regex lineSeparatorRegex("^(\\n)");
 
-#define TOKEN_TYPES 17
+//comments
+const std::regex commentRegex("^(#)");
+
+#define TOKEN_TYPES 18
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
@@ -62,7 +65,9 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 
 	std::make_tuple(lineSeparatorRegex, TOKEN_TYPE_END_OF_LINE),
 	std::make_tuple(keywordsRegex, TOKEN_TYPE_KEYWORD),
-	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL)
+	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL),
+
+	std::make_tuple(commentRegex, TOKEN_TYPE_COMMENT)
 };
 
 class Token {

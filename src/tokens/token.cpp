@@ -24,6 +24,9 @@ ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<To
 			std::regex regex = std::get<0>(tokenRegexes[i]);
 			if (std::regex_search(lineString, match, regex)) {
 				TokenType type = std::get<1>(tokenRegexes[i]);
+				if (type == TOKEN_TYPE_COMMENT) {
+					return ExpressionResult();
+				}
 				std::string value = match.str(1);
 				tokens.push(Token(line, column, type, value));
 			}
@@ -99,6 +102,10 @@ std::string Token::stringType(TokenType type) {
 			return "function call";
 		case TOKEN_TYPE_KEYWORD:
 			return "language keyword";
+		case TOKEN_TYPE_BOOLEAN_OPERATOR:
+			return "boolean operator";
+		case TOKEN_TYPE_COMMENT:
+			return "comment";
 		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
 			return "expression separator";
 	}
