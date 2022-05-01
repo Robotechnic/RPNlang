@@ -38,7 +38,7 @@ void ExpressionResult::display(ExpressionResult result, std::string code) {
 	std::cout << "Error : " << result.getErrorMessage()<<std::endl;
 	std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
 	std::cout << range.getLine(code) << std::endl;
-	for (long unsigned int i = 0; i < range.columnEnd; i++) {
+	for (long unsigned int i = 0; i <= range.columnEnd; i++) {
 		if (i < range.columnStart) {
 			std::cout << " ";
 		} else {

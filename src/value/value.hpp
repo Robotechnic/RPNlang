@@ -23,7 +23,8 @@ class Value {
 		Value(const Value &other);
 		Value(std::string value, ValueType type, int line, int column);
 		Value(std::string value, TokenType type, int line, int column);
-		Value(std::string, int line, int column);
+		Value(std::string value, int line, int column);
+		Value(std::string value, TextRange range);
 		Value(int value, int line, int column);
 		Value(float value, int line, int column);
 		Value(bool value, int line, int column);

@@ -10,6 +10,8 @@ class TextRange {
 		TextRange(int line, int column, int length);
 
 		std::string getLine(std::string code);
+		
+		TextRange merge(const TextRange &other);
 
 		unsigned long int line, columnStart, columnEnd;
 };

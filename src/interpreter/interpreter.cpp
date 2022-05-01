@@ -23,31 +23,24 @@ bool Interpreter::interpretFile(std::string &errorMessage) {
 		errorMessage = "File stream error :" + std::string(e.what());
 		return false;
 	}
-
-	// std::string line;
-	// std::getline(this->file, line);
-	// bool error = true;
-	// int lineNumber = 0;
-	// std::vector<Token> tokens;
-	// while (!error && !this->file.eof()) {
-	// 	lineNumber ++;
-	// 	error = Token::tokenize(lineNumber, line, tokens, errorMessage);
-	// 	if (error)
-	// 		continue;
-	// 	error = this->interpret(tokens, errorMessage);
-	// 	if (error)
-	// 		continue;
-	// 	std::getline(this->file, line);
-	// }
-
-	// return error;
 	return true;
 }
 
+/**
+ * @brief return the last value remaining in the interpreter memory
+ * 
+ * @return Value the last value in the stack
+ */
 Value Interpreter::getLastValue() const {
 	return this->lastValue;
 }
 
+/**
+ * @brief take a string line, parse it and interpret the result
+ * 
+ * @param line the line to interpret
+ * @return ExpressionResult status of the interpretation
+ */
 ExpressionResult Interpreter::interpret(std::string line) {
 	std::queue<Token> tokens;
 	std::string errorMessage;
@@ -59,6 +52,11 @@ ExpressionResult Interpreter::interpret(std::string line) {
 	return result;
 }
 
+/**
+ * @brief skip all separators in the token queue
+ * 
+ * @param tokens the token queue
+ */
 void Interpreter::skipSeparators(std::queue<Token> &tokens) {
 	while (
 		tokens.front().getType() == TOKEN_TYPE_END_OF_LINE || 
@@ -68,12 +66,38 @@ void Interpreter::skipSeparators(std::queue<Token> &tokens) {
 	}
 }
 
+/**
+ * @brief clear the interpreter memory
+ */
 void Interpreter::clearMemory() {
 	while (!this->memory.empty()) {
 		this->memory.pop();
 	}
 }
 
+/**
+ * @brief get the minimum and maximum text range of value list
+ * 
+ * @param values values that the text range will be calculated from
+ * @return TextRange text range of the tokens list
+ */
+TextRange Interpreter::mergeRanges(const std::vector<Value> &values) {
+	if (values.size() == 0) return TextRange();
+	
+	TextRange range = values.begin()->getRange();
+	for (const Value &token : values) {
+		range.merge(token.getRange());
+	}
+	
+	return range;
+}
+
+/**
+ * @brief check if the interpreter memory contain only one value
+ * 
+ * @param line the current line number in the file
+ * @return ExpressionResult the result of the check
+ */
 ExpressionResult Interpreter::checkMemory(int line) {
 	if (memory.size() != 1) {
 		if (memory.size() == 0) {
@@ -90,6 +114,12 @@ ExpressionResult Interpreter::checkMemory(int line) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief try to extract values needed of a given math operator, apply it and push the result in the memory
+ * 
+ * @param mathOperator the token which represent the math operator
+ * @return ExpressionResult result of the operation
+ */
 ExpressionResult Interpreter::applyOperator(const Token &mathOperator) {
 	if (memory.size() < 2) {
 		return ExpressionResult("Not enough arguments for operator " + mathOperator.getValue(), mathOperator.getRange());
@@ -100,6 +130,12 @@ ExpressionResult Interpreter::applyOperator(const Token &mathOperator) {
 	return this->memory.top().applyOperator(second, mathOperator, this->variables);
 }
 
+/**
+ * @brief affect a value to a given variable
+ * 
+ * @param affectToken the token which represent the affectation (=)
+ * @return ExpressionResult result of the affectation
+ */
 ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 	if (memory.size() < 2) {
 		return ExpressionResult("Not enough arguments for affectation", affectToken.getRange());
@@ -121,7 +157,16 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::isFunction(const Token &functionName, std::string name, bool &builtin, int &argCount) {
+/**
+ * @brief check if the current token refer to a function
+ * 
+ * @param functionName token which represent the function call
+ * @param builtin boolean to know if the function is a builtin function or an user defined one
+ * @param argCount int to know how many arguments the function need
+ * @return ExpressionResult result of the check
+ */
+ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builtin, int &argCount) {
+	const std::string name = functionName.getValue();
 	if (this->variables.find(name) != this->variables.end()) {
 		builtin = false;
 		if (this->variables[name].getType() != FUNCTION) {
@@ -144,6 +189,14 @@ ExpressionResult Interpreter::isFunction(const Token &functionName, std::string 
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if the memory contain enough values to apply a function and get values of variables
+ * 
+ * @param literalToken the token which represent the function call
+ * @param argCount number of arguments needed
+ * @param args A vector of Value to store the arguments
+ * @return ExpressionResult status of the check
+ */
 ExpressionResult Interpreter::checkArgs(const Token &literalToken, int argCount, RPNFunctionArgs &args) {
 	if ((int)memory.size() < argCount) {
 		return ExpressionResult("Not enough arguments for function " + literalToken.getValue(), literalToken.getRange());
@@ -163,6 +216,12 @@ ExpressionResult Interpreter::checkArgs(const Token &literalToken, int argCount,
 	return result;
 }
 
+/**
+ * @brief call a function and push the result in the memory
+ * 
+ * @param functionName the token which represent the function call
+ * @return ExpressionResult result of the call
+ */
 ExpressionResult Interpreter::callFunction(const Token &functionName) {
 	// check if literal is a function name
 	ExpressionResult result;
@@ -170,7 +229,7 @@ ExpressionResult Interpreter::callFunction(const Token &functionName) {
 	int argCount = 0;
 	bool builtin = true;
 
-	result = this->isFunction(functionName, name, builtin, argCount);
+	result = this->isFunction(functionName, builtin, argCount);
 	if (result.error()) return result;
 
 	RPNFunctionArgs args;
@@ -187,6 +246,70 @@ ExpressionResult Interpreter::callFunction(const Token &functionName) {
 	this->memory.push(std::get<1>(functionResult));
 	return ExpressionResult();
 }
+
+/**
+ * @brief parse a given fstring and replace all {} by the values in the memory
+ * 
+ * @param fStringToken the token which represent the fstring
+ * @return ExpressionResult result of the parsing
+ */
+ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
+	std::string fString = fStringToken.getValue();
+	TextRange range = fStringToken.getRange();
+
+	std::vector<std::string> substrings(1, "");
+
+	char c;
+	int argCount = 0;
+	int column = 0;
+	while (fString.size() > 0) {
+		c = fString.at(0);
+		fString.erase(fString.begin());
+		column++;
+		if (c == '{') {
+			if (fString.size() == 0 || fString[0] != '}') {
+				return ExpressionResult(
+					"Expected '}' after '{'", 
+					TextRange(range.line, range.columnStart + column, 1)
+				);
+			}
+			fString.erase(fString.begin());
+			column++;
+			argCount ++;
+			substrings.push_back("");
+		} else if (c == '}') {
+			return ExpressionResult(
+				"Expected '{' before '}'", 
+				TextRange(range.line, range.columnStart + column, 1)
+			);
+		} else {
+			substrings.at(substrings.size() - 1) += c;
+		}
+	}
+
+
+	if (argCount > (int)memory.size()) {
+		return ExpressionResult("Not enough arguments for fstring", range);
+	}
+
+	std::vector<Value> args(argCount);
+	for (int i = argCount - 1; i >= 0; i--) {
+		args.at(i) = memory.top();
+		memory.pop();
+	}
+
+	std::stringstream result;
+	for (size_t i = 0; i < substrings.size(); i++) {
+		result << substrings.at(i);
+		if (i < args.size())
+			result << args.at(i).getStringValue();
+	}
+
+	memory.push(Value(result.str(), this->mergeRanges(args).merge(fStringToken.getRange())));
+
+	return ExpressionResult();
+}
+
 
 ExpressionResult Interpreter::extractExpressionBody(std::queue<Token> &tokens, std::queue<Token> &expressionBody) {
 	if (tokens.empty()) {
@@ -278,6 +401,8 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_LITERAL:
 			this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
 			return ExpressionResult();
+		case TOKEN_TYPE_FSTRING:
+			return this->parseFString(tok);
 		case TOKEN_TYPE_OPERATOR:
 		case TOKEN_TYPE_BOOLEAN_OPERATOR:
 			return this->applyOperator(tok);

@@ -10,6 +10,17 @@ std::string TextRange::getLine(std::string code) {
 	return lines[line];
 }
 
+TextRange TextRange::merge(const TextRange &other) {
+	if (other.line > this->line)
+		line = other.line;
+	if (other.columnStart < this->columnStart)
+		this->columnStart = other.columnStart;
+	if (other.columnEnd > this->columnEnd)
+		this->columnEnd = other.columnEnd;
+	
+	return *this;
+}
+
 
 std::ostream &operator<<(std::ostream &os, const TextRange &range) {
 	os << "Line " << range.line << " : " << range.columnStart << " -> " << range.columnEnd;

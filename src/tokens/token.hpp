@@ -17,6 +17,7 @@ const std::regex floatRegex("^((?:[0-9]+)?\\.(?:[0-9]+)?)");
 const std::regex intRegex("^([0-9]+)");
 const std::regex boolRegex("^(true|false)");
 const std::regex stringRegex("^(?:\")([^\"]*)(?:\")");
+const std::regex fStringRegex("^f(?:\")([^\"]*)(?:\")");
 const std::regex typeRegex("^(int|float|bool|string)");
 
 // control structures
@@ -37,7 +38,7 @@ const std::regex booleanOperatorRegex("^([<>]=?|==|!=)");
 // multi lines statements
 const std::regex lineSeparatorRegex("^(\\n)");
 
-#define TOKEN_TYPES 16
+#define TOKEN_TYPES 17
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
@@ -47,6 +48,7 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 	std::make_tuple(intRegex, TOKEN_TYPE_INT),
 	std::make_tuple(boolRegex, TOKEN_TYPE_BOOL),
 	std::make_tuple(stringRegex, TOKEN_TYPE_STRING),
+	std::make_tuple(fStringRegex, TOKEN_TYPE_FSTRING),
 	std::make_tuple(typeRegex, TOKEN_TYPE_VALUE_TYPE),
 
 	std::make_tuple(indentBlockRegex, TOKEN_TYPE_INDENT),
