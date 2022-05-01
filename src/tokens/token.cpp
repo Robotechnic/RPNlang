@@ -14,6 +14,14 @@ Token::Token(const Token &other) :
 	column(other.column)
 {}
 
+/**
+ * @brief take a line of code and convert it to a vector of tokens
+ * 
+ * @param line the current line number
+ * @param lineString the current line of code
+ * @param tokens the vector of tokens to fill
+ * @return ExpressionResult if the line is a valid expression
+ */
 ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<Token> &tokens) {
 	int column = 0;
 	std::smatch match;
@@ -72,6 +80,12 @@ TextRange Token::getRange() const {
 	return TextRange(this->line, this->column, this->value.size());
 }
 
+/**
+ * @brief convert a TokenType to its string representation
+ * 
+ * @param type the TokenType to convert
+ * @return std::string the string representation of the TokenType
+ */
 std::string Token::stringType(TokenType type) {
 	switch (type) {
 		case TOKEN_TYPE_INT:

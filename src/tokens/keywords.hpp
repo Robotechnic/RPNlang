@@ -2,10 +2,16 @@
 #include <regex>
 
 const std::regex keywordsRegex("^("
-	"def|"
+	"fun|"
+	"nuf|"
 	"if|"
+	"fi|"
 	"else|"
 	"while|"
+	"elihw|"
 	"for|"
-	"return"
+	"rof|"
+	"return|"
+	"continue|"
+	"break|"
 ")");

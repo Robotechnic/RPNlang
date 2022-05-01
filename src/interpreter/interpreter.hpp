@@ -12,10 +12,12 @@
 #include "expressionresult/expressionresult.hpp"
 
 class UserRPNFunction;
-
 #include "rpnfunctions/rpnfunction.hpp"
 #include "rpnfunctions/builtinsrpnfunction.hpp"
 #include "rpnfunctions/userrpnfunction.hpp"
+
+class Context;
+#include "context/context.hpp"
 
 class Interpreter {
 	public:

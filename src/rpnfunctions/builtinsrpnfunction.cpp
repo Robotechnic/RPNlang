@@ -21,7 +21,7 @@ TextRange BuiltinRPNFunction::getRange() const {
 	return TextRange(0, 0, 0);
 }
 
-
+// until modules are implemented
 const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunctions = {
 	{"print", BuiltinRPNFunction(
 		"print",
@@ -109,6 +109,30 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		ValueType::BOOL,
 		[](RPNFunctionArgs args) {
 			return std::make_tuple(ExpressionResult(), Value(!args[0].getBoolValue(), 0, 0));
+		}
+	)},
+	{"ord", BuiltinRPNFunction(
+		"ord",
+		{"value"},
+		{ValueType::STRING},
+		ValueType::INT,
+		[](RPNFunctionArgs args) {
+			if (args[0].getStringValue().size() != 1) return std::make_tuple(
+				ExpressionResult(
+					"string must have length of 1", args[0].getRange()
+				), 
+				Value()
+			);
+			return std::make_tuple(ExpressionResult(), Value((int)args[0].getStringValue()[0], 0, 0));
+		}
+	)},
+	{"chr", BuiltinRPNFunction(
+		"chr",
+		{"value"},
+		{ValueType::INT},
+		ValueType::STRING,
+		[](RPNFunctionArgs args) {
+			return std::make_tuple(ExpressionResult(), Value(std::string(1, (char)args[0].getIntValue()), 0, 0));
 		}
 	)}
 };

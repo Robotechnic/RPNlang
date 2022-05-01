@@ -93,6 +93,11 @@ Value::Value(RPNFunction * function, int line, int column) :
 	valueRange(function->getRange()),
 	type(FUNCTION) {}
 
+/**
+ * @brief return the value if it is a float or try to convert it to a float
+ * 
+ * @return float the value as a float
+ */
 float Value::getFloatValue() const {
 	switch (this->type) {
 		case INT:
@@ -112,6 +117,11 @@ float Value::getFloatValue() const {
 	}
 }
 
+/**
+ * @brief return the value if it is an int or try to convert it to an int
+ * 
+ * @return int the value as an int
+ */
 int Value::getIntValue() const {
 	switch (this->type) {
 		case INT:
@@ -131,6 +141,11 @@ int Value::getIntValue() const {
 	}
 }
 
+/**
+ * @brief return the value if it is a bool or try to convert it to a bool
+ * 
+ * @return bool the value as a bool
+ */
 bool Value::getBoolValue() const {
 	switch (this->type) {
 		case INT:
@@ -146,6 +161,11 @@ bool Value::getBoolValue() const {
 	}
 }
 
+/**
+ * @brief return the value if it is a string or convert it to a string
+ * 
+ * @return std::string the value as a string
+ */
 std::string Value::getStringValue() const {
 	switch (this->type) {
 		case INT:
@@ -166,9 +186,13 @@ std::string Value::getStringValue() const {
 			}
 			return "<function " + function->getName() + ">";
 	}
-	return "";
 }
 
+/**
+ * @brief return the value if it is a function
+ * 
+ * @return RPNFunction* the value as a function
+ */
 const RPNFunction* Value::getFunctionValue() const {
 	if (this->type == FUNCTION) {
 		return std::get<RPNFunction*>(this->value);
@@ -177,6 +201,12 @@ const RPNFunction* Value::getFunctionValue() const {
 	throw std::runtime_error("This value is not a function");
 }
 
+/**
+ * @brief check if the current value can be converted to a given type
+ * 
+ * @param type the type to convert to
+ * @return true if the value can be converted to the given type
+ */
 bool Value::isCastableTo(ValueType type) const {
 	switch (type) {
 		case INT:
@@ -189,7 +219,11 @@ bool Value::isCastableTo(ValueType type) const {
 			return false;
 	}
 }
-
+/**
+ * @brief check if the current value is a number
+ * 
+ * @return true if the value is a number
+ */
 bool Value::isNumber() const {
 	if (this->type == INT || this->type == FLOAT || this->type == BOOL) {
 		return true;
@@ -214,6 +248,12 @@ ValueStorage Value::getValue() const {
 	return this->value;
 }
 
+/**
+ * @brief return the string representation of the ValueType
+ * 
+ * @param type the type to convert to a string
+ * @return std::string the string representation of the type
+ */
 std::string Value::stringType(const ValueType type) {
 	switch(type) {
 		case INT:
@@ -233,6 +273,12 @@ std::string Value::stringType(const ValueType type) {
 	}
 }
 
+/**
+ * @brief convert string representation of a value type to a ValueType
+ * 
+ * @param type the string representation of the type
+ * @return ValueType the type
+ */
 ValueType Value::valueType(const std::string type) {
 	if (type == "int")
 		return INT;
@@ -250,22 +296,12 @@ ValueType Value::valueType(const std::string type) {
 	throw std::runtime_error("This type doesn't exist");
 }
 
-void Value::concatValueRange(const TextRange &otherRange) {
-	if (otherRange.columnStart < this->valueRange.columnStart) {
-		this->valueRange.columnStart = otherRange.columnStart;
-	}
-
-	if (otherRange.columnEnd > this->valueRange.columnEnd) {
-		this->valueRange.columnEnd = otherRange.columnEnd;
-	}
-}
-
 void Value::concatValueRange(const Value &other) {
-	this->concatValueRange(other.getRange());
+	this->valueRange.merge(other.getRange());
 }
 
 void Value::concatValueRange(const Token &other) {
-	this->concatValueRange(other.getRange());
+	this->valueRange.merge(other.getRange());
 }
 
 void Value::setValue(std::string value) {
@@ -288,6 +324,17 @@ void Value::setValue(bool value) {
 	this->type = BOOL;
 }
 
+void Value::setValue(RPNFunction * function) {
+	this->value = function;
+	this->type = FUNCTION;
+}
+
+/**
+ * @brief check if the value is a valid variable name and if it is, set it's value and type
+ * 
+ * @param variables the variables to check
+ * @return ExpressionResult if the variable is valid
+ */
 ExpressionResult Value::setVariable(std::map<std::string, Value> &variables) {
 	if (this->type != VARIABLE) return ExpressionResult();
 
@@ -305,6 +352,14 @@ ExpressionResult Value::setVariable(std::map<std::string, Value> &variables) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief apply a math operation to the value
+ * 
+ * @param other the other value to apply the operation to
+ * @param operatorToken the operator token to apply
+ * @param variables variables to use in the operation
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::applyOperator(const Value &other, const Token &operatorToken, std::map<std::string, Value> &variables) {
 	std::string op = operatorToken.getValue();
 
@@ -368,6 +423,12 @@ ExpressionResult Value::applyOperator(const Value &other, const Token &operatorT
 	);
 }
 
+/**
+ * @brief add another value to this value
+ * 
+ * @param other the other value to add
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opadd(const Value &other) {
 	if (this->type == STRING && other.getType() == STRING) {
 		this->setValue(
@@ -391,6 +452,12 @@ ExpressionResult Value::opadd(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief subtract another value from this value
+ * 
+ * @param other the other value to subtract
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opsub(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
@@ -410,6 +477,12 @@ ExpressionResult Value::opsub(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief multiply this value by another value
+ * 
+ * @param other the other value to multiply by
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opmul(const Value &other) {
 	if (this->type == STRING && other.getType() == INT) {
 		std::string result = "";
@@ -436,6 +509,12 @@ ExpressionResult Value::opmul(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief divide this value by another value
+ * 
+ * @param other the other value to divide by
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opdiv(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
@@ -464,6 +543,12 @@ ExpressionResult Value::opdiv(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief modulo this value by another value
+ * 
+ * @param other the other value to modulo by
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opmod(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
@@ -492,6 +577,12 @@ ExpressionResult Value::opmod(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief power this value by another value
+ * 
+ * @param other the other value to power by
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::oppow(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
@@ -513,6 +604,12 @@ ExpressionResult Value::oppow(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if this value is greater than other value
+ * 
+ * @param other the other value to compare to
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opgt(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
@@ -534,6 +631,12 @@ ExpressionResult Value::opgt(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if this value is greater than or equal to other value
+ * 
+ * @param other the other value to compare to
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opge(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
@@ -555,6 +658,12 @@ ExpressionResult Value::opge(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if this value is less than other value
+ * 
+ * @param other the other value to compare to
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::oplt(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
@@ -576,6 +685,12 @@ ExpressionResult Value::oplt(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if this value is less than or equal to other value
+ * 
+ * @param other the other value to compare to
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::ople(const Value &other) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
@@ -597,6 +712,12 @@ ExpressionResult Value::ople(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if this value is not equal to other value
+ * 
+ * @param other the other value to compare to
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opne(const Value &other) {
 	if (this->type == STRING && other.getType() == STRING) {
 		this->setValue(
@@ -622,6 +743,12 @@ ExpressionResult Value::opne(const Value &other) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if this value is equal to other value
+ * 
+ * @param other the other value to compare to
+ * @return ExpressionResult if the operation was successful
+ */
 ExpressionResult Value::opeq(const Value &other) {
 	if (this->type == STRING && other.getType() == STRING) {
 		this->setValue(

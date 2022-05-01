@@ -12,6 +12,13 @@ RPNFunction::RPNFunction(
 	returnType(returnType)
 {}
 
+/**
+ * @brief Take the function body and run it, must be overriden
+ * 
+ * @param args arguments of the function
+ * @param variables variables of the current context
+ * @return RPNFunctionResult If the function was executed successfully and value if it is the case
+ */
 RPNFunctionResult RPNFunction::call(
 	RPNFunctionArgs args,
 	std::map<std::string, Value> variables
@@ -27,15 +34,19 @@ RPNFunctionResult RPNFunction::call(
 	return std::make_tuple(ExpressionResult("Function is not callable", range), Value());
 }
 
+/**
+ * @brief check if there is enough arguments and if the provided arguments have the correct types
+ * 
+ * @param args arguments provided by the user
+ * @return ExpressionResult if the arguments are correct
+ */
 ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args) const{
-	ExpressionResult result = this->checkTypes(args);
-	if (result.error()) return result;
 	if (args.size() != this->argsName.size()) {
 		TextRange range(0, 0, 0);
 		if (args.size() != 0) {
 			range = args[0].getRange();
 			if (args.size() > 1) {
-				range.columnEnd = args[args.size() - 1].getRange().columnEnd;
+				range.merge(args[args.size() - 1].getRange());
 			}
 		}
 
@@ -49,9 +60,18 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args) const{
 		);
 	}
 
+	ExpressionResult result = this->checkTypes(args);
+	if (result.error()) return result;
+
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if all provided arguments have the correct types or if they can be converted to the correct types
+ * 
+ * @param args the arguments provided by the user
+ * @return ExpressionResult if the arguments are correct
+ */
 ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args) const{
 	for (size_t i = 0; i < args.size(); i++) {
 		if (args[i].getType() != this->parameterTypes[i]) {

@@ -45,6 +45,7 @@ class Value {
 		void setValue(float value);
 		void setValue(int value);
 		void setValue(bool value);
+		void setValue(RPNFunction * function);
 
 		ValueStorage getValue() const;
 
@@ -58,7 +59,6 @@ class Value {
 		ExpressionResult applyOperator(const Value &other, const Token &operatorToken, std::map<std::string, Value> &variables);
 
 	private:
-		void concatValueRange(const TextRange &otherRange);
 		void concatValueRange(const Value &other);
 		void concatValueRange(const Token &other);
 		ExpressionResult opadd(const Value &other);

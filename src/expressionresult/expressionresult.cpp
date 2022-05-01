@@ -13,10 +13,20 @@ ExpressionResult::~ExpressionResult() {
 	this->errorMessage.clear();
 }
 
+/**
+ * @brief get if the result is an error
+ * 
+ * @return true if the result is an error
+ */
 bool ExpressionResult::error() const {
 	return this->isError;
 }
 
+/**
+ * @brief get if the result is not an error
+ * 
+ * @return true if the result is not an error
+ */
 bool ExpressionResult::success() const {
 	return !this->isError;
 }
@@ -29,10 +39,21 @@ TextRange ExpressionResult::getRange() const {
 	return this->errorRange;
 }
 
+/**
+ * @brief display the error message to the output stream
+ * 
+ * @param code lines of code
+ */
 void ExpressionResult::display(std::string code) {
 	ExpressionResult::display(*this, code);
 }
 
+/**
+ * @brief display the error message to the output stream
+ * 
+ * @param result the result to display
+ * @param code lines of code
+ */
 void ExpressionResult::display(ExpressionResult result, std::string code) {
 	TextRange range = result.getRange();
 	std::cout << "Error : " << result.getErrorMessage()<<std::endl;

@@ -11,6 +11,7 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/rpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/userrpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinsrpnfunction.cpp
+	${CMAKE_CURRENT_LIST_DIR}/context/context.cpp
 	${CMAKE_CURRENT_LIST_DIR}/interpreter/interpreter.cpp
 	${CMAKE_CURRENT_LIST_DIR}/main.cpp
 )
