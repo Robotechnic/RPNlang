@@ -16,12 +16,12 @@ RPNFunction::RPNFunction(
  * @brief Take the function body and run it, must be overriden
  * 
  * @param args arguments of the function
- * @param variables variables of the current context
+ * @param context the parent context
  * @return RPNFunctionResult If the function was executed successfully and value if it is the case
  */
 RPNFunctionResult RPNFunction::call(
 	RPNFunctionArgs args,
-	std::map<std::string, Value> variables
+	const Context &context
 ) const {
 	TextRange range(0, 0, 0);
 	if (args.size() != 0) {
@@ -31,7 +31,13 @@ RPNFunctionResult RPNFunction::call(
 		}
 	}
 
-	return std::make_tuple(ExpressionResult("Function is not callable", range), Value());
+	return std::make_tuple(ExpressionResult(
+			"Function is not callable", 
+			range,
+			Context(this->name, &context, CONTEXT_TYPE_FUNCTION)
+		), 
+		Value()
+	);
 }
 
 /**
@@ -40,7 +46,7 @@ RPNFunctionResult RPNFunction::call(
  * @param args arguments provided by the user
  * @return ExpressionResult if the arguments are correct
  */
-ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args) const{
+ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Context &context) const{
 	if (args.size() != this->argsName.size()) {
 		TextRange range(0, 0, 0);
 		if (args.size() != 0) {
@@ -56,11 +62,12 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args) const{
 			" arguents expected but got " + 
 			std::to_string(args.size()) + 
 			" arguments",
-			range
+			range,
+			context
 		);
 	}
 
-	ExpressionResult result = this->checkTypes(args);
+	ExpressionResult result = this->checkTypes(args, context);
 	if (result.error()) return result;
 
 	return ExpressionResult();
@@ -72,7 +79,7 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args) const{
  * @param args the arguments provided by the user
  * @return ExpressionResult if the arguments are correct
  */
-ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args) const{
+ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Context &context) const{
 	for (size_t i = 0; i < args.size(); i++) {
 		if (args[i].getType() != this->parameterTypes[i]) {
 			if (!args[i].isCastableTo(this->parameterTypes[i])) {
@@ -80,7 +87,8 @@ ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args) const{
 					"Function call argument type mismatch, expected " + 
 					Value::stringType(this->parameterTypes[i]) + 
 					" but got " + Value::stringType(args[i].getType()),
-					args[i].getRange()
+					args[i].getRange(),
+					context
 				);
 			}
 		}

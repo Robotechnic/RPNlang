@@ -22,7 +22,7 @@ Token::Token(const Token &other) :
  * @param tokens the vector of tokens to fill
  * @return ExpressionResult if the line is a valid expression
  */
-ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<Token> &tokens) {
+ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context &context) {
 	int column = 0;
 	std::smatch match;
 	while (lineString.size() > 0) {
@@ -42,7 +42,11 @@ ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<To
 		}
 		
 		if (match.size() == 0) {
-			return ExpressionResult("Unexpected char", TextRange(line, column, 1));
+			return ExpressionResult(
+				"Unexpected char",
+				TextRange(line, column, 1),
+				context
+			);
 		}
 
 		column += match.str().size();
@@ -120,6 +124,8 @@ std::string Token::stringType(TokenType type) {
 			return "boolean operator";
 		case TOKEN_TYPE_COMMENT:
 			return "comment";
+		case TOKEN_TYPE_FSTRING:
+			return "fstring";
 		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
 			return "expression separator";
 	}

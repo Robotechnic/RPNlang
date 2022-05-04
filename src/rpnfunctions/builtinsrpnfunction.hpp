@@ -15,12 +15,12 @@ class BuiltinRPNFunction : public RPNFunction {
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argumentsTypes,
 			ValueType returnType,
-			std::function<RPNFunctionResult(RPNFunctionArgs&)> function
+			std::function<RPNFunctionResult(RPNFunctionArgs&, const Context&)> function
 		);
 
 		RPNFunctionResult call(
 			RPNFunctionArgs args,
-			std::map<std::string, Value> variables
+			const Context &context
 		) const;
 
 		TextRange getRange() const;
@@ -28,5 +28,5 @@ class BuiltinRPNFunction : public RPNFunction {
 		static const std::map<std::string, BuiltinRPNFunction> builtinFunctions;
 
 	private:
-		std::function<RPNFunctionResult(RPNFunctionArgs&)> function;
+		std::function<RPNFunctionResult(RPNFunctionArgs&, const Context&)> function;
 };

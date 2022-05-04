@@ -1,0 +1,4 @@
+# just test file readding and interpretation
+
+name "What is your name ? " :input =
+name f"Hello World, {}!" :print

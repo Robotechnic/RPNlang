@@ -3,6 +3,7 @@
 #include <string>
 #include "expressionresult/expressionresult.hpp"
 #include "interpreter/interpreter.hpp"
+#include "context/context.hpp"
 
 void readLine(std::string &line) {
 	line.clear();
@@ -10,8 +11,8 @@ void readLine(std::string &line) {
 	std::getline(std::cin, line);
 }
 
-int main() {
-	Interpreter i;
+void shell() {
+	Interpreter i(Context("<stdin>"));
 	std::string errorMessage;
 	std::vector<Token> tokens;
 	std::string instruction;
@@ -25,6 +26,14 @@ int main() {
 		}
 
 		readLine(instruction);
+	}
+}
+
+int main(int argc, char **argv) {
+	if (argc == 1) {
+		shell();
+	} else {
+		return Interpreter(Context(argv[1], CONTEXT_TYPE_FILE)).interpretFile(argv[1]);
 	}
 
 	return 0;

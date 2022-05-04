@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <string>
 #include <sstream>
 #include <vector>
@@ -10,6 +9,9 @@
 #include "tokens/tokentypes.hpp"
 #include "tokens/keywords.hpp"
 #include "textutilities/textrange.hpp"
+#include "context/context.hpp"
+
+class ExpressionResult;
 #include "expressionresult/expressionresult.hpp"
 
 // values types
@@ -86,7 +88,7 @@ class Token {
 
 		static std::string stringType(TokenType type);
 
-		static ExpressionResult tokenize(int line, std::string lineString, std::queue<Token> &tokens);
+		static ExpressionResult tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context &context);
 
 	private:
 		std::string value;

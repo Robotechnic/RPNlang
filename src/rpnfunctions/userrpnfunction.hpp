@@ -20,12 +20,12 @@ class UserRPNFunction : public RPNFunction {
 
 		RPNFunctionResult call(
 			RPNFunctionArgs args,
-			std::map<std::string, Value> variables
+			const Context &context
 		) const;
 
 		TextRange getRange() const;
 
 	private:
-		void addParameters(const RPNFunctionArgs &args, std::map<std::string, Value> &variables) const;
+		void addParameters(const RPNFunctionArgs &args, Context &context) const;
 		std::queue<Token> body;
 };

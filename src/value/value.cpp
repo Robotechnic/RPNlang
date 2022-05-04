@@ -3,7 +3,7 @@
 
 Value::Value() : value(0), type(NONE) {}
 
-Value::Value(const Value &other) : value(other.value), valueRange(other.valueRange), type(other.type) {}
+Value::Value(const Value &other, const Context &context) : value(other.value), valueRange(other.valueRange), type(other.type) {}
 
 Value::Value(std::string value, ValueType type, int line, int column) : 
 	valueRange(line, column, value.length()),
@@ -186,6 +186,7 @@ std::string Value::getStringValue() const {
 			}
 			return "<function " + function->getName() + ">";
 	}
+	throw std::runtime_error("This value is not convertible to string");
 }
 
 /**
@@ -332,25 +333,21 @@ void Value::setValue(RPNFunction * function) {
 /**
  * @brief check if the value is a valid variable name and if it is, set it's value and type
  * 
- * @param variables the variables to check
+ * @param context the context where the symbol table is defined
  * @return ExpressionResult if the variable is valid
  */
-ExpressionResult Value::setVariable(std::map<std::string, Value> &variables) {
+ExpressionResult Value::getVariableValue(const Context &context) {
 	if (this->type != VARIABLE) return ExpressionResult();
 
-	std::string varName = this->getStringValue();
-	if (variables.find(varName) == variables.end()) {
-		return ExpressionResult(
-			"Variable " + varName + " not found",
-			this->valueRange
-		);
-	}
+	Value temp;
+	ExpressionResult result = context.getValue(*this, temp);
+	if (result.error()) return result;
 
-	this->type = variables[varName].getType();
-	this->value = variables[varName].getValue();
-
+	this->value = temp.getValue();
+	this->type = temp.getType();
 	return ExpressionResult();
 }
+
 
 /**
  * @brief apply a math operation to the value
@@ -360,32 +357,34 @@ ExpressionResult Value::setVariable(std::map<std::string, Value> &variables) {
  * @param variables variables to use in the operation
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::applyOperator(const Value &other, const Token &operatorToken, std::map<std::string, Value> &variables) {
+ExpressionResult Value::applyOperator(const Value &other, const Token &operatorToken, const Context &context) {
 	std::string op = operatorToken.getValue();
 
 	if (this->type == NONE) {
 		return ExpressionResult(
 			"Invalid operator " + op + " on NONE value",
-			this->getRange()
+			this->getRange(),
+			context
 		);
 	}
 
 	if (other.getType() == NONE) {
 		return ExpressionResult(
 			"Invalid operator " + op + " on NONE value",
-			other.getRange()
+			other.getRange(),
+			context
 		);
 	}
 
 	if (this->type == VARIABLE) {
-		ExpressionResult result = this->setVariable(variables);
+		ExpressionResult result = this->getVariableValue(context);
 		if (result.error()) return result;
 	}
 
 	Value otherValue = other;
 
 	if (other.getType() == VARIABLE) {
-		ExpressionResult result = otherValue.setVariable(variables);
+		ExpressionResult result = otherValue.getVariableValue(context);
 		if (result.error()) return result;
 	}
 
@@ -393,33 +392,34 @@ ExpressionResult Value::applyOperator(const Value &other, const Token &operatorT
 	this->concatValueRange(operatorToken);
 
 	if (op == "/")
-		return this->opdiv(otherValue);
+		return this->opdiv(otherValue, context);
 	if (op == "%")
-		return this->opmod(otherValue);
+		return this->opmod(otherValue, context);
 	if (op == "+")
-		return this->opadd(otherValue);
+		return this->opadd(otherValue, context);
 	if (op == "-")
-		return this->opsub(otherValue);
+		return this->opsub(otherValue, context);
 	if (op == "*")
-		return this->opmul(otherValue);
+		return this->opmul(otherValue, context);
 	if (op == "^")
-		return this->oppow(otherValue);
+		return this->oppow(otherValue, context);
 	if (op == "==")
-		return this->opeq(otherValue);
+		return this->opeq(otherValue, context);
 	if (op == "!=")
-		return this->opne(otherValue);
+		return this->opne(otherValue, context);
 	if (op == "<")
-		return this->oplt(otherValue);
+		return this->oplt(otherValue, context);
 	if (op == "<=")
-		return this->ople(otherValue);
+		return this->ople(otherValue, context);
 	if (op == ">")
-		return this->opgt(otherValue);
+		return this->opgt(otherValue, context);
 	if (op == ">=")
-		return this->opge(otherValue);
+		return this->opge(otherValue, context);
 
 	return ExpressionResult(
 		"Invalid operator " + op,
-		this->getRange()
+		this->getRange(),
+		context
 	);
 }
 
@@ -429,7 +429,7 @@ ExpressionResult Value::applyOperator(const Value &other, const Token &operatorT
  * @param other the other value to add
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opadd(const Value &other) {
+ExpressionResult Value::opadd(const Value &other, const Context &context) {
 	if (this->type == STRING && other.getType() == STRING) {
 		this->setValue(
 			this->getStringValue() + other.getStringValue()
@@ -437,7 +437,8 @@ ExpressionResult Value::opadd(const Value &other) {
 	} else if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator + between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	} else if (this->type == FLOAT || other.getType() == FLOAT) {
 		this->setValue(
@@ -458,11 +459,12 @@ ExpressionResult Value::opadd(const Value &other) {
  * @param other the other value to subtract
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opsub(const Value &other) {
+ExpressionResult Value::opsub(const Value &other, const Context &context) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator - between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 	if (this->type == FLOAT || other.getType() == FLOAT) {
@@ -483,7 +485,7 @@ ExpressionResult Value::opsub(const Value &other) {
  * @param other the other value to multiply by
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opmul(const Value &other) {
+ExpressionResult Value::opmul(const Value &other, const Context &context) {
 	if (this->type == STRING && other.getType() == INT) {
 		std::string result = "";
 		for (int i = 0; i < other.getIntValue(); i++) {
@@ -494,7 +496,8 @@ ExpressionResult Value::opmul(const Value &other) {
 	} else if (other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator * between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 	if (this->type == FLOAT || other.getType() == FLOAT) {
@@ -515,18 +518,20 @@ ExpressionResult Value::opmul(const Value &other) {
  * @param other the other value to divide by
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opdiv(const Value &other) {
+ExpressionResult Value::opdiv(const Value &other, const Context &context) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator / between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 
 	if (other.getFloatValue() == 0.0) {
 		return ExpressionResult(
 			"Division by zero",
-			other.getRange()
+			other.getRange(),
+			context
 		);
 	}
 
@@ -549,18 +554,20 @@ ExpressionResult Value::opdiv(const Value &other) {
  * @param other the other value to modulo by
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opmod(const Value &other) {
+ExpressionResult Value::opmod(const Value &other, const Context &context) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator % between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 
 	if (other.getFloatValue() == 0.0) {
 		return ExpressionResult(
 			"Division by zero",
-			other.getRange()
+			other.getRange(),
+			context
 		);
 	}
 
@@ -583,11 +590,12 @@ ExpressionResult Value::opmod(const Value &other) {
  * @param other the other value to power by
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::oppow(const Value &other) {
+ExpressionResult Value::oppow(const Value &other, const Context &context) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator ^ between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 
@@ -610,11 +618,12 @@ ExpressionResult Value::oppow(const Value &other) {
  * @param other the other value to compare to
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opgt(const Value &other) {
+ExpressionResult Value::opgt(const Value &other, const Context &context) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator > between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 
@@ -637,11 +646,12 @@ ExpressionResult Value::opgt(const Value &other) {
  * @param other the other value to compare to
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opge(const Value &other) {
+ExpressionResult Value::opge(const Value &other, const Context &context) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator >= between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 
@@ -664,11 +674,12 @@ ExpressionResult Value::opge(const Value &other) {
  * @param other the other value to compare to
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::oplt(const Value &other) {
+ExpressionResult Value::oplt(const Value &other, const Context &context) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator < between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 
@@ -691,11 +702,12 @@ ExpressionResult Value::oplt(const Value &other) {
  * @param other the other value to compare to
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::ople(const Value &other) {
+ExpressionResult Value::ople(const Value &other, const Context &context) {
 	if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator <= between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 
@@ -718,7 +730,7 @@ ExpressionResult Value::ople(const Value &other) {
  * @param other the other value to compare to
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opne(const Value &other) {
+ExpressionResult Value::opne(const Value &other, const Context &context) {
 	if (this->type == STRING && other.getType() == STRING) {
 		this->setValue(
 			this->getStringValue() != other.getStringValue()
@@ -726,7 +738,8 @@ ExpressionResult Value::opne(const Value &other) {
 	} else if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator != between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 
@@ -749,7 +762,7 @@ ExpressionResult Value::opne(const Value &other) {
  * @param other the other value to compare to
  * @return ExpressionResult if the operation was successful
  */
-ExpressionResult Value::opeq(const Value &other) {
+ExpressionResult Value::opeq(const Value &other, const Context &context) {
 	if (this->type == STRING && other.getType() == STRING) {
 		this->setValue(
 			this->getStringValue() == other.getStringValue()
@@ -757,7 +770,8 @@ ExpressionResult Value::opeq(const Value &other) {
 	} else if (this->type == STRING || other.getType() == STRING) {
 		return ExpressionResult(
 			"Invalid operator == between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange
+			this->valueRange,
+			context
 		);
 	}
 

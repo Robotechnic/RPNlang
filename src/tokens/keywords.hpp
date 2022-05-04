@@ -13,5 +13,5 @@ const std::regex keywordsRegex("^("
 	"rof|"
 	"return|"
 	"continue|"
-	"break|"
+	"break"
 ")");

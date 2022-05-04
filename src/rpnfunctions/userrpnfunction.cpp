@@ -17,23 +17,25 @@ UserRPNFunction::UserRPNFunction(
  * @param args the arguments provided by the user
  * @param variables the variables in context
  */
-void UserRPNFunction::addParameters(const RPNFunctionArgs &args, std::map<std::string, Value> &variables) const {
+void UserRPNFunction::addParameters(const RPNFunctionArgs &args, Context &context) const {
 	for (size_t i = 0; i < args.size(); i++) {
-		variables[this->argsName[i]] = args[i];
+		context.setValue(this->argsName[i], args[i]);
 	}
 }
 
 RPNFunctionResult UserRPNFunction::call(
 	RPNFunctionArgs args,
-	std::map<std::string, Value> variables
+	const Context &context
 ) const {
-	ExpressionResult result = this->checkArgs(args);
+	ExpressionResult result = this->checkArgs(args, context);
 	if (result.error()) return std::make_tuple(result, Value());
 
-	this->addParameters(args, variables);
+	Context functionContext(this->name, &context, CONTEXT_TYPE_FUNCTION);
+
+	this->addParameters(args, functionContext);
 
 	// just for testin purposes, will be removed when return keyword and return type will be implemented
-	Interpreter interpreter(variables);
+	Interpreter interpreter(functionContext);
 	result = interpreter.interpret(this->body, 0);
 
 	return std::make_tuple(result, interpreter.getLastValue());;

@@ -1,28 +1,41 @@
 #include "interpreter/interpreter.hpp"
 
-Interpreter::Interpreter() {}
-Interpreter::Interpreter(std::map<std::string, Value> variables) {
-	this->variables = variables;
-}
-Interpreter::Interpreter(std::string fileName) : fileName(fileName){}
+Interpreter::Interpreter() : context("main") {}
+
+Interpreter::Interpreter(Context ctx) : context(ctx) {}
+
 Interpreter::~Interpreter() {
-	if (this->file.is_open()) {
-		this->file.close();
-	}
-	this->variables.clear();
+	this->context.clear();
 }
 
-bool Interpreter::interpretFile(std::string &errorMessage) {
+bool Interpreter::interpretFile(std::string fileName) {
+	std::ifstream file;
 	try {
-		this->file.open(this->fileName);
+		file.open(fileName);
 		if (file.fail()) {
-			errorMessage = "Failled to open file " + this->fileName + " (" + strerror(errno) + ")";
+			std::cout<<"Failled to open file " << fileName << " (" << strerror(errno) << ")"<<std::endl;
 			return false;
 		}
 	} catch (const std::exception &e) {
-		errorMessage = "File stream error :" + std::string(e.what());
+		std::cout << "File stream error :" << std::string(e.what()) << std::endl;
 		return false;
 	}
+
+	bool errored = false;
+	this->context = Context(fileName, CONTEXT_TYPE_FILE);
+	std::vector<Token> tokens;
+	std::string instruction;
+	int line = 0;
+	while (!errored && std::getline(file, instruction)) {
+		line++;
+		ExpressionResult result = this->interpret(instruction, line);
+		if (result.error()) {
+			result.display(file);
+			errored = true;
+		}
+	}
+	file.close();
+
 	return true;
 }
 
@@ -41,13 +54,13 @@ Value Interpreter::getLastValue() const {
  * @param line the line to interpret
  * @return ExpressionResult status of the interpretation
  */
-ExpressionResult Interpreter::interpret(std::string line) {
+ExpressionResult Interpreter::interpret(std::string line, int lineNumber) {
 	std::queue<Token> tokens;
 	std::string errorMessage;
-	ExpressionResult result = Token::tokenize(0, line, tokens);
+	ExpressionResult result = Token::tokenize(lineNumber, line, tokens, this->context);
 	if (result.error()) return result;
 
-	result = this->interpret(tokens, 0);
+	result = this->interpret(tokens, lineNumber);
 
 	return result;
 }
@@ -99,17 +112,21 @@ TextRange Interpreter::mergeRanges(const std::vector<Value> &values) {
  * @return ExpressionResult the result of the check
  */
 ExpressionResult Interpreter::checkMemory(int line) {
-	if (memory.size() != 1) {
-		if (memory.size() == 0) {
-			return ExpressionResult("No result", TextRange(line, 0, 0));
-		}
+	if (memory.size() > 1) {
 		unsigned int columnEnd = memory.top().getRange().columnEnd - 1;
-		return ExpressionResult("To much remaining arguments: " + std::to_string(memory.size()), TextRange(line, 0, columnEnd));
+		return ExpressionResult(
+			"To much remaining elements: " + std::to_string(memory.size()), 
+			TextRange(line, 0, columnEnd),
+			this->context
+		);
 	}
-
-	ExpressionResult result = memory.top().setVariable(this->variables);
-	if (result.error()) return result;
-	this->lastValue = memory.top();
+	if (memory.size() == 1) {
+		ExpressionResult result = memory.top().getVariableValue(this->context);
+		if (result.error()) return result;
+		this->lastValue = memory.top();
+	} else {
+		this->lastValue = Value();
+	}
 
 	return ExpressionResult();
 }
@@ -122,12 +139,16 @@ ExpressionResult Interpreter::checkMemory(int line) {
  */
 ExpressionResult Interpreter::applyOperator(const Token &mathOperator) {
 	if (memory.size() < 2) {
-		return ExpressionResult("Not enough arguments for operator " + mathOperator.getValue(), mathOperator.getRange());
+		return ExpressionResult(
+			"Not enough arguments for operator " + mathOperator.getValue(), 
+			mathOperator.getRange(),
+			this->context
+		);
 	}
 	ExpressionResult result;
 	Value second = memory.top();
 	memory.pop();
-	return this->memory.top().applyOperator(second, mathOperator, this->variables);
+	return this->memory.top().applyOperator(second, mathOperator, this->context);
 }
 
 /**
@@ -138,19 +159,27 @@ ExpressionResult Interpreter::applyOperator(const Token &mathOperator) {
  */
 ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 	if (memory.size() < 2) {
-		return ExpressionResult("Not enough arguments for affectation", affectToken.getRange());
+		return ExpressionResult(
+			"Not enough arguments for affectation", 
+			affectToken.getRange(),
+			this->context
+		);
 	}
 
 	Value second = memory.top();
-	ExpressionResult result = second.setVariable(this->variables);
+	ExpressionResult result = second.getVariableValue(this->context);
 	if (result.error()) return result;
 	memory.pop();
 
 	if (memory.top().getType() != VARIABLE) {
-		return ExpressionResult("Expected variable name but got (" + std::to_string(memory.top()) + ")", affectToken.getRange());
+		return ExpressionResult(
+			"Expected variable name but got (" + std::to_string(memory.top()) + ")", 
+			affectToken.getRange(),
+			this->context
+		);
 	}
 
-	this->variables[memory.top().getStringValue()] = second;
+	this->context.setValue(this->memory.top(), second);
 	memory.pop();
 	memory.push(second);
 
@@ -167,22 +196,26 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
  */
 ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builtin, int &argCount) {
 	const std::string name = functionName.getValue();
-	if (this->variables.find(name) != this->variables.end()) {
+	Value val;
+	ExpressionResult result = this->context.getValue(functionName, val);
+	if (!result.error()) {
 		builtin = false;
-		if (this->variables[name].getType() != FUNCTION) {
+		if (val.getType() != FUNCTION) {
 			return ExpressionResult(
-				name + " of value " + this->variables[name].getStringValue() + " with type " +
-				this->variables[name].getStringValue() + " is not callable", 
-				functionName.getRange()
+				name + " of value " + val.getStringValue() + " with type " +
+				val.getStringValue() + " is not callable", 
+				functionName.getRange(),
+				this->context
 			);
 		}
-		argCount = this->variables[name].getFunctionValue()->getArgumentsCount();
+		argCount = val.getFunctionValue()->getArgumentsCount();
 	} else if (BuiltinRPNFunction::builtinFunctions.find(name) != BuiltinRPNFunction::builtinFunctions.end()) {
 		argCount = BuiltinRPNFunction::builtinFunctions.at(name).getArgumentsCount();
 	} else {
 		return ExpressionResult(
-			"Function " + name + "not found",
-			functionName.getRange()
+			"Function '" + name + "' not found",
+			functionName.getRange(),
+			this->context
 		);
 	}
 
@@ -199,7 +232,11 @@ ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builti
  */
 ExpressionResult Interpreter::checkArgs(const Token &literalToken, int argCount, RPNFunctionArgs &args) {
 	if ((int)memory.size() < argCount) {
-		return ExpressionResult("Not enough arguments for function " + literalToken.getValue(), literalToken.getRange());
+		return ExpressionResult(
+			"Not enough arguments for function '" + literalToken.getValue() + "'",
+			literalToken.getRange(),
+			this->context
+		);
 	}
 
 	ExpressionResult result;
@@ -207,7 +244,7 @@ ExpressionResult Interpreter::checkArgs(const Token &literalToken, int argCount,
 	Value arg;
 	for (int i = 0; i < argCount; i++) {
 		arg = memory.top();
-		result = arg.setVariable(this->variables);
+		result = arg.getVariableValue(this->context);
 		if (result.error()) return result;
 		args.insert(args.begin(), arg);
 		memory.pop();
@@ -237,8 +274,8 @@ ExpressionResult Interpreter::callFunction(const Token &functionName) {
 	if (result.error()) return result;
 
 	RPNFunctionResult functionResult = builtin ? 
-		BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->variables):
-		this->variables.at(name).getFunctionValue()->call(args, this->variables);
+		BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->context) :
+		this->context.getValue(functionName).getFunctionValue()->call(args, this->context);
 
 	result = std::get<0>(functionResult);
 	if (result.error()) return result;
@@ -271,7 +308,8 @@ ExpressionResult Interpreter::extractFStringSubstrings(const Token &fStringToken
 			if (fString.size() == 0 || fString[0] != '}') {
 				return ExpressionResult(
 					"Expected '}' after '{'", 
-					TextRange(range.line, range.columnStart + column, 1)
+					TextRange(range.line, range.columnStart + column, 1),
+					this->context
 				);
 			}
 			fString.erase(fString.begin());
@@ -280,7 +318,8 @@ ExpressionResult Interpreter::extractFStringSubstrings(const Token &fStringToken
 		} else if (c == '}') {
 			return ExpressionResult(
 				"Expected '{' before '}'", 
-				TextRange(range.line, range.columnStart + column, 1)
+				TextRange(range.line, range.columnStart + column, 1),
+				this->context
 			);
 		} else {
 			substrings.at(substrings.size() - 1) += c;
@@ -304,7 +343,11 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 	int argCount = substrings.size() - 1;
 
 	if (argCount > (int)memory.size()) {
-		return ExpressionResult("Not enough arguments for fstring", fStringToken.getRange());
+		return ExpressionResult(
+			"Not enough arguments for fstring", 
+			fStringToken.getRange(),
+			this->context
+		);
 	}
 
 	std::vector<Value> args(argCount);
@@ -316,8 +359,11 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 	std::stringstream formatedResult;
 	for (size_t i = 0; i < substrings.size(); i++) {
 		formatedResult << substrings.at(i);
-		if (i < args.size())
+		if (i < args.size()) {
+			result = args.at(i).getVariableValue(this->context);
+			if (result.error()) return result;
 			formatedResult << args.at(i).getStringValue();
+		}
 	}
 
 	memory.push(Value(formatedResult.str(), this->mergeRanges(args).merge(fStringToken.getRange())));
@@ -328,7 +374,11 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 
 ExpressionResult Interpreter::extractExpressionBody(std::queue<Token> &tokens, std::queue<Token> &expressionBody) {
 	if (tokens.empty()) {
-		return ExpressionResult("Unexpected end of line", TextRange(0, 0, 0));
+		return ExpressionResult(
+			"Unexpected end of line", 
+			TextRange(0, 0, 0),
+			this->context
+		);
 	}
 	while ( // expression body can only be one line for now
 		!tokens.empty() &&
@@ -344,7 +394,8 @@ ExpressionResult Interpreter::extractExpressionBody(std::queue<Token> &tokens, s
 	if (expressionBody.size() == 0) {
 		return ExpressionResult(
 			"Missing expression after control sequence",
-			tokens.front().getRange()
+			tokens.front().getRange(),
+			this->context
 		);
 	}
 
@@ -353,7 +404,11 @@ ExpressionResult Interpreter::extractExpressionBody(std::queue<Token> &tokens, s
 
 ExpressionResult Interpreter::extractExpressionArguments(std::queue<Token> &tokens, std::queue<Token> &expressionArguments) {
 	if (tokens.empty()) {
-		return ExpressionResult("Unexpected end of line", TextRange(0, 0, 0));
+		return ExpressionResult(
+			"Unexpected end of line", 
+			TextRange(0, 0, 0),
+			this->context
+		);
 	}
 	while (
 		!tokens.empty() &&
@@ -372,13 +427,20 @@ ExpressionResult Interpreter::extractExpressionArguments(std::queue<Token> &toke
 
 	this->skipSeparators(tokens);
 	
-	return ExpressionResult("Missing : at end of expression line", tokens.front().getRange());
+	return ExpressionResult(
+		"Missing : at end of expression line", 
+		tokens.front().getRange(),
+		this->context
+	);
 }
 
 ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue<Token> &tokens) {
 	std::string keyword = keywordToken.getValue();
-
-	return ExpressionResult("Not implemented yet", keywordToken.getRange());
+	return ExpressionResult(
+		"Keyword" + keyword + "is not implemented yet", 
+		keywordToken.getRange(),
+		this->context
+	);
 }
 
 ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::queue<Token> &tokens) {
@@ -430,6 +492,10 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
 			return ExpressionResult();
 		default:
-			return ExpressionResult("Invalid token " + tok.getValue(), tok.getRange());
+			return ExpressionResult(
+				"Invalid token " + tok.getValue(),
+				tok.getRange(),
+				this->context
+			);
 	}
 }

@@ -3,10 +3,11 @@
 
 ExpressionResult::ExpressionResult() : isError(false) {}
 
-ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange) :
+ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange, const Context &context) :
 	isError(true),
 	errorMessage(errorMessage),
-	errorRange(errorRange)
+	errorRange(errorRange),
+	context(context)
 {}
 
 ExpressionResult::~ExpressionResult() {
@@ -44,27 +45,54 @@ TextRange ExpressionResult::getRange() const {
  * 
  * @param code lines of code
  */
-void ExpressionResult::display(std::string code) {
-	ExpressionResult::display(*this, code);
+void ExpressionResult::display(std::string code) const {
+	std::cout<<this->context<<std::endl;
+	
+	TextRange range = this->getRange();
+	std::cout << "Error : " << this->errorMessage<<std::endl;
+
+	if (this->context.getType() == CONTEXT_TYPE_DEFAULT) {
+		std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
+		std::cout << range.getLine(code) << std::endl;
+		for (long unsigned int i = 0; i <= range.columnEnd; i++) {
+			if (i < range.columnStart) {
+				std::cout << " ";
+			} else {
+				std::cout << "^";
+			}
+		}
+		std::cout << std::endl;
+	}
 }
 
 /**
- * @brief display the error message to the output stream
+ * @brief display error message to the output stream
  * 
- * @param result the result to display
- * @param code lines of code
+ * @param file the file which contains the errored code
+
  */
-void ExpressionResult::display(ExpressionResult result, std::string code) {
-	TextRange range = result.getRange();
-	std::cout << "Error : " << result.getErrorMessage()<<std::endl;
+void ExpressionResult::display(std::ifstream &file) const {
+	std::cout<<this->context<<std::endl;
+	TextRange range = this->getRange();
+	std::cout << "Error : " << this->errorMessage<<std::endl;
+
 	std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
-	std::cout << range.getLine(code) << std::endl;
+	std::string line;
+	file.seekg(0, std::ios::beg);
+	while (std::getline(file, line)) {}
+
+	std::cout<<line<<std::endl;
+
 	for (long unsigned int i = 0; i <= range.columnEnd; i++) {
-		if (i < range.columnStart) {
-			std::cout << " ";
-		} else {
-			std::cout << "^";
+			if (i < range.columnStart) {
+				std::cout << " ";
+			} else {
+				std::cout << "^";
+			}
 		}
-	}
-	std::cout << std::endl;
+		std::cout << std::endl;
+}
+
+const Context& ExpressionResult::getContext() const {
+	return this->context;
 }

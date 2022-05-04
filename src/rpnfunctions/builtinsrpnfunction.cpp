@@ -5,16 +5,18 @@ BuiltinRPNFunction::BuiltinRPNFunction(
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argumentsTypes,
 			ValueType returnType,
-			std::function<RPNFunctionResult(RPNFunctionArgs&)> function
+			std::function<RPNFunctionResult(RPNFunctionArgs&, const Context&)> function
 		) : RPNFunction(name, argsName, argumentsTypes, returnType), function(function) {}
 
 RPNFunctionResult BuiltinRPNFunction::call(
 	RPNFunctionArgs args,
-	std::map<std::string, Value> variables
+	const Context &context
 ) const {
-	ExpressionResult result = this->checkArgs(args);
+	Context functionContext(this->name, &context, CONTEXT_TYPE_FUNCTION);
+
+	ExpressionResult result = this->checkArgs(args, context);
 	if (result.error()) return std::make_tuple(result, Value());
-	return this->function(args);
+	return this->function(args, functionContext);
 }
 
 TextRange BuiltinRPNFunction::getRange() const {
@@ -28,7 +30,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::NONE,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			std::cout << args[0].getStringValue() << std::endl;
 			return std::make_tuple(ExpressionResult(), Value());
 		}
@@ -38,7 +40,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::STRING,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			std::cout<<args[0].getStringValue();
 			std::string input;
 			std::getline(std::cin, input);
@@ -50,7 +52,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::INT,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			return std::make_tuple(ExpressionResult(), Value((int)args[0].getStringValue().size(), 0, 0));
 		}
 	)},
@@ -59,7 +61,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value", "start", "length"},
 		{ValueType::STRING, ValueType::INT, ValueType::INT},
 		ValueType::STRING,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			std::string value = args[0].getStringValue();
 			int start = args[1].getIntValue();
 			int length = args[2].getIntValue();
@@ -71,7 +73,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value"},
 		{ValueType::FLOAT},
 		ValueType::INT,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			return std::make_tuple(ExpressionResult(), Value(static_cast<int>(args[0].getFloatValue()), 0, 0));
 		}
 	)},
@@ -80,7 +82,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value"},
 		{ValueType::INT},
 		ValueType::FLOAT,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			return std::make_tuple(ExpressionResult(), Value(static_cast<float>(args[0].getIntValue()), 0, 0));
 		}
 	)},
@@ -89,7 +91,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value1", "value2"},
 		{ValueType::BOOL, ValueType::BOOL},
 		ValueType::BOOL,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			return std::make_tuple(ExpressionResult(), Value(args[0].getBoolValue() && args[1].getBoolValue(), 0, 0));
 		}
 	)},
@@ -98,7 +100,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value1", "value2"},
 		{ValueType::BOOL, ValueType::BOOL},
 		ValueType::BOOL,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			return std::make_tuple(ExpressionResult(), Value(args[0].getBoolValue() || args[1].getBoolValue(), 0, 0));
 		}
 	)},
@@ -107,7 +109,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value"},
 		{ValueType::BOOL},
 		ValueType::BOOL,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			return std::make_tuple(ExpressionResult(), Value(!args[0].getBoolValue(), 0, 0));
 		}
 	)},
@@ -116,11 +118,12 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::INT,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			if (args[0].getStringValue().size() != 1) return std::make_tuple(
 				ExpressionResult(
-					"string must have length of 1", args[0].getRange()
-				), 
+					"string must have length of 1", args[0].getRange(),
+					context
+				),
 				Value()
 			);
 			return std::make_tuple(ExpressionResult(), Value((int)args[0].getStringValue()[0], 0, 0));
@@ -131,7 +134,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{"value"},
 		{ValueType::INT},
 		ValueType::STRING,
-		[](RPNFunctionArgs args) {
+		[](RPNFunctionArgs args, Context context) {
 			return std::make_tuple(ExpressionResult(), Value(std::string(1, (char)args[0].getIntValue()), 0, 0));
 		}
 	)}

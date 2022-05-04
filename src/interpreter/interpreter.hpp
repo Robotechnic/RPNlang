@@ -22,14 +22,13 @@ class Context;
 class Interpreter {
 	public:
 		Interpreter();
-		Interpreter(std::map<std::string, Value> variables);
-		Interpreter(std::string fileName);
+		Interpreter(Context ctx);
 		~Interpreter();
 
-		bool interpretFile(std::string &errorMessage);
+		bool interpretFile(std::string fileName);
 		Value getLastValue() const;
 
-		ExpressionResult interpret(std::string line);
+		ExpressionResult interpret(std::string line, int lineNumber = 0);
 		ExpressionResult interpret(std::queue<Token> tokens, int line);
 
 	private:
@@ -52,10 +51,6 @@ class Interpreter {
 		ExpressionResult parseIf(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult parseElse(std::queue<Token> &tokens);
 
-
-
-		std::string fileName;
-		std::ifstream file;
 		Value lastValue;
 
 		void skipSeparators(std::queue<Token> &tokens);
@@ -67,5 +62,5 @@ class Interpreter {
 		ExpressionResult extractExpressionBody(std::queue<Token> &tokens, std::queue<Token> &expressionBody);
 
 		std::stack<Value> memory;
-		std::map<std::string, Value> variables;
+		Context context;
 };

@@ -11,6 +11,7 @@ class Value;
 #include "value/valuetype.hpp"
 #include "tokens/token.hpp"
 #include "expressionresult/expressionresult.hpp"
+#include "context/context.hpp"
 
 typedef std::vector<Value> RPNFunctionArgs;
 typedef std::tuple<ExpressionResult, Value> RPNFunctionResult;
@@ -26,7 +27,7 @@ class RPNFunction {
 
 		virtual RPNFunctionResult call(
 			RPNFunctionArgs args,
-			std::map<std::string, Value> variables
+			const Context &context
 		) const;
 
 		int getArgumentsCount() const;
@@ -34,8 +35,8 @@ class RPNFunction {
 		virtual TextRange getRange() const;
 
 	protected:
-		ExpressionResult checkTypes(const RPNFunctionArgs &args) const;
-		ExpressionResult checkArgs(const RPNFunctionArgs &args) const;
+		ExpressionResult checkTypes(const RPNFunctionArgs &args, const Context &context) const;
+		ExpressionResult checkArgs(const RPNFunctionArgs &args, const Context &context) const;
 		
 
 		std::string name;

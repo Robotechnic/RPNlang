@@ -2,6 +2,7 @@
 
 class ExpressionResult;
 class RPNFunction;
+class Token;
 
 #include <string>
 #include <stdexcept>
@@ -14,13 +15,14 @@ class RPNFunction;
 #include "textutilities/textrange.hpp"
 #include "value/valuetype.hpp"
 #include "rpnfunctions/rpnfunction.hpp"
+#include "context/context.hpp"
 
 typedef std::variant<int, float, bool, std::string, RPNFunction *> ValueStorage;
 
 class Value {
 	public:
 		Value();
-		Value(const Value &other);
+		Value(const Value &other, const Context &context);
 		Value(std::string value, ValueType type, int line, int column);
 		Value(std::string value, TokenType type, int line, int column);
 		Value(std::string value, int line, int column);
@@ -54,25 +56,25 @@ class Value {
 		static std::string stringType(const ValueType type);
 		static ValueType valueType(const std::string type); 
 
-		ExpressionResult setVariable(std::map<std::string, Value> &variables);
+		ExpressionResult getVariableValue(const Context &context);
 
-		ExpressionResult applyOperator(const Value &other, const Token &operatorToken, std::map<std::string, Value> &variables);
+		ExpressionResult applyOperator(const Value &other, const Token &operatorToken, const Context &context);
 
 	private:
 		void concatValueRange(const Value &other);
 		void concatValueRange(const Token &other);
-		ExpressionResult opadd(const Value &other);
-		ExpressionResult opsub(const Value &other);
-		ExpressionResult opmul(const Value &other);
-		ExpressionResult opdiv(const Value &other);
-		ExpressionResult opmod(const Value &other);
-		ExpressionResult oppow(const Value &other);
-		ExpressionResult opgt(const Value &other);
-		ExpressionResult opge(const Value &other);
-		ExpressionResult oplt(const Value &other);
-		ExpressionResult ople(const Value &other);
-		ExpressionResult opne(const Value &other);
-		ExpressionResult opeq(const Value &other);
+		ExpressionResult opadd(const Value &other, const Context &context);
+		ExpressionResult opsub(const Value &other, const Context &context);
+		ExpressionResult opmul(const Value &other, const Context &context);
+		ExpressionResult opdiv(const Value &other, const Context &context);
+		ExpressionResult opmod(const Value &other, const Context &context);
+		ExpressionResult oppow(const Value &other, const Context &context);
+		ExpressionResult opgt(const Value &other, const Context &context);
+		ExpressionResult opge(const Value &other, const Context &context);
+		ExpressionResult oplt(const Value &other, const Context &context);
+		ExpressionResult ople(const Value &other, const Context &context);
+		ExpressionResult opne(const Value &other, const Context &context);
+		ExpressionResult opeq(const Value &other, const Context &context);
 
 		ValueStorage value;
 		TextRange valueRange;
