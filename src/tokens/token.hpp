@@ -27,11 +27,11 @@ const std::regex indentBlockRegex("^(\t)");
 const std::regex functionArrowRegex("^(->)");
 const std::regex controlEndRegex("^([:])");
 const std::regex expressionSeparatorRegex("^(\\|)");
-const std::regex functionCallRegex("^(?:[:])([a-z][a-zA-Z]*)");
+const std::regex functionCallRegex("^(?:[:])([a-z][a-zA-Z0-9]*|[A-Z]*)");
 
 // variables
 const std::regex affectTokenRegex("^(=)");
-const std::regex literalRegex("^([a-z][a-zA-Z]*)");
+const std::regex literalRegex("^([a-z][a-zA-Z0-9]*)");
 
 // math operators
 const std::regex operatorRegex("^([+-/*^])");

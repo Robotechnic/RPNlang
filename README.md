@@ -51,7 +51,7 @@ elihw
 ```
 0 10 1 for
 	"hello world" :print
-end
+rof
 ```
 
 
