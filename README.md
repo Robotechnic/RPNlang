@@ -49,7 +49,7 @@ elihw
 ```
 
 ```
-0 10 1 for
+i 0 10 1 for
 	"hello world" :print
 rof
 ```

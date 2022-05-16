@@ -36,7 +36,7 @@ RPNFunctionResult UserRPNFunction::call(
 
 	// just for testin purposes, will be removed when return keyword and return type will be implemented
 	Interpreter interpreter(functionContext);
-	result = interpreter.interpret(this->body, 0);
+	result = interpreter.interpret(this->body);
 
 	return std::make_tuple(result, interpreter.getLastValue());;
 }

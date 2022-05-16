@@ -13,7 +13,7 @@ bool Interpreter::interpretFile(std::string fileName) {
 	try {
 		file.open(fileName);
 		if (file.fail()) {
-			std::cout<<"Failled to open file " << fileName << " (" << strerror(errno) << ")"<<std::endl;
+			std::cout<<"Failled to open file " << fileName << " (" << std::strerror(errno) << ")"<<std::endl;
 			return false;
 		}
 	} catch (const std::exception &e) {
@@ -60,7 +60,7 @@ ExpressionResult Interpreter::interpret(std::string line, int lineNumber) {
 	ExpressionResult result = Token::tokenize(lineNumber, line, tokens, this->context);
 	if (result.error()) return result;
 
-	result = this->interpret(tokens, lineNumber);
+	result = this->interpret(tokens);
 
 	return result;
 }
@@ -108,15 +108,15 @@ TextRange Interpreter::mergeRanges(const std::vector<Value> &values) {
 /**
  * @brief check if the interpreter memory contain only one value
  * 
- * @param line the current line number in the file
  * @return ExpressionResult the result of the check
  */
-ExpressionResult Interpreter::checkMemory(int line) {
+ExpressionResult Interpreter::checkMemory() {
 	if (memory.size() > 1) {
-		unsigned int columnEnd = memory.top().getRange().columnEnd - 1;
+		TextRange lastTokenRange = memory.top().getRange();
+		lastTokenRange.columnStart = 0;
 		return ExpressionResult(
 			"To much remaining elements: " + std::to_string(memory.size()), 
-			TextRange(line, 0, columnEnd),
+			lastTokenRange,
 			this->context
 		);
 	}
@@ -127,6 +127,8 @@ ExpressionResult Interpreter::checkMemory(int line) {
 	} else {
 		this->lastValue = Value();
 	}
+
+	this->clearMemory();
 
 	return ExpressionResult();
 }
@@ -371,8 +373,19 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 	return ExpressionResult();
 }
 
-
-ExpressionResult Interpreter::extractExpressionBody(std::queue<Token> &tokens, std::queue<Token> &expressionBody) {
+/**
+ * @brief extract body of an expression and stop to the expression end at the right level
+ * 
+ * @param tokens tokens in the expression or file
+ * @param expressionBody the body inside the expression
+ * @param expressionEnd the closing token of the expression
+ * @return ExpressionResult 
+ */
+ExpressionResult Interpreter::extractExpressionBody(
+	std::queue<Token> &tokens, 
+	std::queue<Token> &expressionBody,
+	Token &expressionEnd
+) {
 	if (tokens.empty()) {
 		return ExpressionResult(
 			"Unexpected end of line", 
@@ -380,23 +393,29 @@ ExpressionResult Interpreter::extractExpressionBody(std::queue<Token> &tokens, s
 			this->context
 		);
 	}
-	while ( // expression body can only be one line for now
-		!tokens.empty() &&
-		tokens.front().getType() != TOKEN_TYPE_END_OF_LINE && 
-		tokens.front().getType() != TOKEN_TYPE_EXPRESSION_SEPARATOR
-	) {
-		expressionBody.emplace(tokens.front());
+	
+	// continue over lines until found the corresponding end at the correct level
+	int level = 1;
+	Token token;
+	while (!tokens.empty() && level > 0) {
+		token = tokens.front();
 		tokens.pop();
+		if (token.getType() == TokenType::TOKEN_TYPE_KEYWORD) {
+			if (std::find(blockOpeners, blockOpeners + BLOCK_OPERATORS, token.getValue()) != blockOpeners + BLOCK_OPERATORS) {
+				level++;
+			} else if (std::find(blockClosers, blockClosers + BLOCK_OPERATORS, token.getValue()) != blockClosers + BLOCK_OPERATORS) {
+				level--;
+			}
+		}
+		if (level > 0) {
+			expressionBody.emplace(token);
+		} else {
+			expressionEnd = token;
+		}
 	}
 
-	this->skipSeparators(tokens);
-
-	if (expressionBody.size() == 0) {
-		return ExpressionResult(
-			"Missing expression after control sequence",
-			tokens.front().getRange(),
-			this->context
-		);
+	if (level > 0) {
+		expressionEnd = token;
 	}
 
 	return ExpressionResult();
@@ -436,40 +455,115 @@ ExpressionResult Interpreter::extractExpressionArguments(std::queue<Token> &toke
 
 ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue<Token> &tokens) {
 	std::string keyword = keywordToken.getValue();
+	if (keyword == "fi") {
+		return ExpressionResult(
+			"Expected 'if' before 'fi'", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	if (keyword == "if") {
+		return this->parseIf(keywordToken, tokens);
+	}
+
 	return ExpressionResult(
-		"Keyword" + keyword + "is not implemented yet", 
+		"Keyword " + keyword + " is not implemented yet", 
 		keywordToken.getRange(),
 		this->context
 	);
+}
+
+/**
+ * @brief parse an if expression in the tokens queue and run it if the condition is true
+ * 
+ * @param keywordToken the token which represent the if keyword
+ * @param tokens the list of tokens to parse
+ * @return ExpressionResult if there is and error in the expression
+ */
+ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Token> &tokens) {
+	if (this->memory.size() < 1) {
+		return ExpressionResult(
+			"Expected boolean expression before 'if'", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	Value condition = this->memory.top();
+	this->memory.pop();
+	ExpressionResult result = condition.getVariableValue(this->context);
+	if (result.error()) return result;
+	
+	//extract if body
+	std::queue<Token> ifBody;
+	Token ifEnd;
+	result = this->extractExpressionBody(tokens, ifBody, ifEnd);
+	if (result.error()) return result;
+
+	if (ifEnd.getValue() != "fi" && ifEnd.getValue() != "else")  {
+		return ExpressionResult(
+			"Expected 'fi' or 'else' keywords after 'if' statement", 
+			ifEnd.getRange(),
+			this->context
+		);
+	}
+
+	// run if body if condition is true
+	bool conditionValue = condition.getBoolValue();
+	if (conditionValue) {
+		result = this->interpret(ifBody);
+		if (result.error()) return result;
+	}
+
+	if (ifEnd.getValue() == "fi") {
+		return ExpressionResult();
+	}
+
+	return this->parseElse(ifEnd, tokens, conditionValue);
+}
+
+ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<Token> &tokens, bool skipElse) {
+	// extract else body
+	std::queue<Token> elseBody;
+	Token elseEnd;
+	ExpressionResult result = this->extractExpressionBody(tokens, elseBody, elseEnd);
+	if (result.error()) return result;
+
+	if (elseEnd.getValue() != "fi") {
+		return ExpressionResult(
+			"Expected 'fi' keyword after 'else' statement", 
+			elseEnd.getRange(),
+			this->context
+		);
+	}
+
+	if (skipElse) {
+		return ExpressionResult();
+	}
+
+	return this->interpret(elseBody);
 }
 
 ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::queue<Token> &tokens) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Token> &tokens) {
-	return ExpressionResult();
-}
-
-ExpressionResult Interpreter::parseElse(std::queue<Token> &tokens) {
-	return ExpressionResult();
-}
-
-ExpressionResult Interpreter::interpret(std::queue<Token> tokens, int line) {
+ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	this->clearMemory();
 	ExpressionResult result;
 
 	while (tokens.size() > 0) {
 		Token tok = tokens.front();
 		tokens.pop();
-		result = this->interpretToken(tok, tokens, line);
+		result = this->interpretToken(tok, tokens);
 		if (result.error()) return result;
 	}
 	
-	return this->checkMemory(line);
+	return this->checkMemory();
 }
 
-ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token> &tokens, int line) {
+ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token> &tokens) {
 	switch (tok.getType()) {
 		case TOKEN_TYPE_FLOAT:
 		case TOKEN_TYPE_INT:
@@ -491,6 +585,8 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 			return this->parseKeyword(tok, tokens);
 		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
 			return ExpressionResult();
+		case TOKEN_TYPE_END_OF_LINE:
+			return this->checkMemory();
 		default:
 			return ExpressionResult(
 				"Invalid token " + tok.getValue(),

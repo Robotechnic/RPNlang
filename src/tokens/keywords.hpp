@@ -15,3 +15,18 @@ const std::regex keywordsRegex("^("
 	"continue|"
 	"break"
 ")");
+
+#define BLOCK_OPERATORS 4
+const std::string blockOpeners[BLOCK_OPERATORS] = {
+	"fun",
+	"if",
+	"while",
+	"for"
+};
+
+const std::string blockClosers[BLOCK_OPERATORS] = {
+	"nuf",
+	"fi",
+	"elihw",
+	"rof"
+};

@@ -74,6 +74,7 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 
 class Token {
 	public:
+		Token();
 		Token(int line, int column, TokenType type, std::string value);
 		Token(const Token &other);
 

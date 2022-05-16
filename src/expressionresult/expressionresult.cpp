@@ -40,6 +40,10 @@ TextRange ExpressionResult::getRange() const {
 	return this->errorRange;
 }
 
+void ExpressionResult::setRange(const TextRange &range) {
+	this->errorRange = range;
+}
+
 /**
  * @brief display the error message to the output stream
  * 

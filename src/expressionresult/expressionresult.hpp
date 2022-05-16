@@ -20,6 +20,8 @@ class ExpressionResult {
 		TextRange getRange() const;
 		const Context& getContext() const;
 
+		void setRange(const TextRange &range);
+
 		void display(std::string line) const;
 		void display (std::ifstream &file) const;
 

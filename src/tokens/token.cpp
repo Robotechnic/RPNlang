@@ -1,5 +1,13 @@
 #include "tokens/token.hpp"
 
+Token::Token() :
+	value(""),
+	type(TOKEN_TYPE_UNKNOWN),
+	line(0),
+	column(0)
+{
+}
+
 Token::Token(int line, int column, TokenType type, std::string value) :
 	value(value),
 	type(type),
@@ -128,6 +136,8 @@ std::string Token::stringType(TokenType type) {
 			return "fstring";
 		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
 			return "expression separator";
+		default:
+			return "unknown";
 	}
 }
 
