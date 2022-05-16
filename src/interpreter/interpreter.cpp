@@ -401,9 +401,9 @@ ExpressionResult Interpreter::extractExpressionBody(
 		token = tokens.front();
 		tokens.pop();
 		if (token.getType() == TokenType::TOKEN_TYPE_KEYWORD) {
-			if (std::find(blockOpeners, blockOpeners + BLOCK_OPERATORS, token.getValue()) != blockOpeners + BLOCK_OPERATORS) {
+			if (std::find(blockOpeners, blockOpeners + BLOCK_OPENERS, token.getValue()) != blockOpeners + BLOCK_OPENERS) {
 				level++;
-			} else if (std::find(blockClosers, blockClosers + BLOCK_OPERATORS, token.getValue()) != blockClosers + BLOCK_OPERATORS) {
+			} else if (std::find(blockClosers, blockClosers + BLOCK_CLOSERS, token.getValue()) != blockClosers + BLOCK_CLOSERS) {
 				level--;
 			}
 		}
@@ -458,6 +458,14 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 	if (keyword == "fi") {
 		return ExpressionResult(
 			"Expected 'if' before 'fi'", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	if (keyword == "else") {
+		return ExpressionResult(
+			"Expected 'if' statement before 'else' keyword", 
 			keywordToken.getRange(),
 			this->context
 		);

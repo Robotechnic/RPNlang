@@ -16,17 +16,19 @@ const std::regex keywordsRegex("^("
 	"break"
 ")");
 
-#define BLOCK_OPERATORS 4
-const std::string blockOpeners[BLOCK_OPERATORS] = {
+#define BLOCK_OPENERS 4
+const std::string blockOpeners[BLOCK_OPENERS] = {
 	"fun",
 	"if",
 	"while",
 	"for"
 };
 
-const std::string blockClosers[BLOCK_OPERATORS] = {
+#define BLOCK_CLOSERS 5
+const std::string blockClosers[BLOCK_CLOSERS] = {
 	"nuf",
 	"fi",
 	"elihw",
-	"rof"
+	"rof",
+	"else" // else if a spetial case but in my language it closes the if block
 };
