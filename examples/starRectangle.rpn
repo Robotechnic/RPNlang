@@ -1,11 +1,13 @@
 width "Width of the rectangle : " :input =
 width :isNumber :not if
 	"Width must be a number \n" :print
+	1 :exit
 fi
 
 height "Height of the rectangle : " :input =
 height :isNumber :not if
 	"Height must be a number \n" :print
+	1 :exit
 fi
 
 height height :toInt =

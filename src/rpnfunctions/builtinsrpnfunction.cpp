@@ -184,5 +184,16 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		[](RPNFunctionArgs args, Context context) {
 			return std::make_tuple(ExpressionResult(), Value(std::string(1, (char)args[0].getIntValue()), 0, 0));
 		}
+	)},
+	{"exit", BuiltinRPNFunction(
+		"exit",
+		{"value"},
+		{ValueType::INT},
+		ValueType::NONE,
+		[](RPNFunctionArgs args, Context context) {
+			exit(args[0].getIntValue());
+			// Should never reach this point
+			return std::make_tuple(ExpressionResult(), Value());
+		}
 	)}
 };
