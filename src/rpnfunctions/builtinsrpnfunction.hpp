@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
+#include <regex>
 #include "rpnfunctions/rpnfunction.hpp"
 #include "value/value.hpp"
 #include "value/valuetype.hpp"

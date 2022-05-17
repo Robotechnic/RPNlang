@@ -86,6 +86,44 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 			return std::make_tuple(ExpressionResult(), Value(static_cast<float>(args[0].getIntValue()), 0, 0));
 		}
 	)},
+	{"toInt", BuiltinRPNFunction(
+		"toInt",
+		{"value"},
+		{ValueType::STRING},
+		ValueType::INT,
+		[](RPNFunctionArgs args, Context context) {
+			if (args[0].isNumber()) {
+				return std::make_tuple(ExpressionResult(), Value(args[0].getIntValue(), 0, 0));
+			}
+			return std::make_tuple(
+				ExpressionResult(
+					"Cannot convert '" + args[0].getStringValue() + "' to int",
+					args[0].getRange(),
+					context
+				),
+				Value()
+			);
+		}
+	)},
+	{"toFloat", BuiltinRPNFunction(
+		"toFloat",
+		{"value"},
+		{ValueType::STRING},
+		ValueType::FLOAT,
+		[](RPNFunctionArgs args, Context context) {
+			if (args[0].isNumber()) {
+				return std::make_tuple(ExpressionResult(), Value(args[0].getFloatValue(), 0, 0));
+			}
+			return std::make_tuple(
+				ExpressionResult(
+					"Cannot convert '" + args[0].getStringValue() + "' to float",
+					args[0].getRange(),
+					context
+				),
+				Value()
+			);
+		}
+	)},
 	{"and", BuiltinRPNFunction(
 		"and",
 		{"value1", "value2"},
