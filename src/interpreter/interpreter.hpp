@@ -9,6 +9,7 @@
 #include <map>
 #include <iostream>
 #include <algorithm>
+#include "textutilities/escapecharacters.hpp"
 #include "tokens/token.hpp"
 #include "value/value.hpp"
 #include "expressionresult/expressionresult.hpp"
@@ -34,6 +35,7 @@ class Interpreter {
 		ExpressionResult interpret(std::queue<Token> tokens);
 
 	private:
+		bool openFile(std::ifstream &file, std::string fileName);
 		TextRange mergeRanges(const std::vector<Value> &values);
 
 		ExpressionResult interpretToken(const Token &tok, std::queue<Token> &tokens);

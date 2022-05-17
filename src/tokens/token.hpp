@@ -66,6 +66,7 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 	std::make_tuple(expressionSeparatorRegex, TOKEN_TYPE_EXPRESSION_SEPARATOR),
 
 	std::make_tuple(lineSeparatorRegex, TOKEN_TYPE_END_OF_LINE),
+
 	std::make_tuple(keywordsRegex, TOKEN_TYPE_KEYWORD),
 	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL),
 

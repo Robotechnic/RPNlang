@@ -24,7 +24,7 @@ Value::Value(std::string value, ValueType type, int line, int column) :
 			this->value = (bool)(value == "true");
 			break;
 		case STRING:
-			this->value = (std::string)value;
+			this->value = value;
 			break;
 		default:
 			throw std::runtime_error("Invalid value type");
@@ -50,8 +50,8 @@ Value::Value(std::string value, TokenType type, int line, int column) {
 			this->value = (bool)(value == "true");
 			this->type = BOOL;
 			break;
-		case TOKEN_TYPE_STRING: 
-			this->value = (std::string)value;
+		case TOKEN_TYPE_STRING:
+			this->value = value;
 			this->type = STRING;
 			break;
 		case TOKEN_TYPE_LITERAL:
@@ -755,24 +755,17 @@ ExpressionResult Value::opne(const Value &other, const Context &context) {
 		this->setValue(
 			this->getStringValue() != other.getStringValue()
 		);
-	} else if (this->type == STRING || other.getType() == STRING) {
-		return ExpressionResult(
-			"Invalid operator != between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange,
-			context
-		);
-	}
-
-	if (this->type == FLOAT || other.getType() == FLOAT) {
+	} else if (this->type == FLOAT || other.getType() == FLOAT) {
 		this->setValue(
 			this->getFloatValue() != other.getFloatValue()
 		);
-	} else {
+	} else if (this->isNumber() && other.isNumber()) {
 		this->setValue(
 			this->getIntValue() != other.getIntValue()
 		);
+	} else {
+		this->setValue(true);
 	}
-
 	return ExpressionResult();
 }
 
@@ -787,22 +780,16 @@ ExpressionResult Value::opeq(const Value &other, const Context &context) {
 		this->setValue(
 			this->getStringValue() == other.getStringValue()
 		);
-	} else if (this->type == STRING || other.getType() == STRING) {
-		return ExpressionResult(
-			"Invalid operator == between " + this->stringType(this->type) + " and " + this->stringType(other.getType()),
-			this->valueRange,
-			context
-		);
-	}
-
-	if (this->type == FLOAT || other.getType() == FLOAT) {
+	} else if (this->type == FLOAT || other.getType() == FLOAT) {
 		this->setValue(
 			this->getFloatValue() == other.getFloatValue()
 		);
-	} else {
+	} else if (this->isNumber() && other.isNumber()) {
 		this->setValue(
 			this->getIntValue() == other.getIntValue()
 		);
+	} else {
+		this->setValue(false);
 	}
 
 	return ExpressionResult();

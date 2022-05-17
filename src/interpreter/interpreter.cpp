@@ -8,8 +8,7 @@ Interpreter::~Interpreter() {
 	this->context.clear();
 }
 
-bool Interpreter::interpretFile(std::string fileName) {
-	std::ifstream file;
+bool Interpreter::openFile(std::ifstream &file, std::string fileName) {
 	try {
 		file.open(fileName);
 		if (file.fail()) {
@@ -21,20 +20,37 @@ bool Interpreter::interpretFile(std::string fileName) {
 		return false;
 	}
 
-	bool errored = false;
+	return true;
+}
+
+bool Interpreter::interpretFile(std::string fileName) {
+	std::ifstream file;
+	if (!this->openFile(file, fileName)) {
+		return false;
+	}
+
 	this->context = Context(fileName, CONTEXT_TYPE_FILE);
-	std::vector<Token> tokens;
+	bool errored = false;
+	std::queue<Token> tokens;
 	std::string instruction;
 	int line = 0;
+	ExpressionResult result;
 	while (!errored && std::getline(file, instruction)) {
 		line++;
-		ExpressionResult result = this->interpret(instruction, line);
+		result = Token::tokenize(line, instruction, tokens, this->context);
 		if (result.error()) {
-			result.display(file);
+			result.display(fileName);
 			errored = true;
 		}
+		tokens.push(Token(line, instruction.size(), TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	file.close();
+
+	result = this->interpret(tokens);
+	if (result.error()) {
+		result.display(fileName);
+		return false;
+	}
 
 	return true;
 }
@@ -625,6 +641,13 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
 	return ExpressionResult();
 }
 
+/**
+ * @brief extract for body and run it as a normal for loop does
+ * 
+ * @param keywordToken the token which represent the for keyword
+ * @param tokens the list of tokens to parse
+ * @return ExpressionResult if there is an error in the expression
+ */
 ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Token> &tokens) {
 	std::string incrementName;
 	Value range[3];
@@ -658,6 +681,12 @@ ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::que
 	return ExpressionResult();
 }
 
+/**
+ * @brief take a list of tokens and interpret them
+ * 
+ * @param tokens list of tokens to interpret
+ * @return ExpressionResult if there is an error in the expression
+ */
 ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	this->clearMemory();
 	ExpressionResult result;
@@ -672,14 +701,28 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	return this->checkMemory();
 }
 
+/**
+ * @brief interpret a single token
+ * 
+ * @param tok the token to interpret
+ * @param tokens all the tokens after the current token in case where the token is a keyword
+ * @return ExpressionResult if there is an error in the interpretation
+ */
 ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token> &tokens) {
 	switch (tok.getType()) {
 		case TOKEN_TYPE_FLOAT:
 		case TOKEN_TYPE_INT:
-		case TOKEN_TYPE_STRING:
 		case TOKEN_TYPE_BOOL:
 		case TOKEN_TYPE_LITERAL:
 			this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
+			return ExpressionResult();
+		case TOKEN_TYPE_STRING:
+			this->memory.push(Value(
+				escapeCharacters(tok.getValue()),
+				tok.getType(),
+				tok.getLine(),
+				tok.getColumn()
+			));
 			return ExpressionResult();
 		case TOKEN_TYPE_FSTRING:
 			return this->parseFString(tok);
@@ -696,9 +739,11 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 			return ExpressionResult();
 		case TOKEN_TYPE_END_OF_LINE:
 			return this->checkMemory();
+		case TOKEN_TYPE_INDENT:
+			return ExpressionResult();
 		default:
 			return ExpressionResult(
-				"Invalid token " + tok.getValue(),
+				"Invalid token '" + tok.getValue() + "'",
 				tok.getRange(),
 				this->context
 			);

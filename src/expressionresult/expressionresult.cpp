@@ -49,7 +49,7 @@ void ExpressionResult::setRange(const TextRange &range) {
  * 
  * @param code lines of code
  */
-void ExpressionResult::display(std::string code) const {
+void ExpressionResult::displayLineError(std::string code) const {
 	std::cout<<this->context<<std::endl;
 	
 	TextRange range = this->getRange();
@@ -72,26 +72,39 @@ void ExpressionResult::display(std::string code) const {
 /**
  * @brief display error message to the output stream
  * 
- * @param file the file which contains the errored code
+ * @param fileName the file which contains the errored code
 
  */
-void ExpressionResult::display(std::ifstream &file) const {
-	std::cout<<this->context<<std::endl;
+void ExpressionResult::display(std::string fileName) const {
+	std::ifstream file(fileName);
+
+	std::cout<<this->context;
 	TextRange range = this->getRange();
 	std::cout << "Error : " << this->errorMessage<<std::endl;
-
 	std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
-	std::string line;
-	file.seekg(0, std::ios::beg);
-	while (std::getline(file, line)) {}
+	
+	std::string lineString;
+	file.seekg(0);
+	unsigned long int line = 1;
+	while (std::getline(file, lineString) && line < range.line) {
+		line++;
+	}
 
-	std::cout<<line<<std::endl;
+	std::cout<<lineString<<std::endl;
 
 	for (long unsigned int i = 0; i <= range.columnEnd; i++) {
 			if (i < range.columnStart) {
-				std::cout << " ";
+				if (lineString[i] == '\t') {
+					std::cout << "\t";
+				} else {
+					std::cout << " ";
+				}
 			} else {
-				std::cout << "^";
+				if (lineString[i] == '\t') {
+					std::cout << "^\t";
+				} else {
+					std::cout << "^";
+				}
 			}
 		}
 		std::cout << std::endl;

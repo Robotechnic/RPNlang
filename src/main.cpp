@@ -20,7 +20,7 @@ void shell() {
 	while (instruction != "exit") {
 		ExpressionResult result = i.interpret(instruction);
 		if (result.error()) {
-			result.display(instruction);
+			result.displayLineError(instruction);
 		} else {
 			std::cout<<i.getLastValue().getStringValue()<<std::endl;
 		}

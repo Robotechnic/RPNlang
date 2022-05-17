@@ -5,6 +5,7 @@ list(APPEND includes
 list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/textutilities/textutilities.cpp
 	${CMAKE_CURRENT_LIST_DIR}/textutilities/textrange.cpp
+	${CMAKE_CURRENT_LIST_DIR}/textutilities/escapecharacters.cpp
 	${CMAKE_CURRENT_LIST_DIR}/tokens/token.cpp
 	${CMAKE_CURRENT_LIST_DIR}/value/value.cpp
 	${CMAKE_CURRENT_LIST_DIR}/expressionresult/expressionresult.cpp

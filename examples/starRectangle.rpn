@@ -1,0 +1,9 @@
+width 10 =
+height 10 =
+
+x 0 height 1 for
+	y 0 width 1 for
+		"*" :print
+	rof
+	"\n" :print
+rof

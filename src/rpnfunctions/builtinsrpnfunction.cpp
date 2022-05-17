@@ -31,7 +31,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{ValueType::STRING},
 		ValueType::NONE,
 		[](RPNFunctionArgs args, Context context) {
-			std::cout << args[0].getStringValue() << std::endl;
+			std::cout << args[0].getStringValue();
 			return std::make_tuple(ExpressionResult(), Value());
 		}
 	)},

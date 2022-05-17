@@ -22,8 +22,8 @@ class ExpressionResult {
 
 		void setRange(const TextRange &range);
 
-		void display(std::string line) const;
-		void display (std::ifstream &file) const;
+		void displayLineError(std::string line) const;
+		void display (std::string fileName) const;
 
 	private:
 		bool isError;
