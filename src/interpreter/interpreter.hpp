@@ -48,10 +48,13 @@ class Interpreter {
 		ExpressionResult parseFString(const Token &fStringToken);
 
 		ExpressionResult parseKeyword(const Token &keywordToken, std::queue<Token> &tokens);
-
-		// not implemented yet
 		ExpressionResult parseIf(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult parseElse(const Token &keywordToken, std::queue<Token> &tokens, bool skipElse);
+
+		ExpressionResult parseForParameters(const Token &keywordToken, std::string &incrementName, Value range[3]);
+		ExpressionResult parseFor(const Token &keywordToken, std::queue<Token> &tokens);
+
+		// not implemented yet
 		ExpressionResult createFunction(const Token &keywordToken, std::queue<Token> &tokens);
 		
 

@@ -457,7 +457,15 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 	std::string keyword = keywordToken.getValue();
 	if (keyword == "fi") {
 		return ExpressionResult(
-			"Expected 'if' before 'fi'", 
+			"Expected 'if' statement before 'fi' keyword", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	if (keyword == "rof") {
+		return ExpressionResult(
+			"Expected 'for' statement before 'rof' keyword", 
 			keywordToken.getRange(),
 			this->context
 		);
@@ -473,6 +481,10 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 
 	if (keyword == "if") {
 		return this->parseIf(keywordToken, tokens);
+	}
+
+	if (keyword == "for") {
+		return this->parseFor(keywordToken, tokens);
 	}
 
 	return ExpressionResult(
@@ -531,6 +543,14 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 	return this->parseElse(ifEnd, tokens, conditionValue);
 }
 
+/**
+ * @brief parse else token and run the body if the previous if was false
+ * 
+ * @param keywordToken the token which represent the else keyword
+ * @param tokens the list of tokens to parse
+ * @param skipElse if true the else body will not be run
+ * @return ExpressionResult 
+ */
 ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<Token> &tokens, bool skipElse) {
 	// extract else body
 	std::queue<Token> elseBody;
@@ -551,6 +571,87 @@ ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<To
 	}
 
 	return this->interpret(elseBody);
+}
+
+/**
+ * @brief extract and parse values in memory for the for loop
+ * 
+ * @param keywordToken the token which represent the for keyword
+ * @param incrementName the name of the variable to increment
+ * @param range the range of the for loop
+ * @return ExpressionResult 
+ */
+ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std::string &incrementName, Value range[3] ) {
+	if (this->memory.size() < 4) {
+		return ExpressionResult(
+			"Exprected start, end and step values before 'for' statement",
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	ExpressionResult result;
+	for (int i = 0; i < 3; i++) {
+		range[i] = this->memory.top();
+		this->memory.pop();
+		result = range[i].getVariableValue(this->context);
+		if (result.error()) return result;
+		if (!range[i].isNumber()) {
+			return ExpressionResult(
+				"Expected number value for for statement",
+				range[i].getRange(),
+				this->context
+			);
+		}
+	}
+
+	Value increment = this->memory.top();
+	this->memory.pop();
+	if (increment.getType() != VARIABLE) {
+		return ExpressionResult(
+			"Expected variable name for incement",
+			increment.getRange(),
+			this->context
+		);
+	}
+
+	incrementName = increment.getStringValue();
+
+	if (range[2] > range[1]) {
+		range[0] = -range[0];
+		std::swap(range[2], range[1]);
+	}
+
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Token> &tokens) {
+	std::string incrementName;
+	Value range[3];
+	ExpressionResult result = this->parseForParameters(keywordToken, incrementName, range);
+	if (result.error()) return result;
+
+	// extract for body
+	std::queue<Token> forBody;
+	Token forEnd;
+	result = this->extractExpressionBody(tokens, forBody, forEnd);
+	if (result.error()) return result;
+	if (forEnd.getValue() != "rof") {
+		return ExpressionResult(
+			"Expected 'rof' keyword after 'for' statement", 
+			forEnd.getRange(),
+			this->context
+		);
+	}
+
+	// run for body for each value in range
+	for (Value value = range[2]; value < range[1]; value += range[0]) {
+		this->context.setValue(incrementName, value);
+		result = this->interpret(forBody);
+		if (result.error()) return result;
+	}
+
+	return ExpressionResult();
 }
 
 ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::queue<Token> &tokens) {

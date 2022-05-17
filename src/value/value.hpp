@@ -27,10 +27,16 @@ class Value {
 		Value(std::string value, TokenType type, int line, int column);
 		Value(std::string value, int line, int column);
 		Value(std::string value, TextRange range);
+
 		Value(int value, int line, int column);
 		Value(float value, int line, int column);
 		Value(bool value, int line, int column);
 		Value(RPNFunction * function, int line, int column);
+
+		Value(int value, TextRange range);
+		Value(float value, TextRange range);
+		Value(bool value, TextRange range);
+		Value(RPNFunction * function, TextRange range);
 
 		ValueType getType() const;
 
@@ -60,9 +66,25 @@ class Value {
 
 		ExpressionResult applyOperator(const Value &other, const Token &operatorToken, const Context &context);
 
-	private:
+
+		// some c++ operators which throw exceptions if the types are not compatibles
+		// also only works with numbers for now
+		Value operator+(const Value &other);
+		Value operator-(const Value &other);
+		Value operator-();
+		Value operator*(const Value &other);
+		Value operator/(const Value &other);
+		bool operator>(const Value &other);
+		bool operator>=(const Value &other);
+		bool operator<(const Value &other);
+		bool operator<=(const Value &other);
+		bool operator!=(const Value &other);
+		bool operator==(const Value &other);
+
 		void concatValueRange(const Value &other);
 		void concatValueRange(const Token &other);
+
+	private:
 		ExpressionResult opadd(const Value &other, const Context &context);
 		ExpressionResult opsub(const Value &other, const Context &context);
 		ExpressionResult opmul(const Value &other, const Context &context);
@@ -81,6 +103,11 @@ class Value {
 		ValueType type;
 };
 
+
+Value &operator+=(Value &lhs, const Value &rhs);
+Value &operator-=(Value &lhs, const Value &rhs);
+Value &operator*=(Value &lhs, const Value &rhs);
+Value &operator/=(Value &lhs, const Value &rhs);
 
 std::ostream &operator<<(std::ostream &os, const Value &value);
 namespace std {

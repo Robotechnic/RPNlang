@@ -93,6 +93,26 @@ Value::Value(RPNFunction * function, int line, int column) :
 	valueRange(function->getRange()),
 	type(FUNCTION) {}
 
+Value::Value(int value, TextRange range) : 
+	value(value),
+	valueRange(range),
+	type(INT) {}
+
+Value::Value(float value, TextRange range) : 
+	value(value),
+	valueRange(range),
+	type(FLOAT) {}
+	
+Value::Value(bool value, TextRange range) : 
+	value(value),
+	valueRange(range),
+	type(BOOL) {}
+
+Value::Value(RPNFunction * function, TextRange range) :
+	value(function),
+	valueRange(function->getRange()),
+	type(FUNCTION) {}
+
 /**
  * @brief return the value if it is a float or try to convert it to a float
  * 
@@ -788,6 +808,202 @@ ExpressionResult Value::opeq(const Value &other, const Context &context) {
 	return ExpressionResult();
 }
 
+Value Value::operator+(const Value &other) {
+	if (!this->isNumber() || !other.isNumber()) {
+		throw std::runtime_error("Invalid operator + between " + this->stringType(this->type) + " and " + this->stringType(other.getType()));
+	}
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		return Value(
+			this->getFloatValue() + other.getFloatValue(),
+			this->getRange().merge(other.getRange())
+		);
+	}
+	return Value(
+		this->getIntValue() + other.getIntValue(),
+		this->getRange().merge(other.getRange())
+	);
+}
+
+Value Value::operator-(const Value &other) {
+	if (!this->isNumber() || !other.isNumber()) {
+		throw std::runtime_error("Invalid operator - between " + this->stringType(this->type) + " and " + this->stringType(other.getType()));
+	}
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		return Value(
+			this->getFloatValue() - other.getFloatValue(),
+			this->getRange().merge(other.getRange())
+		);
+	}
+	return Value(
+		this->getIntValue() - other.getIntValue(),
+		this->getRange().merge(other.getRange())
+	);
+}
+
+Value Value::operator-() {
+	if (!this->isNumber()) {
+		throw std::runtime_error("Invalid operator - on " + this->stringType(this->type));
+	}
+	
+	if (this->type == FLOAT) {
+		return Value(
+			-this->getFloatValue(),
+			this->getRange()
+		);
+	}
+
+	return Value(
+		-this->getIntValue(),
+		this->getRange()
+	);
+}
+
+Value Value::operator*(const Value &other) {
+	if (!this->isNumber() || !other.isNumber()) {
+		throw std::runtime_error("Invalid operator * between " + this->stringType(this->type) + " and " + this->stringType(other.getType()));
+	}
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		return Value(
+			this->getFloatValue() * other.getFloatValue(),
+			this->getRange().merge(other.getRange())
+		);
+	}
+	return Value(
+		this->getIntValue() * other.getIntValue(),
+		this->getRange().merge(other.getRange())
+	);
+}
+
+Value Value::operator/(const Value &other) {
+	if (!this->isNumber() || !other.isNumber()) {
+		throw std::runtime_error("Invalid operator / between " + this->stringType(this->type) + " and " + this->stringType(other.getType()));
+	}
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		return Value(
+			this->getFloatValue() / other.getFloatValue(),
+			this->getRange().merge(other.getRange())
+		);
+	}
+	return Value(
+		this->getIntValue() / other.getIntValue(),
+		this->getRange().merge(other.getRange())
+	);
+}
+
+bool Value::operator>(const Value &other) {
+	if (!this->isNumber() || !other.isNumber()) {
+		throw std::runtime_error("Invalid operator > between " + this->stringType(this->type) + " and " + this->stringType(other.getType()));
+	}
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		return this->getFloatValue() > other.getFloatValue();
+	}
+	return this->getIntValue() > other.getIntValue();
+}
+
+bool Value::operator>=(const Value &other) {
+	if (!this->isNumber() || !other.isNumber()) {
+		throw std::runtime_error("Invalid operator >= between " + this->stringType(this->type) + " and " + this->stringType(other.getType()));
+	}
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		return this->getFloatValue() >= other.getFloatValue();
+	}
+	return this->getIntValue() >= other.getIntValue();
+}
+
+bool Value::operator<(const Value &other) {
+	if (!this->isNumber() || !other.isNumber()) {
+		throw std::runtime_error("Invalid operator < between " + this->stringType(this->type) + " and " + this->stringType(other.getType()));
+	}
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		return this->getFloatValue() < other.getFloatValue();
+	}
+	return this->getIntValue() < other.getIntValue();
+}
+
+bool Value::operator<=(const Value &other) {
+	if (!this->isNumber() || !other.isNumber()) {
+		throw std::runtime_error("Invalid operator <= between " + this->stringType(this->type) + " and " + this->stringType(other.getType()));
+	}
+	if (this->type == FLOAT || other.getType() == FLOAT) {
+		return this->getFloatValue() <= other.getFloatValue();
+	}
+	return this->getIntValue() <= other.getIntValue();
+}
+
+bool Value::operator!=(const Value &other) {
+	if (this->getType() != other.getType()) {
+		return true;
+	}
+
+	return this->value != other.value;
+}
+
+bool Value::operator==(const Value &other) {
+	if (this->getType() != other.getType()) {
+		return false;
+	}
+
+	return this->value == other.value;
+}
+
+Value &operator+=(Value &lhs, const Value &rhs) {
+	if (!lhs.isNumber() || !rhs.isNumber()) {
+		throw std::runtime_error("Invalid operator += between " + lhs.stringType(lhs.getType()) + " and " + lhs.stringType(rhs.getType()));
+	}
+	if (lhs.getType() == FLOAT || rhs.getType() == FLOAT) {
+		lhs.setValue(lhs.getFloatValue() + rhs.getFloatValue());
+		lhs.concatValueRange(rhs);
+		return lhs;
+	}
+
+	lhs.setValue(lhs.getIntValue() + rhs.getIntValue());
+	lhs.concatValueRange(rhs);
+	return lhs;
+}
+
+Value &operator-=(Value &lhs, const Value &rhs) {
+	if (!lhs.isNumber() || !rhs.isNumber()) {
+		throw std::runtime_error("Invalid operator -= between " + lhs.stringType(lhs.getType()) + " and " + lhs.stringType(rhs.getType()));
+	}
+	if (lhs.getType() == FLOAT || rhs.getType() == FLOAT) {
+		lhs.setValue(lhs.getFloatValue() - rhs.getFloatValue());
+		lhs.concatValueRange(rhs);
+		return lhs;
+	}
+
+	lhs.setValue(lhs.getIntValue() - rhs.getIntValue());
+	lhs.concatValueRange(rhs);
+	return lhs;
+}
+Value &operator*=(Value &lhs, const Value &rhs) {
+	if (!lhs.isNumber() || !rhs.isNumber()) {
+		throw std::runtime_error("Invalid operator *= between " + lhs.stringType(lhs.getType()) + " and " + lhs.stringType(rhs.getType()));
+	}
+	if (lhs.getType() == FLOAT || rhs.getType() == FLOAT) {
+		lhs.setValue(lhs.getFloatValue() * rhs.getFloatValue());
+		lhs.concatValueRange(rhs);
+		return lhs;
+	}
+
+	lhs.setValue(lhs.getIntValue() * rhs.getIntValue());
+	lhs.concatValueRange(rhs);
+	return lhs;
+}
+
+Value &operator/=(Value &lhs, const Value &rhs) {
+	if (!lhs.isNumber() || !rhs.isNumber()) {
+		throw std::runtime_error("Invalid operator /= between " + lhs.stringType(lhs.getType()) + " and " + lhs.stringType(rhs.getType()));
+	}
+	if (lhs.getType() == FLOAT || rhs.getType() == FLOAT) {
+		lhs.setValue(lhs.getFloatValue() / rhs.getFloatValue());
+		lhs.concatValueRange(rhs);
+		return lhs;
+	}
+
+	lhs.setValue(lhs.getIntValue() / rhs.getIntValue());
+	lhs.concatValueRange(rhs);
+	return lhs;
+}
 
 std::ostream &operator<<(std::ostream &os, const Value &value) {
 	os << "( " << value.getType() << "," << value.getStringValue() << " )";
