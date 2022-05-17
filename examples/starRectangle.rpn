@@ -1,5 +1,15 @@
-width 10 =
-height 10 =
+width "Width of the rectangle : " :input =
+width :isNumber :not if
+	"Width must be a number \n" :print
+fi
+
+height "Height of the rectangle : " :input =
+height :isNumber :not if
+	"Height must be a number \n" :print
+fi
+
+height height :toInt =
+width width :toInt =
 
 x 0 height 1 for
 	y 0 width 1 for

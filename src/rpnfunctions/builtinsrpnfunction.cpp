@@ -86,6 +86,15 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 			return std::make_tuple(ExpressionResult(), Value(static_cast<float>(args[0].getIntValue()), 0, 0));
 		}
 	)},
+	{"isNumber", BuiltinRPNFunction(
+		"isNumber",
+		{"value"},
+		{ValueType::STRING},
+		ValueType::BOOL,
+		[](RPNFunctionArgs args, Context context) {
+			return std::make_tuple(ExpressionResult(), Value(args[0].isNumber(), 0, 0));
+		}
+	)},
 	{"toInt", BuiltinRPNFunction(
 		"toInt",
 		{"value"},

@@ -250,7 +250,7 @@ bool Value::isNumber() const {
 		return true;
 	}
 
-	if (this->type == STRING && std::regex_match(std::get<std::string>(this->value), std::regex("^[0-9](.[0-9]+)?$"))) {
+	if (this->type == STRING && std::regex_match(std::get<std::string>(this->value), std::regex("^[0-9]+(.[0-9]+)?$"))) {
 		return true;
 	}
 
