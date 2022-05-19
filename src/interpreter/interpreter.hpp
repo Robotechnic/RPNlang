@@ -38,7 +38,7 @@ class Interpreter {
 		bool openFile(std::ifstream &file, std::string fileName);
 		TextRange mergeRanges(const std::vector<Value> &values);
 
-		ExpressionResult interpretToken(const Token &tok, std::queue<Token> &tokens);
+		ExpressionResult interpretToken(const Token &tok, std::queue<Token> &tokens, std::queue<Token> &previous);
 		ExpressionResult applyOperator(const Token &mathOperator);
 		ExpressionResult affectVariable(const Token &affectToken);
 
@@ -49,12 +49,14 @@ class Interpreter {
 		ExpressionResult extractFStringSubstrings(const Token &fStringToken, std::vector<std::string> &substrings);
 		ExpressionResult parseFString(const Token &fStringToken);
 
-		ExpressionResult parseKeyword(const Token &keywordToken, std::queue<Token> &tokens);
+		ExpressionResult parseKeyword(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous);
 		ExpressionResult parseIf(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult parseElse(const Token &keywordToken, std::queue<Token> &tokens, bool skipElse);
 
 		ExpressionResult parseForParameters(const Token &keywordToken, std::string &incrementName, Value range[3]);
 		ExpressionResult parseFor(const Token &keywordToken, std::queue<Token> &tokens);
+
+		ExpressionResult parseWhile(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous);
 
 		// not implemented yet
 		ExpressionResult createFunction(const Token &keywordToken, std::queue<Token> &tokens);
@@ -63,6 +65,7 @@ class Interpreter {
 		Value lastValue;
 
 		void skipSeparators(std::queue<Token> &tokens);
+		void clearQueue(std::queue<Token> &tokens);
 		void clearMemory();
 		ExpressionResult checkMemory();
 

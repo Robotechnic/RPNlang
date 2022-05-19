@@ -96,6 +96,17 @@ void Interpreter::skipSeparators(std::queue<Token> &tokens) {
 }
 
 /**
+ * @brief clear a token queue
+ * 
+ * @param tokens the queue to clear
+ */
+void Interpreter::clearQueue(std::queue<Token> &tokens) {
+	while (!tokens.empty()) {
+		tokens.pop();
+	}
+}
+
+/**
  * @brief clear the interpreter memory
  */
 void Interpreter::clearMemory() {
@@ -376,7 +387,7 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 
 	std::stringstream formatedResult;
 	for (size_t i = 0; i < substrings.size(); i++) {
-		formatedResult << substrings.at(i);
+		formatedResult << escapeCharacters(substrings.at(i));
 		if (i < args.size()) {
 			result = args.at(i).getVariableValue(this->context);
 			if (result.error()) return result;
@@ -469,7 +480,15 @@ ExpressionResult Interpreter::extractExpressionArguments(std::queue<Token> &toke
 	);
 }
 
-ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue<Token> &tokens) {
+/**
+ * @brief pasre a givent token, his body and its arguments and run the corresponding instruction
+ * 
+ * @param keywordToken the token which represent the keyword
+ * @param tokens the tokens after the keyword in the expression
+ * @param previous the tokens before the keyword in the expression
+ * @return ExpressionResult if the parsing is successfull
+ */
+ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous) {
 	std::string keyword = keywordToken.getValue();
 	if (keyword == "fi") {
 		return ExpressionResult(
@@ -501,6 +520,10 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 
 	if (keyword == "for") {
 		return this->parseFor(keywordToken, tokens);
+	}
+
+	if (keyword == "while") {
+		return this->parseWhile(keywordToken, tokens, previous);
 	}
 
 	return ExpressionResult(
@@ -550,6 +573,7 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 	if (conditionValue) {
 		result = this->interpret(ifBody);
 		if (result.error()) return result;
+		this->memory.push(this->lastValue);
 	}
 
 	if (ifEnd.getValue() == "fi") {
@@ -586,7 +610,10 @@ ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<To
 		return ExpressionResult();
 	}
 
-	return this->interpret(elseBody);
+	result = this->interpret(elseBody);
+	if (result.error()) return result;
+	this->memory.push(this->lastValue);
+	return ExpressionResult();
 }
 
 /**
@@ -677,6 +704,46 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 	return ExpressionResult();
 }
 
+ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous) {
+	std::cout<<previous.size()<<std::endl;
+	if (this->memory.size() < 1) {
+		return ExpressionResult(
+			"Expected boolean expression before 'while'", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	Value condition = this->memory.top();
+	this->memory.pop();
+	ExpressionResult result = condition.getVariableValue(this->context);
+	if (result.error()) return result;
+
+	// extract while body
+	std::queue<Token> whileBody;
+	Token whileEnd;
+	result = this->extractExpressionBody(tokens, whileBody, whileEnd);
+	if (result.error()) return result;
+	if (whileEnd.getValue() != "elihw") {
+		return ExpressionResult(
+			"Expected 'elihw' keyword after 'while' statement", 
+			whileEnd.getRange(),
+			this->context
+		);
+	}
+
+	bool continueLoop = condition.getBoolValue();
+	while (continueLoop) {
+		result = this->interpret(whileBody);
+		if (result.error()) return result;
+
+		this->interpret(previous);
+		continueLoop = this->lastValue.getBoolValue();
+	}
+
+	return ExpressionResult();
+}
+
 ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::queue<Token> &tokens) {
 	return ExpressionResult();
 }
@@ -691,13 +758,16 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	this->clearMemory();
 	ExpressionResult result;
 
+	std::queue<Token> previous; // save previous tokens to check for while loops and for errors
 	while (tokens.size() > 0) {
 		Token tok = tokens.front();
 		tokens.pop();
-		result = this->interpretToken(tok, tokens);
+		result = this->interpretToken(tok, tokens, previous);
 		if (result.error()) return result;
+		previous.emplace(tok);
 	}
 	
+	this->clearQueue(previous);
 	return this->checkMemory();
 }
 
@@ -706,9 +776,10 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
  * 
  * @param tok the token to interpret
  * @param tokens all the tokens after the current token in case where the token is a keyword
+ * @param previous the previous tokens in case where the token is a keyword
  * @return ExpressionResult if there is an error in the interpretation
  */
-ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token> &tokens) {
+ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token> &tokens, std::queue<Token> &previous) {
 	switch (tok.getType()) {
 		case TOKEN_TYPE_FLOAT:
 		case TOKEN_TYPE_INT:
@@ -734,10 +805,11 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_AFFECT:
 			return this->affectVariable(tok);
 		case TOKEN_TYPE_KEYWORD:
-			return this->parseKeyword(tok, tokens);
+			return this->parseKeyword(tok, tokens, previous);
 		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
 			return ExpressionResult();
 		case TOKEN_TYPE_END_OF_LINE:
+			this->clearQueue(previous);
 			return this->checkMemory();
 		case TOKEN_TYPE_INDENT:
 			return ExpressionResult();

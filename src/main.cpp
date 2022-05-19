@@ -30,10 +30,13 @@ void shell() {
 }
 
 int main(int argc, char **argv) {
-	if (argc == 1) {
+	if (argc == 1 && false) {
 		shell();
 	} else {
-		return Interpreter(Context(argv[1], CONTEXT_TYPE_FILE)).interpretFile(argv[1]);
+		// std::string path = argv[1];
+		std::string path = "/home/robotechnic/Documents/c++ projet/RPN language/examples/while.rpn";
+
+		return Interpreter(Context(path, CONTEXT_TYPE_FILE)).interpretFile(path);
 	}
 
 	return 0;

@@ -1,0 +1,20 @@
+pseudoText "What's your name ?\n>> " =
+pseudo pseudoText :input =
+pseudo :len 3 <= pseudo :len 15 >= :or while
+	"Your name must be between 3 and 15 characters\n" :print
+	pseudo pseudoText :input =
+elihw
+
+passwordText "What's your password ?\n>> " =
+password passwordText :input =
+password :len 8 <= while
+	"Your password must be at least 8 characters long\n" :print
+	password passwordText :input =
+elihw
+
+"==========================================================\n" :print
+"User info\n" :print
+"==========================================================\n" :print
+pseudo f"Pseudo : {}\n" :print
+password f"Password : {}\n" :print
+"==========================================================\n" :print
