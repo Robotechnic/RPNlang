@@ -408,15 +408,11 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
  * @param expressionEnd the closing token of the expression
  * @return ExpressionResult 
  */
-ExpressionResult Interpreter::extractExpressionBody(
-	std::queue<Token> &tokens, 
-	std::queue<Token> &expressionBody,
-	Token &expressionEnd
-) {
+ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, 	std::queue<Token> &expressionBody, Token &expressionEnd) {
 	if (tokens.empty()) {
 		return ExpressionResult(
-			"Unexpected end of line", 
-			TextRange(0, 0, 0),
+			"Unexpected end of line after token '" + keywordToken.getValue() + "'", 
+			keywordToken.getRange(),
 			this->context
 		);
 	}
@@ -448,36 +444,19 @@ ExpressionResult Interpreter::extractExpressionBody(
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::extractExpressionArguments(std::queue<Token> &tokens, std::queue<Token> &expressionArguments) {
-	if (tokens.empty()) {
+ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, std::string expressionEnd) {
+	std::queue<Token> body;
+	Token end;
+	ExpressionResult result = this->extractExpressionBody(keywordToken, tokens, body, end);
+	if (result.error()) return result;
+
+	if (end.getValue() != expressionEnd)  {
 		return ExpressionResult(
-			"Unexpected end of line", 
-			TextRange(0, 0, 0),
+			"Expected '" + expressionEnd + "' keywords after '" + keywordToken.getValue() + "' statement", 
+			end.getRange(),
 			this->context
 		);
 	}
-	while (
-		!tokens.empty() &&
-		tokens.front().getType() != TOKEN_TYPE_CONTROL_END &&
-		tokens.front().getType() != TOKEN_TYPE_END_OF_LINE && 
-		tokens.front().getType() != TOKEN_TYPE_EXPRESSION_SEPARATOR
-	) {
-		expressionArguments.emplace(tokens.front());
-		tokens.pop();
-	}
-
-	if (tokens.front().getType() == TOKEN_TYPE_CONTROL_END) {
-		tokens.pop();
-		return ExpressionResult();
-	}
-
-	this->skipSeparators(tokens);
-	
-	return ExpressionResult(
-		"Missing : at end of expression line", 
-		tokens.front().getRange(),
-		this->context
-	);
 }
 
 /**
@@ -506,6 +485,22 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 		);
 	}
 
+	if (keyword == "elihw") {
+		return ExpressionResult(
+			"Expected 'while' statement before 'elihw' keyword", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	if (keyword == "nuf") {
+		return ExpressionResult(
+			"Expected 'fun' statement before 'nuf' keyword", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
 	if (keyword == "else") {
 		return ExpressionResult(
 			"Expected 'if' statement before 'else' keyword", 
@@ -524,6 +519,10 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 
 	if (keyword == "while") {
 		return this->parseWhile(keywordToken, tokens, previous);
+	}
+
+	if (keyword == "fun") {
+		return this->createFunction(keywordToken, tokens);
 	}
 
 	return ExpressionResult(
@@ -557,7 +556,7 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 	//extract if body
 	std::queue<Token> ifBody;
 	Token ifEnd;
-	result = this->extractExpressionBody(tokens, ifBody, ifEnd);
+	result = this->extractExpressionBody(keywordToken, tokens, ifBody, ifEnd);
 	if (result.error()) return result;
 
 	if (ifEnd.getValue() != "fi" && ifEnd.getValue() != "else")  {
@@ -594,17 +593,8 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<Token> &tokens, bool skipElse) {
 	// extract else body
 	std::queue<Token> elseBody;
-	Token elseEnd;
-	ExpressionResult result = this->extractExpressionBody(tokens, elseBody, elseEnd);
+	ExpressionResult result = this->extractExpressionBody(keywordToken, tokens, elseBody, "fi");
 	if (result.error()) return result;
-
-	if (elseEnd.getValue() != "fi") {
-		return ExpressionResult(
-			"Expected 'fi' keyword after 'else' statement", 
-			elseEnd.getRange(),
-			this->context
-		);
-	}
 
 	if (skipElse) {
 		return ExpressionResult();
@@ -641,7 +631,7 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
 		if (result.error()) return result;
 		if (!range[i].isNumber()) {
 			return ExpressionResult(
-				"Expected number value for for statement",
+				"Expected number value for 'for' statement",
 				range[i].getRange(),
 				this->context
 			);
@@ -652,7 +642,7 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
 	this->memory.pop();
 	if (increment.getType() != VARIABLE) {
 		return ExpressionResult(
-			"Expected variable name for incement",
+			"Expected variable name to store incement",
 			increment.getRange(),
 			this->context
 		);
@@ -683,16 +673,8 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 
 	// extract for body
 	std::queue<Token> forBody;
-	Token forEnd;
-	result = this->extractExpressionBody(tokens, forBody, forEnd);
+	result = this->extractExpressionBody(keywordToken, tokens, forBody, "rof");
 	if (result.error()) return result;
-	if (forEnd.getValue() != "rof") {
-		return ExpressionResult(
-			"Expected 'rof' keyword after 'for' statement", 
-			forEnd.getRange(),
-			this->context
-		);
-	}
 
 	// run for body for each value in range
 	for (Value value = range[2]; value < range[1]; value += range[0]) {
@@ -705,7 +687,6 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 }
 
 ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous) {
-	std::cout<<previous.size()<<std::endl;
 	if (this->memory.size() < 1) {
 		return ExpressionResult(
 			"Expected boolean expression before 'while'", 
@@ -721,16 +702,8 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 
 	// extract while body
 	std::queue<Token> whileBody;
-	Token whileEnd;
-	result = this->extractExpressionBody(tokens, whileBody, whileEnd);
+	result = this->extractExpressionBody(keywordToken, tokens, whileBody, "elihw");
 	if (result.error()) return result;
-	if (whileEnd.getValue() != "elihw") {
-		return ExpressionResult(
-			"Expected 'elihw' keyword after 'while' statement", 
-			whileEnd.getRange(),
-			this->context
-		);
-	}
 
 	bool continueLoop = condition.getBoolValue();
 	while (continueLoop) {

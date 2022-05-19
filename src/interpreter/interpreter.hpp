@@ -49,6 +49,10 @@ class Interpreter {
 		ExpressionResult extractFStringSubstrings(const Token &fStringToken, std::vector<std::string> &substrings);
 		ExpressionResult parseFString(const Token &fStringToken);
 
+		ExpressionResult extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, Token &expressionEnd);
+		ExpressionResult extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, std::string expressionEnd);
+
+
 		ExpressionResult parseKeyword(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous);
 		ExpressionResult parseIf(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult parseElse(const Token &keywordToken, std::queue<Token> &tokens, bool skipElse);
@@ -68,10 +72,6 @@ class Interpreter {
 		void clearQueue(std::queue<Token> &tokens);
 		void clearMemory();
 		ExpressionResult checkMemory();
-
-
-		ExpressionResult extractExpressionArguments(std::queue<Token> &tokens, std::queue<Token> &expressionArguments);
-		ExpressionResult extractExpressionBody(std::queue<Token> &tokens, std::queue<Token> &expressionBody, Token &expressionEnd);
 
 		std::stack<Value> memory;
 		Context context;
