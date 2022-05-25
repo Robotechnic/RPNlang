@@ -76,6 +76,9 @@ ExpressionResult Interpreter::interpret(std::string line, int lineNumber) {
 	ExpressionResult result = Token::tokenize(lineNumber, line, tokens, this->context);
 	if (result.error()) return result;
 
+	std::cout<<"Tokens : "<<std::endl;
+	std::cout<<tokens<<std::endl;
+
 	result = this->interpret(tokens);
 
 	return result;
@@ -955,6 +958,8 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_BOOL:
 		case TOKEN_TYPE_LITERAL:
 		case TOKEN_TYPE_VALUE_TYPE:
+		case TOKEN_TYPE_BIN:
+		case TOKEN_TYPE_HEX:
 			this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
 			return ExpressionResult();
 		case TOKEN_TYPE_STRING:

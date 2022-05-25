@@ -15,8 +15,10 @@ class ExpressionResult;
 #include "expressionresult/expressionresult.hpp"
 
 // values types
-const std::regex floatRegex("^((?:[0-9]+)?\\.(?:[0-9]+)?)");
-const std::regex intRegex("^([0-9]+)");
+const std::regex floatRegex("^((?:[-])?(?:[0-9]+)?\\.(?:[0-9]+)?)");
+const std::regex intRegex("^((?:[-])?[0-9]+)");
+const std::regex binNumRegex("^(?:0b)([01]+)");
+const std::regex hexNumRegex("^(0x[0-9a-fA-F]+)");
 const std::regex boolRegex("^(true|false)");
 const std::regex stringRegex("^(?:\")([^\"]*)(?:\")");
 const std::regex fStringRegex("^f(?:\")([^\"]*)(?:\")");
@@ -42,15 +44,17 @@ const std::regex lineSeparatorRegex("^(\\n)");
 //comments
 const std::regex commentRegex("^(#)");
 
-#define TOKEN_TYPES 17
+#define TOKEN_TYPES 19
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
  */
 const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
+	std::make_tuple(commentRegex, TOKEN_TYPE_COMMENT),
+	std::make_tuple(binNumRegex, TOKEN_TYPE_BIN),
+	std::make_tuple(hexNumRegex, TOKEN_TYPE_HEX),
 	std::make_tuple(keywordsRegex, TOKEN_TYPE_KEYWORD),
 	std::make_tuple(arrowRegex, TOKEN_TYPE_ARROW),
-	std::make_tuple(commentRegex, TOKEN_TYPE_COMMENT),
 	std::make_tuple(floatRegex, TOKEN_TYPE_FLOAT),
 	std::make_tuple(intRegex, TOKEN_TYPE_INT),
 	std::make_tuple(boolRegex, TOKEN_TYPE_BOOL),

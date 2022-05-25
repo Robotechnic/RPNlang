@@ -102,6 +102,10 @@ std::string Token::stringType(TokenType type) {
 	switch (type) {
 		case TOKEN_TYPE_INT:
 			return "int";
+		case TOKEN_TYPE_HEX:
+			return "hex number";
+		case TOKEN_TYPE_BIN:
+			return "binary number";
 		case TOKEN_TYPE_FLOAT:
 			return "float";
 		case TOKEN_TYPE_STRING:

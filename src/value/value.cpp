@@ -42,6 +42,14 @@ Value::Value(std::string value, TokenType type, int line, int column) {
 			this->value = (int)std::stoi(value);
 			this->type = INT;
 			break;
+		case TOKEN_TYPE_HEX:
+			this->value = (int)std::stoi(value, nullptr, 16);
+			this->type = INT;
+			break;
+		case TOKEN_TYPE_BIN:
+			this->value = (int)std::stoi(value, nullptr, 2);
+			this->type = INT;
+			break;
 		case TOKEN_TYPE_FLOAT:
 			this->value = (float)std::stof(value);
 			this->type = FLOAT;
