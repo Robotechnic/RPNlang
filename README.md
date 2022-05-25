@@ -62,6 +62,22 @@ fun hello a string -> none:
 nuf
 ```
 
+```
+fun pow a float b int -> float:
+	b 0 == if
+		1 return
+	fi
+	0 b 1 for
+		a a * =
+	rof
+	a return
+nuf
+```
+
+```
+divide fun nb float -> float: nb .5 / return nuf =
+```
+
 **Functions call**:
 ```
 "yeye" :hello

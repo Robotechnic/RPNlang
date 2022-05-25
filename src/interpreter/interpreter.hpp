@@ -51,7 +51,7 @@ class Interpreter {
 
 		ExpressionResult extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, Token &expressionEnd);
 		ExpressionResult extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, std::string expressionEnd);
-
+		ExpressionResult getUntilToken(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, TokenType tokenType, std::string tokenValue);
 
 		ExpressionResult parseKeyword(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous);
 		ExpressionResult parseIf(const Token &keywordToken, std::queue<Token> &tokens);
@@ -62,13 +62,13 @@ class Interpreter {
 
 		ExpressionResult parseWhile(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous);
 
-		// not implemented yet
+		ExpressionResult extractFunctionArgs(const Token &keywordToken, std::queue<Token> &tokens, std::string &name, std::vector<std::string> &argsNames, std::vector<ValueType> &types, ValueType &returnType);
 		ExpressionResult createFunction(const Token &keywordToken, std::queue<Token> &tokens);
+
+		ExpressionResult parseFunctionCall(const Token &keywordToken, std::queue<Token> &tokens);
 		
 
 		Value lastValue;
-
-		void skipSeparators(std::queue<Token> &tokens);
 		void clearQueue(std::queue<Token> &tokens);
 		void clearMemory();
 		ExpressionResult checkMemory();

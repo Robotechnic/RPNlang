@@ -114,18 +114,14 @@ std::string Token::stringType(TokenType type) {
 			return "literal";
 		case TOKEN_TYPE_AFFECT:
 			return "effectation";
-		case TOKEN_TYPE_CONTROL_END:
-			return "control sequence end";
+		case TOKEN_TYPE_COLON:
+			return "colon token";
 		case TOKEN_TYPE_INDENT:
 			return "indentation";
 		case TOKEN_TYPE_VALUE_TYPE:
 			return "value type";
-		case TOKEN_TYPE_ARROW:
-			return "arrow token";
 		case TOKEN_TYPE_END_OF_LINE:
 			return "end of line";
-		case TOKEN_TYPE_FUNCTION_CALL:
-			return "function call";
 		case TOKEN_TYPE_KEYWORD:
 			return "language keyword";
 		case TOKEN_TYPE_BOOLEAN_OPERATOR:
@@ -136,6 +132,8 @@ std::string Token::stringType(TokenType type) {
 			return "fstring";
 		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
 			return "expression separator";
+		case TOKEN_TYPE_ARROW:
+			return "arrow";
 		default:
 			return "unknown";
 	}
@@ -153,6 +151,14 @@ std::ostream &operator<<(std::ostream &os, const Token &token) {
 std::ostream &operator<<(std::ostream &os, const std::vector<Token> &tokens) {
 	for (const Token &token : tokens) {
 		os << token << " ";
+	}
+	return os;
+}
+
+std::ostream &operator<<(std::ostream &os, std::queue<Token> tokens) {
+	while (!tokens.empty()) {
+		os << tokens.front() << " ";
+		tokens.pop();
 	}
 	return os;
 }

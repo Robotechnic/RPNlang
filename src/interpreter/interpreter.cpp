@@ -82,20 +82,6 @@ ExpressionResult Interpreter::interpret(std::string line, int lineNumber) {
 }
 
 /**
- * @brief skip all separators in the token queue
- * 
- * @param tokens the token queue
- */
-void Interpreter::skipSeparators(std::queue<Token> &tokens) {
-	while (
-		tokens.front().getType() == TOKEN_TYPE_END_OF_LINE || 
-		tokens.front().getType() == TOKEN_TYPE_EXPRESSION_SEPARATOR
-	) {
-		tokens.pop();
-	}
-}
-
-/**
  * @brief clear a token queue
  * 
  * @param tokens the queue to clear
@@ -403,12 +389,13 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 /**
  * @brief extract body of an expression and stop to the expression end at the right level
  * 
+ * @param keywordToken the token which represent the expression keyword
  * @param tokens tokens in the expression or file
  * @param expressionBody the body inside the expression
  * @param expressionEnd the closing token of the expression
  * @return ExpressionResult 
  */
-ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, 	std::queue<Token> &expressionBody, Token &expressionEnd) {
+ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, Token &expressionEnd) {
 	if (tokens.empty()) {
 		return ExpressionResult(
 			"Unexpected end of line after token '" + keywordToken.getValue() + "'", 
@@ -441,15 +428,31 @@ ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, s
 		expressionEnd = token;
 	}
 
+	if (expressionBody.empty()) {
+		return ExpressionResult(
+			"Expected expression body after token '" + keywordToken.getValue() + "'", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
 	return ExpressionResult();
 }
 
+/**
+ * @brief extract body of an expression and check if the closing token is correct
+ * 
+ * @param keywordToken the token which represent the expression keyword
+ * @param tokens the tokens to parse
+ * @param expressionBody the body of the expression
+ * @param expressionEnd the expected content of the closing token
+ * @return ExpressionResult if the closing token is correct
+ */
 ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, std::string expressionEnd) {
-	std::queue<Token> body;
 	Token end;
-	ExpressionResult result = this->extractExpressionBody(keywordToken, tokens, body, end);
+	ExpressionResult result = this->extractExpressionBody(keywordToken, tokens, expressionBody, end);
 	if (result.error()) return result;
-
+	
 	if (end.getValue() != expressionEnd)  {
 		return ExpressionResult(
 			"Expected '" + expressionEnd + "' keywords after '" + keywordToken.getValue() + "' statement", 
@@ -457,6 +460,44 @@ ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, s
 			this->context
 		);
 	}
+
+	return ExpressionResult();
+}
+
+/**
+ * @brief Extract all tokens from the tokens queue until the encountered token match the given type and content it's ignore block level
+ * 
+ * @param keywordToken the token to extract from
+ * @param tokens the tokens to parse
+ * @param expressionBody the tokens until the provided end
+ * @param tokenType the type of the token to extract
+ * @param tokenValue the value of the token to extract
+ * @return ExpressionResult if the closing token is found
+ */
+ExpressionResult Interpreter::getUntilToken(const Token &keywordToken, std::queue<Token> &tokens, std::queue<Token> &expressionBody, TokenType tokenType, std::string tokenValue) {
+	if (tokens.empty()) {
+		return ExpressionResult(
+			"Unexpected end of line after token '" + keywordToken.getValue() + "'", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	Token token;
+	while (!tokens.empty()) {
+		token = tokens.front();
+		tokens.pop();
+		if (token.getType() == tokenType && token.getValue() == tokenValue) {
+			return ExpressionResult();
+		}
+		expressionBody.emplace(token);
+	}
+
+	return ExpressionResult(
+		"Expected '" + tokenValue + "' after '" + keywordToken.getValue() + "' statement", 
+		token.getRange(),
+		this->context
+	);
 }
 
 /**
@@ -686,6 +727,14 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 	return ExpressionResult();
 }
 
+/**
+ * @brief parse and run a while loop
+ * 
+ * @param keywordToken the token which represent the while keyword
+ * @param tokens the list of tokens to parse
+ * @param previous the previous tokens because in case of while the condition is evaluated each loop iteration
+ * @return ExpressionResult if the loop is valid
+ */
 ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous) {
 	if (this->memory.size() < 1) {
 		return ExpressionResult(
@@ -717,8 +766,155 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::queue<Token> &tokens) {
+/**
+ * @brief extract and parse values for function arguments
+ * 
+ * @param keywordToken the token which represent the fun keyword
+ * @param tokens the tokens to parse
+ * @param name the string to store the function name in
+ * @param argNames the vector to store the function arguments names in
+ * @param types the vector to store the function arguments types in
+ * @return ExpressionResult if there is an error in the arguments list
+ */
+ExpressionResult Interpreter::extractFunctionArgs(const Token &keywordToken, std::queue<Token> &tokens, std::string &name, std::vector<std::string> &argsNames, std::vector<ValueType> &types, ValueType &returnType) {
+	std::queue<Token> args;
+	ExpressionResult result = this->getUntilToken(keywordToken, tokens, args, TOKEN_TYPE_ARROW, "->");
+	if (result.error()) return result;
+
+	name = "";
+	if (args.size() % 2 != 0) {
+		Token functionName = args.front();
+		args.pop();
+		if (functionName.getType() != TOKEN_TYPE_LITERAL) {
+			return ExpressionResult(
+				"Expected function name",
+				functionName.getRange(),
+				this->context
+			);
+		}
+		name = functionName.getValue();
+	}
+
+	while (!args.empty()) {
+		if (argsNames.size() < types.size()) {
+			if (args.front().getType() != TOKEN_TYPE_LITERAL) {
+				return ExpressionResult(
+					"Expected argument name",
+					args.front().getRange(),
+					this->context
+				);
+			}
+			argsNames.push_back(args.front().getValue());
+			args.pop();
+		} else {
+			if (args.front().getType() != TOKEN_TYPE_VALUE_TYPE) {
+				return ExpressionResult(
+					"Expected argument type",
+					args.front().getRange(),
+					this->context
+				);
+			}
+			types.push_back(Value::valueType(args.front().getValue()));
+			args.pop();
+		}
+	}
+
+	result = this->getUntilToken(keywordToken, tokens, args, TOKEN_TYPE_COLON, ":");
+	if (result.error()) return result;
+
+	if (args.size() != 1) {
+		if (args.size() == 0) {
+			return ExpressionResult(
+				"Missing return type for function '" + name + "'",
+				keywordToken.getRange(),
+				this->context
+			);
+		}
+		return ExpressionResult(
+			"Expected single token for return type but got " + std::to_string(args.size()) + " tokens",
+			args.front().getRange(),
+			this->context
+		);
+	}
+
+	if (args.front().getType() != TOKEN_TYPE_VALUE_TYPE) {
+		return ExpressionResult(
+			"Expected return type",
+			args.front().getRange(),
+			this->context
+		);
+	}
+
+	returnType = Value::valueType(args.front().getValue());
+
 	return ExpressionResult();
+}
+
+/**
+ * @brief extract arguments and body of a function
+ * 
+ * @param keywordToken the token which represent the fun keyword
+ * @param tokens the list of tokens to parse
+ * @return ExpressionResult if the function is correct or not
+ */
+ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::queue<Token> &tokens) {
+	// extract function name, args and return type
+	std::string name;
+	std::vector<std::string> argsNames;
+	std::vector<ValueType> types;
+	ValueType returnType;
+
+	ExpressionResult result = this->extractFunctionArgs(keywordToken, tokens, name, argsNames, types, returnType);
+	if (result.error()) return result;
+
+	// extract body
+	std::queue<Token> body;
+	result = this->extractExpressionBody(keywordToken, tokens, body, "nuf");
+	if (result.error()) return result;
+
+
+	// build the function
+	Value definedFunction = Value(
+		new UserRPNFunction(
+			name,
+			argsNames,
+			types,
+			returnType,
+			body
+		),
+		keywordToken.getRange().merge(body.back().getRange())
+	);
+
+	this->memory.push(definedFunction);
+	
+	if (name.size() == 0) return ExpressionResult();
+	this->context.setValue(
+		name,
+		definedFunction
+	);
+
+	return ExpressionResult();
+}
+
+/**
+ * @brief check if the token after : is a function name and if it is, call the function
+ * 
+ * @param keywordToken the token which represent the ':' keyword
+ * @param tokens the list of tokens to parse
+ * @return ExpressionResult if the function is correct and called wihout errors
+ */
+ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::queue<Token> &tokens) {
+	Token functionName = tokens.front();
+	tokens.pop();
+	if (functionName.getType() != TOKEN_TYPE_LITERAL) {
+		return ExpressionResult(
+			"Expected function name after ':' keyword",
+			functionName.getRange(),
+			this->context
+		);
+	}
+
+	return this->callFunction(functionName);
 }
 
 /**
@@ -758,6 +954,7 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_INT:
 		case TOKEN_TYPE_BOOL:
 		case TOKEN_TYPE_LITERAL:
+		case TOKEN_TYPE_VALUE_TYPE:
 			this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
 			return ExpressionResult();
 		case TOKEN_TYPE_STRING:
@@ -773,8 +970,6 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_OPERATOR:
 		case TOKEN_TYPE_BOOLEAN_OPERATOR:
 			return this->applyOperator(tok);
-		case TOKEN_TYPE_FUNCTION_CALL:
-			return this->callFunction(tok);
 		case TOKEN_TYPE_AFFECT:
 			return this->affectVariable(tok);
 		case TOKEN_TYPE_KEYWORD:
@@ -784,6 +979,8 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_END_OF_LINE:
 			this->clearQueue(previous);
 			return this->checkMemory();
+		case TOKEN_TYPE_COLON:
+			return this->parseFunctionCall(tok, tokens);
 		case TOKEN_TYPE_INDENT:
 			return ExpressionResult();
 		default:
