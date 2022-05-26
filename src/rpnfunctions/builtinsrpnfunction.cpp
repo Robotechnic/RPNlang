@@ -195,5 +195,17 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 			// Should never reach this point
 			return std::make_tuple(ExpressionResult(), Value());
 		}
+	)},
+	{"assert",BuiltinRPNFunction(
+		"assert",
+		{"value"},
+		{ValueType::BOOL},
+		ValueType::NONE,
+		[](RPNFunctionArgs args, Context context) {
+			if (!args[0].getBoolValue()) {
+				return std::make_tuple(ExpressionResult("Assertion failed", args[0].getRange(), context), Value());
+			}
+			return std::make_tuple(ExpressionResult(), Value());
+		}
 	)}
 };

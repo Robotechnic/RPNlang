@@ -1,0 +1,22 @@
+fun spaceStar int spaces int star -> none:
+	spaces 0 >= :assert
+	star 0 >= :assert
+	i 0 spaces 1 for
+		" " :print
+	rof
+	i 0 star 1 for
+		"*" :print
+	rof
+	"\n" :print
+nuf
+
+fun pyramid int size -> none:
+	size 0 >= :assert
+	# display a pyramid with 'size' number of lines
+	size size 2 * =
+	i 1 size 2 for
+		size i - 2 / i :spaceStar
+	rof
+nuf
+
+10 :pyramid
