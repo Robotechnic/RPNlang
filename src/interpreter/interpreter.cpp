@@ -76,9 +76,6 @@ ExpressionResult Interpreter::interpret(std::string line, int lineNumber) {
 	ExpressionResult result = Token::tokenize(lineNumber, line, tokens, this->context);
 	if (result.error()) return result;
 
-	std::cout<<"Tokens : "<<std::endl;
-	std::cout<<tokens<<std::endl;
-
 	result = this->interpret(tokens);
 
 	return result;
