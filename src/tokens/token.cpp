@@ -30,7 +30,7 @@ Token::Token(const Token &other) :
  * @param tokens the vector of tokens to fill
  * @return ExpressionResult if the line is a valid expression
  */
-ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context &context) {
+ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context *context) {
 	int column = 0;
 	std::smatch match;
 	while (lineString.size() > 0) {

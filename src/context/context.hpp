@@ -13,17 +13,19 @@ typedef std::map<std::string, Value> symbolTable;
 
 class Context {
 	public:
-		Context();
 		Context(const Context &other);
 		Context(std::string name, ContextType type = CONTEXT_TYPE_DEFAULT);
 		Context(std::string name, const Context* parent, ContextType type = CONTEXT_TYPE_DEFAULT);
 		Context(std::string name, symbolTable symbols, ContextType type = CONTEXT_TYPE_DEFAULT);
 		Context(std::string name, symbolTable symbols, const Context* parent, ContextType type = CONTEXT_TYPE_DEFAULT);
-		
+		~Context();
+
 		void setName(std::string name);
 		std::string getName() const;
 
-		void setParent(Context* parent);
+		void setParent(const Context* parent);
+		void setChild(Context* child);
+		Context *getChild() const;
 		const Context* getParent() const;
 
 		ContextType getType() const;
@@ -37,17 +39,16 @@ class Context {
 		Value getValue(const Value &name) const;
 		Value getValue(const Token &name) const;
 
-
-		void clear();
-
 	private:
 		std::string name;
 		symbolTable symbols;
 		ContextType type;
 		const Context* parent;
+		Context* child; // save a pointer to the child to save it have a possibility to delete it
+
 };
 
-std::ostream& operator<<(std::ostream& os, const Context& context);
+std::ostream& operator<<(std::ostream& os, const Context* context);
 
 // I don't know why, but I must include this here else the compiler will not compile the code
 #include "expressionresult/expressionresult.hpp"

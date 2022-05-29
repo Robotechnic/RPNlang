@@ -1,46 +1,54 @@
 #include "context/context.hpp"
 
-Context::Context() :
-	name(""),
-	symbols(),
-	type(CONTEXT_TYPE_DEFAULT),
-	parent(nullptr)
-	{}
 
 Context::Context(const Context &other) :
 	name(other.name),
 	symbols(other.symbols),
 	type(other.type),
-	parent(other.parent)
+	parent(other.parent),
+	child(nullptr)
 	{}
 
 Context::Context(std::string name, ContextType type) :
 	name(name),
 	symbols(),
 	type(type),
-	parent(nullptr)
+	parent(nullptr),
+	child(nullptr)
 	{}
 
 Context::Context(std::string name, const Context* parent, ContextType type) :
 	name(name),
 	symbols(),
 	type(type),
-	parent(parent)
+	parent(parent),
+	child(nullptr)
 	{}
 
 Context::Context(std::string name, symbolTable symbols, ContextType type) :
 	name(name),
 	symbols(symbols),
 	type(type),
-	parent(nullptr)
+	parent(nullptr),
+	child(nullptr)
 	{}
 
 Context::Context(std::string name, symbolTable symbols, const Context* parent, ContextType type) :
 	name(name),
 	symbols(symbols),
 	type(type),
-	parent(parent)
+	parent(parent),
+	child(nullptr)
 	{}
+
+Context::~Context() {
+	if (this->child != nullptr) {
+		delete this->child;
+	}
+	for (auto it = this->symbols.begin(); it != this->symbols.end(); it++) {
+		it->second.clean();
+	}
+}
 
 void Context::setName(std::string name) {
 	this->name = name;
@@ -50,8 +58,15 @@ std::string Context::getName() const {
 	return this->name;
 }
 
-void Context::setParent(Context* parent) {
+void Context::setParent(const Context* parent) {
 	this->parent = parent;
+}
+
+void Context::setChild(Context* child) {
+	if (this->child != nullptr) {
+		delete this->child;
+	}
+	this->child = child;
 }
 
 ContextType Context::getType() const {
@@ -62,6 +77,9 @@ const Context* Context::getParent() const {
 	return this->parent;
 }
 
+Context * Context::getChild() const {
+	return this->child;
+}
 /**
  * @brief set a name and value in the context
  * 
@@ -98,7 +116,7 @@ ExpressionResult Context::getValue(const Token &name, Value &value) const {
 		return ExpressionResult(
 			"Undefined variable name:" + nameStr,
 			name.getRange(),
-			*this
+			this
 		);
 	}
 }
@@ -114,7 +132,7 @@ ExpressionResult Context::getValue(const Value &name, Value &value) const {
 		return ExpressionResult(
 			"Undefined variable name:" + nameStr,
 			name.getRange(),
-			*this
+			this
 		);
 	}
 }
@@ -143,26 +161,21 @@ Value Context::getValue(const Value &name) const {
 	return value;
 }
 
-/**
- * @brief clear symbol table for the current context
- */
-void Context::clear() {
-	this->symbols.clear();
-}
 
-std::ostream& operator<<(std::ostream& os, const Context& context) {
-	if (context.getParent() != nullptr) {
-		os << *context.getParent();
+
+std::ostream& operator<<(std::ostream& os, const Context* context) {
+	if (context->getParent() != nullptr) {
+		os << context->getParent();
 	}
-	switch (context.getType()) {
+	switch (context->getType()) {
 		case CONTEXT_TYPE_DEFAULT:
-			os << "In : " << context.getName() << std::endl;
+			os << "In : " << context->getName() << std::endl;
 			break;
 		case CONTEXT_TYPE_FUNCTION:
-			os << "In function: " << context.getName() << std::endl;
+			os << "In function: " << context->getName() << std::endl;
 			break;
 		case CONTEXT_TYPE_FILE:
-			os << "In file: " << context.getName() << std::endl;
+			os << "In file: " << context->getName() << std::endl;
 			break;
 	}
 	return os;

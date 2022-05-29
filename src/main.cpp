@@ -5,6 +5,8 @@
 #include "interpreter/interpreter.hpp"
 #include "context/context.hpp"
 
+// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/examples/functions.rpn"
+
 void readLine(std::string &line) {
 	line.clear();
 	std::cout<<">>> ";
@@ -12,7 +14,7 @@ void readLine(std::string &line) {
 }
 
 void shell() {
-	Interpreter i(Context("<stdin>"));
+	Interpreter i(new Context("<stdin>"));
 	std::string errorMessage;
 	std::vector<Token> tokens;
 	std::string instruction;
@@ -30,12 +32,22 @@ void shell() {
 }
 
 int main(int argc, char **argv) {
+	bool result = true;
+	#ifdef TEST_FILE
+		argc = 0;
+	#endif
 	if (argc == 1) {
 		shell();
 	} else {
-		std::string path = argv[1];
-		return Interpreter(Context(path, CONTEXT_TYPE_FILE)).interpretFile(path);
+		#ifdef TEST_FILE
+			std::string path = TEST_FILE;
+		#else
+			std::string path = argv[1];
+		#endif
+		Context *ctx = new Context(path, CONTEXT_TYPE_FILE);
+		result = Interpreter(ctx).interpretFile(path);
+		delete ctx;
 	}
 
-	return 0;
+	return result ? 0 : 1;
 }

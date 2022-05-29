@@ -17,15 +17,16 @@ class UserRPNFunction : public RPNFunction {
 			ValueType returnType, 
 			std::queue<Token> body
 		);
+		~UserRPNFunction();
 
 		RPNFunctionResult call(
 			RPNFunctionArgs args,
-			const Context &context
+			Context *context
 		) const;
 
 		TextRange getRange() const;
 
 	private:
-		void addParameters(const RPNFunctionArgs &args, Context &context) const;
+		void addParameters(const RPNFunctionArgs &args, Context *context) const;
 		std::queue<Token> body;
 };

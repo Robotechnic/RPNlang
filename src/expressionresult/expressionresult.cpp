@@ -1,9 +1,13 @@
 #include "expressionresult.hpp"
 
 
-ExpressionResult::ExpressionResult() : isError(false) {}
+ExpressionResult::ExpressionResult() : 
+	isError(false)
+{
+	this->context = nullptr;
+}
 
-ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange, const Context &context) :
+ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange, const Context *context) :
 	isError(true),
 	errorMessage(errorMessage),
 	errorRange(errorRange),
@@ -50,12 +54,12 @@ void ExpressionResult::setRange(const TextRange &range) {
  * @param code lines of code
  */
 void ExpressionResult::displayLineError(std::string code) const {
-	std::cout<<this->context<<std::endl;
+	std::cout<<this->context;
 	
 	TextRange range = this->getRange();
 	std::cout << "Error : " << this->errorMessage<<std::endl;
 
-	if (this->context.getType() == CONTEXT_TYPE_DEFAULT) {
+	if (this->context->getType() == CONTEXT_TYPE_DEFAULT) {
 		std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
 		std::cout << range.getLine(code) << std::endl;
 		for (long unsigned int i = 0; i <= range.columnEnd; i++) {
@@ -110,6 +114,6 @@ void ExpressionResult::display(std::string fileName) const {
 		std::cout << std::endl;
 }
 
-const Context& ExpressionResult::getContext() const {
+const Context* ExpressionResult::getContext() const {
 	return this->context;
 }

@@ -12,6 +12,8 @@ RPNFunction::RPNFunction(
 	returnType(returnType)
 {}
 
+RPNFunction::~RPNFunction() {}
+
 /**
  * @brief Take the function body and run it, must be overriden
  * 
@@ -21,7 +23,7 @@ RPNFunction::RPNFunction(
  */
 RPNFunctionResult RPNFunction::call(
 	RPNFunctionArgs args,
-	const Context &context
+	Context *context
 ) const {
 	TextRange range(0, 0, 0);
 	if (args.size() != 0) {
@@ -30,12 +32,12 @@ RPNFunctionResult RPNFunction::call(
 			range.columnEnd = args[args.size() - 1].getRange().columnEnd;
 		}
 	}
-
+	context->setChild(new Context(this->name, context, CONTEXT_TYPE_FUNCTION));
 	return std::make_tuple(ExpressionResult(
 			"Function is not callable", 
 			range,
-			Context(this->name, &context, CONTEXT_TYPE_FUNCTION)
-		), 
+			context->getChild()
+		),
 		Value()
 	);
 }
@@ -46,7 +48,7 @@ RPNFunctionResult RPNFunction::call(
  * @param args arguments provided by the user
  * @return ExpressionResult if the arguments are correct
  */
-ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Context &context) const{
+ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Context *context) const{
 	if (args.size() != this->argsName.size()) {
 		TextRange range(0, 0, 0);
 		if (args.size() != 0) {
@@ -79,7 +81,7 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Conte
  * @param args the arguments provided by the user
  * @return ExpressionResult if the arguments are correct
  */
-ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Context &context) const{
+ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Context *context) const{
 	for (size_t i = 0; i < args.size(); i++) {
 		if (args[i].getType() != this->parameterTypes[i]) {
 			if (!args[i].isCastableTo(this->parameterTypes[i])) {

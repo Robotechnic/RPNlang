@@ -88,7 +88,7 @@ class Token {
 
 		static std::string stringType(TokenType type);
 
-		static ExpressionResult tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context &context);
+		static ExpressionResult tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context *context);
 
 	private:
 		std::string value;

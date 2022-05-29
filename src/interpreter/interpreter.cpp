@@ -1,12 +1,10 @@
 #include "interpreter/interpreter.hpp"
 
-Interpreter::Interpreter() : context("main") {}
+Interpreter::Interpreter() : context(new Context("main", CONTEXT_TYPE_DEFAULT)) {}
 
-Interpreter::Interpreter(Context ctx) : context(ctx) {}
+Interpreter::Interpreter(Context *ctx) : context(ctx) {}
 
-Interpreter::~Interpreter() {
-	this->context.clear();
-}
+Interpreter::~Interpreter() {}
 
 bool Interpreter::openFile(std::ifstream &file, std::string fileName) {
 	try {
@@ -29,30 +27,31 @@ bool Interpreter::interpretFile(std::string fileName) {
 		return false;
 	}
 
-	this->context = Context(fileName, CONTEXT_TYPE_FILE);
-	bool errored = false;
+	bool error = false;
 	std::queue<Token> tokens;
 	std::string instruction;
 	int line = 0;
 	ExpressionResult result;
-	while (!errored && std::getline(file, instruction)) {
+	while (!error && std::getline(file, instruction)) {
 		line++;
 		result = Token::tokenize(line, instruction, tokens, this->context);
 		if (result.error()) {
 			result.display(fileName);
-			errored = true;
+			error = true;
 		}
 		tokens.push(Token(line, instruction.size(), TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	file.close();
-
-	result = this->interpret(tokens);
-	if (result.error()) {
-		result.display(fileName);
-		return false;
+	
+	if (!error) {
+		result = this->interpret(tokens);
+		if (result.error()) {
+			result.display(fileName);
+			error = true;
+		}
 	}
 
-	return true;
+	return !error;
 }
 
 /**
@@ -194,7 +193,7 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 		);
 	}
 
-	this->context.setValue(this->memory.top(), second);
+	this->context->setValue(this->memory.top(), second);
 	memory.pop();
 	memory.push(second);
 
@@ -212,7 +211,7 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builtin, int &argCount) {
 	const std::string name = functionName.getValue();
 	Value val;
-	ExpressionResult result = this->context.getValue(functionName, val);
+	ExpressionResult result = this->context->getValue(functionName, val);
 	if (!result.error()) {
 		builtin = false;
 		if (val.getType() != FUNCTION) {
@@ -290,7 +289,9 @@ ExpressionResult Interpreter::callFunction(const Token &functionName) {
 
 	RPNFunctionResult functionResult = builtin ? 
 		BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->context) :
-		this->context.getValue(functionName).getFunctionValue()->call(args, this->context);
+		this->context->getValue(functionName).getFunctionValue()->call(args, this->context);
+
+	
 
 	result = std::get<0>(functionResult);
 	if (result.error()) return result;
@@ -719,7 +720,7 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 
 	// run for body for each value in range
 	for (Value value = range[2]; value < range[1]; value += range[0]) {
-		this->context.setValue(incrementName, value);
+		this->context->setValue(incrementName, value);
 		result = this->interpret(forBody);
 		if (result.error()) return result;
 	}
@@ -888,7 +889,7 @@ ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::que
 	this->memory.push(definedFunction);
 	
 	if (name.size() == 0) return ExpressionResult();
-	this->context.setValue(
+	this->context->setValue(
 		name,
 		definedFunction
 	);

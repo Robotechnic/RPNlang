@@ -11,14 +11,14 @@ class Context;
 class ExpressionResult {
 	public:
 		ExpressionResult();
-		ExpressionResult(std::string errorMessage, TextRange errorRange, const Context &context);
+		ExpressionResult(std::string errorMessage, TextRange errorRange, const Context *context);
 		~ExpressionResult();
 
 		bool error() const;
 		bool success() const;
 		std::string getErrorMessage() const;
 		TextRange getRange() const;
-		const Context& getContext() const;
+		const Context* getContext() const;
 
 		void setRange(const TextRange &range);
 
@@ -29,5 +29,5 @@ class ExpressionResult {
 		bool isError;
 		std::string errorMessage;
 		TextRange errorRange;
-		Context context;
+		const Context *context;
 };

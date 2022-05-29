@@ -22,7 +22,7 @@ typedef std::variant<int, float, bool, std::string, RPNFunction *> ValueStorage;
 class Value {
 	public:
 		Value();
-		Value(const Value &other, const Context &context);
+		Value(const Value &other, const Context *context);
 		Value(std::string value, ValueType type, int line, int column);
 		Value(std::string value, TokenType type, int line, int column);
 		Value(std::string value, int line, int column);
@@ -37,6 +37,8 @@ class Value {
 		Value(float value, TextRange range);
 		Value(bool value, TextRange range);
 		Value(RPNFunction * function, TextRange range);
+
+		void clean();
 
 		ValueType getType() const;
 
@@ -62,9 +64,9 @@ class Value {
 		static std::string stringType(const ValueType type);
 		static ValueType valueType(const std::string type); 
 
-		ExpressionResult getVariableValue(const Context &context);
+		ExpressionResult getVariableValue(const Context *context);
 
-		ExpressionResult applyOperator(const Value &other, const Token &operatorToken, const Context &context);
+		ExpressionResult applyOperator(const Value &other, const Token &operatorToken, const Context *context);
 
 
 		// some c++ operators which throw exceptions if the types are not compatibles
@@ -85,18 +87,18 @@ class Value {
 		void concatValueRange(const Token &other);
 
 	private:
-		ExpressionResult opadd(const Value &other, const Context &context);
-		ExpressionResult opsub(const Value &other, const Context &context);
-		ExpressionResult opmul(const Value &other, const Context &context);
-		ExpressionResult opdiv(const Value &other, const Context &context);
-		ExpressionResult opmod(const Value &other, const Context &context);
-		ExpressionResult oppow(const Value &other, const Context &context);
-		ExpressionResult opgt(const Value &other, const Context &context);
-		ExpressionResult opge(const Value &other, const Context &context);
-		ExpressionResult oplt(const Value &other, const Context &context);
-		ExpressionResult ople(const Value &other, const Context &context);
-		ExpressionResult opne(const Value &other, const Context &context);
-		ExpressionResult opeq(const Value &other, const Context &context);
+		ExpressionResult opadd(const Value &other, const Context *context);
+		ExpressionResult opsub(const Value &other, const Context *context);
+		ExpressionResult opmul(const Value &other, const Context *context);
+		ExpressionResult opdiv(const Value &other, const Context *context);
+		ExpressionResult opmod(const Value &other, const Context *context);
+		ExpressionResult oppow(const Value &other, const Context *context);
+		ExpressionResult opgt(const Value &other, const Context *context);
+		ExpressionResult opge(const Value &other, const Context *context);
+		ExpressionResult oplt(const Value &other, const Context *context);
+		ExpressionResult ople(const Value &other, const Context *context);
+		ExpressionResult opne(const Value &other, const Context *context);
+		ExpressionResult opeq(const Value &other, const Context *context);
 
 		ValueStorage value;
 		TextRange valueRange;

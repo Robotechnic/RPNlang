@@ -25,7 +25,7 @@ class Context;
 class Interpreter {
 	public:
 		Interpreter();
-		Interpreter(Context ctx);
+		Interpreter(Context *ctx);
 		~Interpreter();
 
 		bool interpretFile(std::string fileName);
@@ -74,5 +74,5 @@ class Interpreter {
 		ExpressionResult checkMemory();
 
 		std::stack<Value> memory;
-		Context context;
+		Context *context;
 };

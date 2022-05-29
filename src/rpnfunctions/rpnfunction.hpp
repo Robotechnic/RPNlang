@@ -24,10 +24,11 @@ class RPNFunction {
 			std::vector<ValueType> parameterTypes,
 			ValueType returnType
 		);
+		virtual ~RPNFunction();
 
 		virtual RPNFunctionResult call(
 			RPNFunctionArgs args,
-			const Context &context
+			Context *context
 		) const;
 
 		int getArgumentsCount() const;
@@ -35,8 +36,8 @@ class RPNFunction {
 		virtual TextRange getRange() const;
 
 	protected:
-		ExpressionResult checkTypes(const RPNFunctionArgs &args, const Context &context) const;
-		ExpressionResult checkArgs(const RPNFunctionArgs &args, const Context &context) const;
+		ExpressionResult checkTypes(const RPNFunctionArgs &args, const Context *context) const;
+		ExpressionResult checkArgs(const RPNFunctionArgs &args, const Context *context) const;
 		
 
 		std::string name;
