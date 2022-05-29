@@ -692,11 +692,6 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
 
 	incrementName = increment.getStringValue();
 
-	if (range[2] > range[1]) {
-		range[0] = -range[0];
-		std::swap(range[2], range[1]);
-	}
-
 	return ExpressionResult();
 }
 
@@ -719,7 +714,8 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 	if (result.error()) return result;
 
 	// run for body for each value in range
-	for (Value value = range[2]; value < range[1]; value += range[0]) {
+	
+	for (Value value = range[2]; range[2] < range[1] ? value < range[1] : value > range[1]; value += range[0]) {
 		this->context->setValue(incrementName, value);
 		result = this->interpret(forBody);
 		if (result.error()) return result;

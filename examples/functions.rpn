@@ -19,4 +19,28 @@ fun pyramid int size -> none:
 	rof
 nuf
 
-10 :pyramid
+fun reversePyramid int size -> none:
+	size 0 >= :assert
+	# display a reverse pyramid with 'size' number of lines
+	size size 2 * =
+	i size 1 - 0 -2 for
+		size i - 2 / i :spaceStar
+	rof
+nuf
+
+fun losange int size -> none:
+	size 0 >= :assert
+	# display a losange with 'size' number of lines
+	size size 2 / =
+	size :pyramid
+	size :reversePyramid
+nuf
+
+"Pyramid :\n" :print
+6 :pyramid
+
+"Reverse Pyramid :\n" :print
+9 :reversePyramid
+
+"Losange :\n" :print
+24 :losange
