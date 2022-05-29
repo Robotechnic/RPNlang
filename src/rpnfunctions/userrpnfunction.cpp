@@ -9,13 +9,9 @@ UserRPNFunction::UserRPNFunction(
 ):
 	RPNFunction(name, argsName, parameterTypes, returnType),
 	body(body)
-{
-	std::cout<<"Creating UserRPNFunction: "<<this->name<<std::endl;
-}
+{}
 
-UserRPNFunction::~UserRPNFunction() {
-	std::cout<<"Deleting UserRPNFunction: "<<this->name<<std::endl;
-}
+UserRPNFunction::~UserRPNFunction() {}
 
 /**
  * @brief add a provided argument to the variables in context
