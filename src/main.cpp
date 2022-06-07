@@ -1,34 +1,47 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <csignal>
 #include "expressionresult/expressionresult.hpp"
 #include "interpreter/interpreter.hpp"
 #include "context/context.hpp"
+#include "shell/colors.hpp"
+#include "shell/shell.hpp"
 
 // #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/examples/functions.rpn"
 
-void readLine(std::string &line) {
-	line.clear();
-	std::cout<<">>> ";
-	std::getline(std::cin, line);
-}
-
-void shell() {
-	Interpreter i(new Context("<stdin>"));
-	std::string errorMessage;
-	std::vector<Token> tokens;
+void shellInput() {
+	Context *ctx = new Context("<stdin>");
+	Interpreter i(ctx);
+	Shell input;
 	std::string instruction;
-	readLine(instruction);
+	input>>instruction;
+
 	while (instruction != "exit") {
 		ExpressionResult result = i.interpret(instruction);
 		if (result.error()) {
 			result.displayLineError(instruction);
 		} else {
-			std::cout<<i.getLastValue().getStringValue()<<std::endl;
+			switch (i.getLastValue().getType()) {
+				case INT:
+				case FLOAT:
+					input<<MAGENTA;
+					break;
+				case STRING:
+					input<<YELLOW;
+					break;
+				case BOOL:
+					input<<GREEN;
+					break;
+				default:
+					break;
+			};
+			input<<i.getLastValue().getStringValue()<<DEFAULT<<std::endl;
 		}
 
-		readLine(instruction);
+		input>>instruction;
 	}
+	delete ctx;
 }
 
 int main(int argc, char **argv) {
@@ -37,7 +50,7 @@ int main(int argc, char **argv) {
 		argc = 0;
 	#endif
 	if (argc == 1) {
-		shell();
+		shellInput();
 	} else {
 		#ifdef TEST_FILE
 			std::string path = TEST_FILE;
