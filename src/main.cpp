@@ -8,7 +8,7 @@
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
 
-#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/3 whileLoops.rpn"
+// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/3 whileLoops.rpn"
 
 void shellInput() {
 	Context *ctx = new Context("<stdin>");
