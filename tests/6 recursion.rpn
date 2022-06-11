@@ -1,0 +1,12 @@
+fun fibonacci int n -> int:
+	n 0 == if
+		0 return
+	else n 1 == if
+		1 return
+	fi fi
+
+	n 1 - :fibonacci n 2 - :fibonacci + return
+nuf
+
+3 :fibonacci f"{}\n" :print
+# 8 :fibonacci f"{}\n" :print

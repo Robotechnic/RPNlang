@@ -1,0 +1,19 @@
+true if
+	"ok\n" :print
+else
+	"not ok\n" :print
+	1 :exit
+end
+
+1 8 / 5 + 3 <= if
+	"not ok\n" :print
+	1 :exit
+else false if
+	"not ok \n" :print
+	1 :exit
+else true if
+	"ok \n" :print
+else
+	"not ok\n" :print
+	1 :exit
+fi fi fi fi

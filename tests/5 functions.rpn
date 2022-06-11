@@ -1,0 +1,30 @@
+fun simpleFuncton -> none:
+	"simpleFuncton ok\n" :print
+nuf
+
+fun paramFunction string param -> none:
+	param f"paramFunction ok: {}\n" :print
+nuf
+
+fun returnFunction -> string:
+	"returnFunction\n" :print
+	"returnFunction ok\n" return
+
+	"returnFunction failled\n" :print
+	1 :exit
+nuf
+
+fun paramReturnFunction string param -> string:
+	param f"paramReturnFunction ok: {}\n" :print
+	"paramReturnFunction ok\n" return
+	"paramReturnFunction failled\n" :print
+	1 :exit
+nuf
+
+lambda fun -> string: "lambda ok\n" return nuf =
+
+:simpleFuncton
+"test2" :paramFunction
+:returnFunction :print
+"test 4" :paramReturnFunction :print
+:lambda :print

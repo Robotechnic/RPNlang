@@ -1,8 +1,8 @@
 a 8 =
 b 7.5 =
-a b + :print
-a b / :print
+a b + f"{}\n" :print
+a b / f"{}\n" :print
 
 a "cou" =
 a a a + =
-a :print
+a f"{}\n" :print
