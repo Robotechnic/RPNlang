@@ -57,6 +57,8 @@ class Value {
 		void setValue(bool value);
 		void setValue(RPNFunction * function);
 
+		Value& to(ValueType type);
+
 		ValueStorage getValue() const;
 
 		TextRange getRange() const;

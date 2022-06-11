@@ -1,0 +1,18 @@
+fun fizzBuz int nb -> string:
+	result "" =
+	nb 3 % :not if
+		result "Fizz" =
+	fi
+	nb 5 % :not if
+		result result "Buzz" + =
+	fi
+	result "" == if
+		nb :toString return
+	else
+		result return
+	fi
+nuf
+
+i 0 20 1 for
+	i i :fizzBuz f"{} -> {}\n" :print
+rof

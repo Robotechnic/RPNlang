@@ -1,0 +1,7 @@
+i 0 =
+i 2 % 0 == i 150 < :and while
+	i i 2 + =
+	i f"{} " :print
+elihw
+
+"\n" :print

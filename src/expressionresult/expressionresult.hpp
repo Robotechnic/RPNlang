@@ -26,6 +26,7 @@ class ExpressionResult {
 		void display (std::string fileName) const;
 
 	private:
+		void displayArrow(TextRange range, std::string lineString) const;
 		bool isError;
 		std::string errorMessage;
 		TextRange errorRange;

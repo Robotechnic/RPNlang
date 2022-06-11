@@ -248,6 +248,7 @@ const RPNFunction* Value::getFunctionValue() const {
  * @return true if the value can be converted to the given type
  */
 bool Value::isCastableTo(ValueType type) const {
+	if (this->type == type) return true;
 	switch (type) {
 		case INT:
 		case FLOAT:
@@ -259,6 +260,46 @@ bool Value::isCastableTo(ValueType type) const {
 			return false;
 	}
 }
+
+/**
+ * @brief convert the current value to a given type
+ * 
+ * @param type the type to convert to
+ * 
+ * @return Value the converted value
+ */
+Value& Value::to(ValueType type) {
+	if (!this->isCastableTo(type)) {
+		throw std::runtime_error("Value::to : This value is not convertible to the given type");
+	}
+
+	switch (type) {
+		case INT:
+			this->value = this->getIntValue();
+			this->type = INT;
+			break;
+		case FLOAT:
+			this->value = this->getFloatValue();
+			this->type = FLOAT;
+			break;
+		case BOOL:
+			this->value = this->getBoolValue();
+			this->type = BOOL;
+			break;
+		case STRING:
+			this->value = this->getStringValue();
+			this->type = STRING;
+			break;
+		case NONE:
+			break;
+		default:
+			throw std::runtime_error("Value::to : This value is not convertible to the given type");
+	}
+
+	return *this;
+}
+
+
 /**
  * @brief check if the current value is a number
  * 

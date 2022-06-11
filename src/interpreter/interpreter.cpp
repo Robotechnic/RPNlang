@@ -1,8 +1,8 @@
 #include "interpreter/interpreter.hpp"
 
-Interpreter::Interpreter() : context(new Context("main", CONTEXT_TYPE_DEFAULT)) {}
+Interpreter::Interpreter() : context(new Context("main", CONTEXT_TYPE_DEFAULT)), quit(false) {}
 
-Interpreter::Interpreter(Context *ctx) : context(ctx) {}
+Interpreter::Interpreter(Context *ctx) : context(ctx), quit(false) {}
 
 Interpreter::~Interpreter() {}
 
@@ -60,7 +60,7 @@ bool Interpreter::interpretFile(std::string fileName) {
  * @return Value the last value in the stack
  */
 Value Interpreter::getLastValue() const {
-	return this->lastValue;
+	return this->returnValue;
 }
 
 /**
@@ -132,12 +132,11 @@ ExpressionResult Interpreter::checkMemory() {
 			this->context
 		);
 	}
-	if (memory.size() == 1) {
+
+	if (this->context->getType() != CONTEXT_TYPE_FUNCTION && memory.size() == 1) {
 		ExpressionResult result = memory.top().getVariableValue(this->context);
 		if (result.error()) return result;
-		this->lastValue = memory.top();
-	} else {
-		this->lastValue = Value();
+		this->returnValue = memory.top();
 	}
 
 	this->clearMemory();
@@ -416,6 +415,9 @@ ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, s
 				level++;
 			} else if (std::find(blockClosers, blockClosers + BLOCK_CLOSERS, token.getValue()) != blockClosers + BLOCK_CLOSERS) {
 				level--;
+			} else if (std::find(blockIntermediates, blockIntermediates + BLOCK_INTERMEDIATES, token.getValue()) != blockIntermediates + BLOCK_INTERMEDIATES) {
+				// somes tokens close blocks and open them at same time (like 'else')
+				if (level == 1) level = 0;
 			}
 		}
 		if (level > 0) {
@@ -456,7 +458,7 @@ ExpressionResult Interpreter::extractExpressionBody(const Token &keywordToken, s
 	
 	if (end.getValue() != expressionEnd)  {
 		return ExpressionResult(
-			"Expected '" + expressionEnd + "' keywords after '" + keywordToken.getValue() + "' statement", 
+			"Expected '" + expressionEnd + "' keywords after '" + keywordToken.getValue() + "' statement but found '" + end.getValue() + "' instead", 
 			end.getRange(),
 			this->context
 		);
@@ -567,6 +569,10 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 		return this->createFunction(keywordToken, tokens);
 	}
 
+	if (keyword == "return") {
+		return this->parseReturn(keywordToken, tokens);
+	}
+
 	return ExpressionResult(
 		"Keyword " + keyword + " is not implemented yet", 
 		keywordToken.getRange(),
@@ -614,7 +620,7 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 	if (conditionValue) {
 		result = this->interpret(ifBody);
 		if (result.error()) return result;
-		this->memory.push(this->lastValue);
+		this->memory.push(this->returnValue);
 	}
 
 	if (ifEnd.getValue() == "fi") {
@@ -644,7 +650,7 @@ ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<To
 
 	result = this->interpret(elseBody);
 	if (result.error()) return result;
-	this->memory.push(this->lastValue);
+	this->memory.push(this->returnValue);
 	return ExpressionResult();
 }
 
@@ -756,8 +762,10 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 		result = this->interpret(whileBody);
 		if (result.error()) return result;
 
-		this->interpret(previous);
-		continueLoop = this->lastValue.getBoolValue();
+		result = this->interpret(previous);
+		if (result.error()) return result;
+
+		continueLoop = this->returnValue.getBoolValue();
 	}
 
 	return ExpressionResult();
@@ -901,8 +909,14 @@ ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::que
  * @return ExpressionResult if the function is correct and called wihout errors
  */
 ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::queue<Token> &tokens) {
+	if (tokens.size() < 1) {
+		return ExpressionResult(
+			"Expected function name",
+			keywordToken.getRange(),
+			this->context
+		);
+	}
 	Token functionName = tokens.front();
-	tokens.pop();
 	if (functionName.getType() != TOKEN_TYPE_LITERAL) {
 		return ExpressionResult(
 			"Expected function name after ':' keyword",
@@ -914,6 +928,37 @@ ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::
 	return this->callFunction(functionName);
 }
 
+
+ExpressionResult Interpreter::parseReturn(const Token &keywordToken, std::queue<Token> &tokens) {
+	if (this->context->getType() != CONTEXT_TYPE_FUNCTION) {
+		return ExpressionResult(
+			"Return keyword can only be used in functions body",
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+	
+	if (this->memory.size() > 1) {
+		return ExpressionResult(
+			"To much return values",
+			this->memory.top().getRange(),
+			this->context
+		);
+	}
+
+	if (this->memory.size() == 1) {
+		ExpressionResult result = this->memory.top().getVariableValue(this->context);
+		if (result.error()) return result;
+		this->returnValue = this->memory.top();
+		this->memory.pop();
+	} else {
+		this->returnValue = Value();
+	}
+	this->quit = true;
+
+	return ExpressionResult();
+}
+
 /**
  * @brief take a list of tokens and interpret them
  * 
@@ -922,17 +967,23 @@ ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::
  */
 ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	this->clearMemory();
+	this->returnValue = Value();
 	ExpressionResult result;
 
 	std::queue<Token> previous; // save previous tokens to check for while loops and for errors
-	while (tokens.size() > 0) {
+	while (tokens.size() > 0 && !quit) {
 		Token tok = tokens.front();
 		tokens.pop();
 		result = this->interpretToken(tok, tokens, previous);
 		if (result.error()) return result;
 		previous.emplace(tok);
+		if (tok.getType() == TOKEN_TYPE_COLON) {
+			previous.emplace(tokens.front());
+			tokens.pop();
+		}
 	}
-	
+
+	this->quit = false;
 	this->clearQueue(previous);
 	return this->checkMemory();
 }

@@ -54,6 +54,7 @@ void ExpressionResult::setRange(const TextRange &range) {
  * @param code lines of code
  */
 void ExpressionResult::displayLineError(std::string code) const {
+	std::cout<<std::endl;
 	std::cout<<this->context;
 	
 	TextRange range = this->getRange();
@@ -62,14 +63,7 @@ void ExpressionResult::displayLineError(std::string code) const {
 	if (this->context->getType() == CONTEXT_TYPE_DEFAULT) {
 		std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
 		std::cout << range.getLine(code) << std::endl;
-		for (long unsigned int i = 0; i <= range.columnEnd; i++) {
-			if (i < range.columnStart) {
-				std::cout << " ";
-			} else {
-				std::cout << "^";
-			}
-		}
-		std::cout << std::endl;
+		this->displayArrow(range, code);
 	}
 }
 
@@ -80,6 +74,7 @@ void ExpressionResult::displayLineError(std::string code) const {
 
  */
 void ExpressionResult::display(std::string fileName) const {
+	std::cout<<std::endl;
 	std::ifstream file(fileName);
 
 	std::cout<<this->context;
@@ -96,22 +91,26 @@ void ExpressionResult::display(std::string fileName) const {
 
 	std::cout<<lineString<<std::endl;
 
+	this->displayArrow(range, lineString);
+}
+
+void ExpressionResult::displayArrow(TextRange range, std::string lineString) const {
 	for (long unsigned int i = 0; i <= range.columnEnd; i++) {
-			if (i < range.columnStart) {
-				if (lineString[i] == '\t') {
-					std::cout << "\t";
-				} else {
-					std::cout << " ";
-				}
+		if (i < range.columnStart) {
+			if (lineString[i] == '\t') {
+				std::cout << "\t";
 			} else {
-				if (lineString[i] == '\t') {
-					std::cout << "^\t";
-				} else {
-					std::cout << "^";
-				}
+				std::cout << " ";
+			}
+		} else {
+			if (lineString[i] == '\t') {
+				std::cout << "^\t";
+			} else {
+				std::cout << "^";
 			}
 		}
-		std::cout << std::endl;
+	}
+	std::cout << std::endl;
 }
 
 const Context* ExpressionResult::getContext() const {

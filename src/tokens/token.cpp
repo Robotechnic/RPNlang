@@ -22,6 +22,8 @@ Token::Token(const Token &other) :
 	column(other.column)
 {}
 
+Token::~Token(){}
+
 /**
  * @brief take a line of code and convert it to a vector of tokens
  * 
@@ -40,10 +42,12 @@ ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<To
 			std::regex regex = std::get<0>(tokenRegexes[i]);
 			if (std::regex_search(lineString, match, regex)) {
 				TokenType type = std::get<1>(tokenRegexes[i]);
+				std::string value = match.str(1);
 				if (type == TOKEN_TYPE_COMMENT) {
 					return ExpressionResult();
+				} else if (type == TOKEN_TYPE_LITERAL && std::regex_search(value, keywordsRegex)) {
+					type = TOKEN_TYPE_KEYWORD;
 				}
-				std::string value = match.str(1);
 				tokens.push(Token(line, column, type, value));
 			}
 			i++;

@@ -36,11 +36,36 @@ RPNFunctionResult UserRPNFunction::call(
 
 	this->addParameters(args, context->getChild());
 
-	// just for testing purposes, will be removed when return keyword and return type will be implemented
 	Interpreter interpreter(context->getChild());
 	result = interpreter.interpret(this->body);
 
-	return std::make_tuple(result, interpreter.getLastValue());;
+	if (result.error()) return std::make_tuple(result, Value());
+
+	//check the return type	
+	Value returnValue = interpreter.getLastValue();
+	if (returnValue.isCastableTo(this->returnType)) {
+		return std::make_tuple(ExpressionResult(), returnValue.to(this->returnType));
+	}
+	
+	TextRange returnValueRange = returnValue.getRange();
+	std::string message = "Return type must be " + Value::stringType(this->returnType) + " but got " + Value::stringType(returnValue.getType());
+	if (returnValueRange.isEmpty()) {
+		returnValueRange = this->body.back().getRange();
+		if (this->returnType == NONE) {
+			message = "Unexpected return value, for function " + this->name;
+		} else {
+			message = "Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found";
+		}
+	}
+	
+	return std::make_tuple(
+		ExpressionResult(
+			message,
+			returnValueRange,
+			context
+		),
+		Value()
+	);
 }
 
 TextRange UserRPNFunction::getRange() const {

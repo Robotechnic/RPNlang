@@ -14,7 +14,7 @@ const std::regex keywordsRegex("^("
 	"return|"
 	"continue|"
 	"break"
-")");
+")$");
 
 #define BLOCK_OPENERS 4
 const std::string blockOpeners[BLOCK_OPENERS] = {
@@ -24,11 +24,15 @@ const std::string blockOpeners[BLOCK_OPENERS] = {
 	"for"
 };
 
-#define BLOCK_CLOSERS 5
+#define BLOCK_CLOSERS 4
 const std::string blockClosers[BLOCK_CLOSERS] = {
 	"nuf",
 	"fi",
 	"elihw",
-	"rof",
-	"else" // else if a spetial case but in my language it closes the if block
+	"rof"
+};
+
+#define BLOCK_INTERMEDIATES 1
+const std::string blockIntermediates[BLOCK_INTERMEDIATES] = {
+	"else"
 };

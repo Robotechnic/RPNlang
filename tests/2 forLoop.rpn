@@ -1,0 +1,11 @@
+"Increment : " :print
+i 0 10 1 for
+	i f"{} " :print
+rof
+"\n" :print
+
+"Decrement : " :print
+i 10 0 -1 for
+	i f"{} " :print
+rof
+"\n" :print

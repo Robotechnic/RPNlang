@@ -35,7 +35,7 @@ const std::regex affectTokenRegex("^(=)");
 const std::regex literalRegex("^([a-z][a-zA-Z0-9]*|[A-Z0-9][A-Z0-9_]*)");
 
 // math operators
-const std::regex operatorRegex("^([+-/*^])");
+const std::regex operatorRegex("^([+-/*^%])");
 const std::regex booleanOperatorRegex("^([<>]=?|==|!=)");
 
 // multi lines statements
@@ -44,7 +44,7 @@ const std::regex lineSeparatorRegex("^(\\n)");
 //comments
 const std::regex commentRegex("^(#)");
 
-#define TOKEN_TYPES 19
+#define TOKEN_TYPES 18
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
@@ -53,7 +53,6 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 	std::make_tuple(commentRegex, TOKEN_TYPE_COMMENT),
 	std::make_tuple(binNumRegex, TOKEN_TYPE_BIN),
 	std::make_tuple(hexNumRegex, TOKEN_TYPE_HEX),
-	std::make_tuple(keywordsRegex, TOKEN_TYPE_KEYWORD),
 	std::make_tuple(arrowRegex, TOKEN_TYPE_ARROW),
 	std::make_tuple(floatRegex, TOKEN_TYPE_FLOAT),
 	std::make_tuple(intRegex, TOKEN_TYPE_INT),
@@ -76,6 +75,8 @@ class Token {
 		Token();
 		Token(int line, int column, TokenType type, std::string value);
 		Token(const Token &other);
+
+		~Token();
 
 		std::string getValue() const;
 		TokenType getType() const;

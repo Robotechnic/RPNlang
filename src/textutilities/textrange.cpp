@@ -34,6 +34,15 @@ TextRange TextRange::merge(const TextRange &other) {
 }
 
 /**
+ * @brief check if the text range is empty
+ * 
+ * @return bool true if the range is empty
+ */
+bool TextRange::isEmpty() {
+	return this->line == 0 && this->columnStart == 0 && this->columnEnd == 0;
+}
+
+/**
  * @brief display the range to the output stream
  * 
  * @param os current output stream
@@ -44,3 +53,4 @@ std::ostream &operator<<(std::ostream &os, const TextRange &range) {
 	os << "Line " << range.line << " : " << range.columnStart << " -> " << range.columnEnd;
 	return os;
 }
+

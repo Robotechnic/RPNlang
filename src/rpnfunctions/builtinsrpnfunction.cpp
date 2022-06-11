@@ -19,7 +19,7 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	ExpressionResult result = this->checkArgs(args, context);
 	if (result.error()) return std::make_tuple(result, Value());
 	RPNFunctionResult functionResult = this->function(args, context->getChild());
-	
+
 	return functionResult;
 }
 
@@ -72,24 +72,6 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 			return std::make_tuple(ExpressionResult(), Value(value.substr(start, length), 0, 0));
 		}
 	)},
-	{"int", BuiltinRPNFunction(
-		"int",
-		{"value"},
-		{ValueType::FLOAT},
-		ValueType::INT,
-		[](RPNFunctionArgs args, const Context *context) {
-			return std::make_tuple(ExpressionResult(), Value(static_cast<int>(args[0].getFloatValue()), 0, 0));
-		}
-	)},
-	{"float", BuiltinRPNFunction(
-		"float",
-		{"value"},
-		{ValueType::INT},
-		ValueType::FLOAT,
-		[](RPNFunctionArgs args, const Context *context) {
-			return std::make_tuple(ExpressionResult(), Value(static_cast<float>(args[0].getIntValue()), 0, 0));
-		}
-	)},
 	{"isNumber", BuiltinRPNFunction(
 		"isNumber",
 		{"value"},
@@ -135,6 +117,15 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 				),
 				Value()
 			);
+		}
+	)},
+	{"toString", BuiltinRPNFunction(
+		"toString",
+		{"value"},
+		{ValueType::FLOAT},
+		ValueType::STRING,
+		[](RPNFunctionArgs args, const Context *context) {
+			return std::make_tuple(ExpressionResult(), Value(args[0].getStringValue(), 0, 0));
 		}
 	)},
 	{"and", BuiltinRPNFunction(

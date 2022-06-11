@@ -12,6 +12,7 @@ class TextRange {
 		std::string getLine(std::string code);
 		
 		TextRange merge(const TextRange &other);
+		bool isEmpty();
 
 		unsigned long int line, columnStart, columnEnd;
 };

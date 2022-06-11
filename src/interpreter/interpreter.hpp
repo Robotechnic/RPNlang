@@ -66,13 +66,17 @@ class Interpreter {
 		ExpressionResult createFunction(const Token &keywordToken, std::queue<Token> &tokens);
 
 		ExpressionResult parseFunctionCall(const Token &keywordToken, std::queue<Token> &tokens);
+
+		ExpressionResult parseReturn(const Token &keywordToken, std::queue<Token> &tokens);
 		
 
-		Value lastValue;
+		Value returnValue;
+		
 		void clearQueue(std::queue<Token> &tokens);
 		void clearMemory();
 		ExpressionResult checkMemory();
 
 		std::stack<Value> memory;
 		Context *context;
+		bool quit;
 };
