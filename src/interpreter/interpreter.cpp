@@ -60,6 +60,10 @@ bool Interpreter::interpretFile(std::string fileName) {
  * @return Value the last value in the stack
  */
 Value Interpreter::getLastValue() const {
+	return this->lastValue;
+}
+
+Value Interpreter::getReturnValue() const {
 	return this->returnValue;
 }
 
@@ -133,10 +137,10 @@ ExpressionResult Interpreter::checkMemory() {
 		);
 	}
 
-	if (this->context->getType() != CONTEXT_TYPE_FUNCTION && memory.size() == 1) {
+	if (memory.size() == 1) {
 		ExpressionResult result = memory.top().getVariableValue(this->context);
 		if (result.error()) return result;
-		this->returnValue = memory.top();
+		this->lastValue = memory.top();
 	}
 
 	this->clearMemory();
@@ -620,7 +624,7 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 	if (conditionValue) {
 		result = this->interpret(ifBody);
 		if (result.error()) return result;
-		this->memory.push(this->returnValue);
+		this->memory.push(this->lastValue);
 	}
 
 	if (ifEnd.getValue() == "fi") {
@@ -650,7 +654,7 @@ ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<To
 
 	result = this->interpret(elseBody);
 	if (result.error()) return result;
-	this->memory.push(this->returnValue);
+	this->memory.push(this->lastValue);
 	return ExpressionResult();
 }
 
@@ -765,7 +769,7 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 		result = this->interpret(previous);
 		if (result.error()) return result;
 
-		continueLoop = this->returnValue.getBoolValue();
+		continueLoop = this->lastValue.getBoolValue();
 	}
 
 	return ExpressionResult();
@@ -968,6 +972,7 @@ ExpressionResult Interpreter::parseReturn(const Token &keywordToken, std::queue<
 ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	this->clearMemory();
 	this->returnValue = Value();
+	this->lastValue = Value();
 	ExpressionResult result;
 
 	std::queue<Token> previous; // save previous tokens to check for while loops and for errors
@@ -982,8 +987,6 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 			tokens.pop();
 		}
 	}
-
-	this->quit = false;
 	this->clearQueue(previous);
 	return this->checkMemory();
 }

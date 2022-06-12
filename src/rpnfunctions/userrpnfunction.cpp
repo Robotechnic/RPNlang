@@ -42,30 +42,44 @@ RPNFunctionResult UserRPNFunction::call(
 	if (result.error()) return std::make_tuple(result, Value());
 
 	//check the return type	
-	Value returnValue = interpreter.getLastValue();
-	if (returnValue.isCastableTo(this->returnType)) {
-		return std::make_tuple(ExpressionResult(), returnValue.to(this->returnType));
+	Value returnValue = interpreter.getReturnValue();
+
+	if (returnValue.getType() == NONE && this->returnType != NONE) {
+		return std::make_tuple(
+			ExpressionResult(
+				"Function " + this->name + " does not return any value",
+				this->body.back().getRange(),
+				context
+			),
+			Value()
+		);
 	}
 	
-	TextRange returnValueRange = returnValue.getRange();
-	std::string message = "Return type must be " + Value::stringType(this->returnType) + " but got " + Value::stringType(returnValue.getType());
-	if (returnValueRange.isEmpty()) {
-		returnValueRange = this->body.back().getRange();
-		if (this->returnType == NONE) {
-			message = "Unexpected return value, for function " + this->name;
-		} else {
-			message = "Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found";
-		}
+	if (returnValue.getType() != NONE && this->returnType == NONE) {
+		return std::make_tuple(
+			ExpressionResult(
+				"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
+				returnValue.getRange(),
+				context
+			),
+			Value()
+		);
+	}
+
+	if (!returnValue.isCastableTo(this->returnType)) {
+		return std::make_tuple(
+			ExpressionResult(
+				"Return type must be " + Value::stringType(this->returnType) + " but got " + Value::stringType(returnValue.getType()),
+				returnValue.getRange(),
+				context
+			),
+			Value()
+		);
 	}
 	
-	return std::make_tuple(
-		ExpressionResult(
-			message,
-			returnValueRange,
-			context
-		),
-		Value()
-	);
+	
+
+	return std::make_tuple(ExpressionResult(), returnValue.to(this->returnType));
 }
 
 TextRange UserRPNFunction::getRange() const {

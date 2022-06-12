@@ -371,6 +371,8 @@ ValueType Value::valueType(const std::string type) {
 		return VARIABLE;
 	if (type == "function")
 		return FUNCTION;
+	if (type == "bool")
+		return BOOL;
 	if (type == "none")
 		return NONE;
 	

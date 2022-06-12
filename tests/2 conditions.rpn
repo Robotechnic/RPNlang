@@ -17,3 +17,12 @@ else
 	"not ok\n" :print
 	1 :exit
 fi fi fi fi
+
+
+a 4 =
+a 4 == if
+	"ok\n" :print
+else
+	"not ok\n" :print
+	1 :exit
+fi

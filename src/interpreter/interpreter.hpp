@@ -30,6 +30,7 @@ class Interpreter {
 
 		bool interpretFile(std::string fileName);
 		Value getLastValue() const;
+		Value getReturnValue() const;
 
 		ExpressionResult interpret(std::string line, int lineNumber = 0);
 		ExpressionResult interpret(std::queue<Token> tokens);
@@ -71,6 +72,7 @@ class Interpreter {
 		
 
 		Value returnValue;
+		Value lastValue;
 		
 		void clearQueue(std::queue<Token> &tokens);
 		void clearMemory();
