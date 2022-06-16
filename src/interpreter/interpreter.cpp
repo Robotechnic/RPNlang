@@ -549,9 +549,33 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 		);
 	}
 
+	if (keyword == "yrt") {
+		return ExpressionResult(
+			"Expected 'try' statement before 'yrt' keyword", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
 	if (keyword == "else") {
 		return ExpressionResult(
 			"Expected 'if' statement before 'else' keyword", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	if (keyword == "catch") {
+		return ExpressionResult(
+			"Expected 'try' statement before 'catch' keyword", 
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	if (keyword == "finally") {
+		return ExpressionResult(
+			"Expected 'try' statement before 'finally' keyword", 
 			keywordToken.getRange(),
 			this->context
 		);
@@ -579,6 +603,10 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 
 	if (keyword == "continue" || keyword == "break") {
 		return this->parseContinueBreak(keywordToken);
+	}
+
+	if (keyword == "try") {
+		return this->parseTry(keywordToken, tokens);
 	}
 
 	return ExpressionResult(
@@ -1013,6 +1041,104 @@ ExpressionResult Interpreter::parseContinueBreak(const Token &keywordToken) {
 	this->quit = true;
 	bool continueLoop = keywordToken.getValue() == "continue";
 	return ExpressionResult(!continueLoop, continueLoop);
+}
+
+ExpressionResult Interpreter::parseTry(const Token &keywordToken, std::queue<Token> &tokens) {
+	if (this->memory.size() != 0) {
+		return ExpressionResult(
+			"unexpected value before 'try' keyword",
+			this->memory.top().getRange(),
+			this->context
+		);
+	}
+
+	std::queue<Token> body;
+	Token catchKeyword;
+	ExpressionResult result = this->extractExpressionBody(keywordToken, tokens, body, catchKeyword);
+	if (result.error()) return result;
+	if (catchKeyword.getType() != TOKEN_TYPE_KEYWORD || 
+		(catchKeyword.getValue() != "catch" && catchKeyword.getValue() != "finally")
+	) {
+		return ExpressionResult(
+			"Expected 'catch' or 'finally' keyword after 'try' statement",
+			catchKeyword.getRange(),
+			this->context
+		);
+	}
+
+	result = this->interpret(body);
+	
+	if (catchKeyword.getValue() == "catch")
+		return this->parseCatch(catchKeyword, tokens, result);
+	
+	return this->parseFinally(catchKeyword, tokens);
+}
+
+ExpressionResult Interpreter::parseCatch(const Token &keywordToken, std::queue<Token> &tokens, ExpressionResult &tryResult) {
+	if (tokens.size() < 1) {
+		return ExpressionResult(
+			"Expected variable name after 'catch' keyword",
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+
+	Token variableName = tokens.front();
+	tokens.pop();
+	if (variableName.getType() != TOKEN_TYPE_LITERAL) {
+		return ExpressionResult(
+			"Expected variable name after 'catch' keyword",
+			variableName.getRange(),
+			this->context
+		);
+	}
+
+	if (tokens.front().getType() != TOKEN_TYPE_COLON) {
+		return ExpressionResult(
+			"Expected ':' after variable name",
+			tokens.front().getRange(),
+			this->context
+		);
+	}
+	tokens.pop();
+
+	std::queue<Token> body;
+	Token catchKeyword;
+	ExpressionResult result = this->extractExpressionBody(keywordToken, tokens, body, catchKeyword);
+	if (result.error()) return result;
+
+	if (catchKeyword.getType() != TOKEN_TYPE_KEYWORD || 
+		(catchKeyword.getValue() != "finally" && catchKeyword.getValue() != "yrt")
+	) {
+		return ExpressionResult(
+			"Expected 'finally' or 'yrt' keyword after 'catch' statement",
+			catchKeyword.getRange(),
+			this->context
+		);
+	}
+
+	if (!tryResult.error()) {
+		if (catchKeyword.getValue() == "finally")
+			return this->parseFinally(catchKeyword, tokens);
+		return ExpressionResult();
+	}
+
+	this->context->setValue(
+		variableName.getValue(), 
+		Value(
+			tryResult.getErrorMessage(),
+			tryResult.getRange()
+		)
+	);
+	return this->interpret(body);
+}
+
+ExpressionResult Interpreter::parseFinally(const Token &keywordToken, std::queue<Token> &tokens) {
+	std::queue<Token> body;
+	ExpressionResult result = this->extractExpressionBody(keywordToken, tokens, body, "yrt");
+	if (result.error()) return result;
+
+	return this->interpret(body);
 }
 
 /**

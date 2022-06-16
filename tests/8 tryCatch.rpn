@@ -1,0 +1,11 @@
+try
+	1 0 /
+catch e:
+	e f"Error: {}\n" :print
+yrt
+
+try
+	1 0 /
+finally
+	"finnaly fired correctly\n" :print
+yrt

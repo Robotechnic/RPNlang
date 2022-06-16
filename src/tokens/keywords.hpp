@@ -13,26 +13,34 @@ const std::regex keywordsRegex("^("
 	"rof|"
 	"return|"
 	"continue|"
-	"break"
+	"break|"
+	"try|"
+	"catch|"
+	"finally|"
+	"yrt|"
 ")$");
 
-#define BLOCK_OPENERS 4
+#define BLOCK_OPENERS 5
 const std::string blockOpeners[BLOCK_OPENERS] = {
 	"fun",
 	"if",
 	"while",
-	"for"
+	"for",
+	"try"
 };
 
-#define BLOCK_CLOSERS 4
+#define BLOCK_CLOSERS 5
 const std::string blockClosers[BLOCK_CLOSERS] = {
 	"nuf",
 	"fi",
 	"elihw",
-	"rof"
+	"rof",
+	"yrt"
 };
 
-#define BLOCK_INTERMEDIATES 1
+#define BLOCK_INTERMEDIATES 3
 const std::string blockIntermediates[BLOCK_INTERMEDIATES] = {
-	"else"
+	"else",
+	"catch",
+	"finally"
 };
