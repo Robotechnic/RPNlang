@@ -1,8 +1,8 @@
 #include "interpreter/interpreter.hpp"
 
-Interpreter::Interpreter() : context(new Context("main", CONTEXT_TYPE_DEFAULT)), quit(false) {}
+Interpreter::Interpreter() : context(new Context("main", CONTEXT_TYPE_DEFAULT)), quit(false), loopLevel(0) {}
 
-Interpreter::Interpreter(Context *ctx) : context(ctx), quit(false) {}
+Interpreter::Interpreter(Context *ctx) : context(ctx), quit(false), loopLevel(0) {}
 
 Interpreter::~Interpreter() {}
 
@@ -577,6 +577,10 @@ ExpressionResult Interpreter::parseKeyword(const Token &keywordToken, std::queue
 		return this->parseReturn(keywordToken, tokens);
 	}
 
+	if (keyword == "continue" || keyword == "break") {
+		return this->parseContinueBreak(keywordToken);
+	}
+
 	return ExpressionResult(
 		"Keyword " + keyword + " is not implemented yet", 
 		keywordToken.getRange(),
@@ -628,7 +632,7 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 	}
 
 	if (ifEnd.getValue() == "fi") {
-		return ExpressionResult();
+		return result;
 	}
 
 	return this->parseElse(ifEnd, tokens, conditionValue);
@@ -655,7 +659,7 @@ ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<To
 	result = this->interpret(elseBody);
 	if (result.error()) return result;
 	this->memory.push(this->lastValue);
-	return ExpressionResult();
+	return result;
 }
 
 /**
@@ -718,19 +722,26 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 	ExpressionResult result = this->parseForParameters(keywordToken, incrementName, range);
 	if (result.error()) return result;
 
+	this->loopLevel++;
 	// extract for body
 	std::queue<Token> forBody;
 	result = this->extractExpressionBody(keywordToken, tokens, forBody, "rof");
 	if (result.error()) return result;
 
 	// run for body for each value in range
-	
 	for (Value value = range[2]; range[2] < range[1] ? value < range[1] : value > range[1]; value += range[0]) {
 		this->context->setValue(incrementName, value);
 		result = this->interpret(forBody);
 		if (result.error()) return result;
+		if (result.breakingLoop()) {
+			this->quit = false;
+			break;
+		}
+		if (result.continuingLoop()) {
+			this->quit = false;
+		}
 	}
-
+	this->loopLevel--;
 	return ExpressionResult();
 }
 
@@ -751,6 +762,7 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 		);
 	}
 
+	this->loopLevel++;
 	Value condition = this->memory.top();
 	this->memory.pop();
 	ExpressionResult result = condition.getVariableValue(this->context);
@@ -765,13 +777,20 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 	while (continueLoop) {
 		result = this->interpret(whileBody);
 		if (result.error()) return result;
+		if (result.breakingLoop()) {
+			this->quit = false;
+			break;
+		}
+		if (result.continuingLoop()) {
+			this->quit = false;
+		}
 
 		result = this->interpret(previous);
 		if (result.error()) return result;
 
 		continueLoop = this->lastValue.getBoolValue();
 	}
-
+	this->loopLevel--;
 	return ExpressionResult();
 }
 
@@ -932,7 +951,13 @@ ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::
 	return this->callFunction(functionName);
 }
 
-
+/**
+ * @brief parse the return keyword and check if it is called in a function
+ * 
+ * @param keywordToken the token which represent the 'return' keyword
+ * @param tokens the list of tokens to parse
+ * @return ExpressionResult if the expression is correct or not
+ */
 ExpressionResult Interpreter::parseReturn(const Token &keywordToken, std::queue<Token> &tokens) {
 	if (this->context->getType() != CONTEXT_TYPE_FUNCTION) {
 		return ExpressionResult(
@@ -964,6 +989,33 @@ ExpressionResult Interpreter::parseReturn(const Token &keywordToken, std::queue<
 }
 
 /**
+ * @brief parse continue and break keywords and check if they are called in a loop
+ * 
+ * @param keywordToken the token which represent the 'continue' or 'break' keyword
+ * @param isContinue 
+ * @return ExpressionResult 
+ */
+ExpressionResult Interpreter::parseContinueBreak(const Token &keywordToken) {
+	if (this->memory.size() != 0) {
+		return ExpressionResult(
+			"unexpected value before '" + keywordToken.getValue() + "' keyword",
+			this->memory.top().getRange(),
+			this->context
+		);
+	}
+	if (this->loopLevel == 0) {
+		return ExpressionResult(
+			"unexpected '" + keywordToken.getValue() + "' keyword outside of a loop",
+			keywordToken.getRange(),
+			this->context
+		);
+	}
+	this->quit = true;
+	bool continueLoop = keywordToken.getValue() == "continue";
+	return ExpressionResult(!continueLoop, continueLoop);
+}
+
+/**
  * @brief take a list of tokens and interpret them
  * 
  * @param tokens list of tokens to interpret
@@ -981,14 +1033,17 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 		tokens.pop();
 		result = this->interpretToken(tok, tokens, previous);
 		if (result.error()) return result;
-		previous.emplace(tok);
+		if (tok.getType() != TOKEN_TYPE_END_OF_LINE)
+			previous.emplace(tok);
 		if (tok.getType() == TOKEN_TYPE_COLON) {
 			previous.emplace(tokens.front());
 			tokens.pop();
 		}
 	}
 	this->clearQueue(previous);
-	return this->checkMemory();
+	ExpressionResult memoryCheck = this->checkMemory();
+	if (memoryCheck.error()) return memoryCheck;
+	return result;
 }
 
 /**

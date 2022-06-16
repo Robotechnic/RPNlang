@@ -2,7 +2,9 @@
 
 
 ExpressionResult::ExpressionResult() : 
-	isError(false)
+	isError(false),
+	breakLoop(false),
+	continueLoop(false)
 {
 	this->context = nullptr;
 }
@@ -11,7 +13,15 @@ ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRang
 	isError(true),
 	errorMessage(errorMessage),
 	errorRange(errorRange),
+	breakLoop(false),
+	continueLoop(false),
 	context(context)
+{}
+
+ExpressionResult::ExpressionResult(bool breakLoop, bool continueLoop) :
+	isError(false),
+	breakLoop(breakLoop),
+	continueLoop(continueLoop)
 {}
 
 ExpressionResult::~ExpressionResult() {
@@ -25,6 +35,14 @@ ExpressionResult::~ExpressionResult() {
  */
 bool ExpressionResult::error() const {
 	return this->isError;
+}
+
+bool ExpressionResult::breakingLoop() const {
+	return this->breakLoop;
+}
+
+bool ExpressionResult::continuingLoop() const {
+	return this->continueLoop;
 }
 
 /**

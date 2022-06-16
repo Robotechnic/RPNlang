@@ -12,6 +12,7 @@ class ExpressionResult {
 	public:
 		ExpressionResult();
 		ExpressionResult(std::string errorMessage, TextRange errorRange, const Context *context);
+		ExpressionResult(bool breakLoop, bool continueLoop);
 		~ExpressionResult();
 
 		bool error() const;
@@ -25,10 +26,14 @@ class ExpressionResult {
 		void displayLineError(std::string line) const;
 		void display (std::string fileName) const;
 
+		bool breakingLoop() const;
+		bool continuingLoop() const;
+
 	private:
 		void displayArrow(TextRange range, std::string lineString) const;
 		bool isError;
 		std::string errorMessage;
 		TextRange errorRange;
+		bool breakLoop, continueLoop;
 		const Context *context;
 };

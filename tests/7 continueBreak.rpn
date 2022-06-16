@@ -1,0 +1,13 @@
+i 0 =
+
+i 100 <= while
+	i i 1 + =
+	i 50 == if
+		break
+	fi
+	continue
+	1 :exit
+elihw
+
+i f"i = {}\n" :print
+i 50 == :assert

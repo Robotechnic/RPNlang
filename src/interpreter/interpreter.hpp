@@ -69,6 +69,7 @@ class Interpreter {
 		ExpressionResult parseFunctionCall(const Token &keywordToken, std::queue<Token> &tokens);
 
 		ExpressionResult parseReturn(const Token &keywordToken, std::queue<Token> &tokens);
+		ExpressionResult parseContinueBreak(const Token &keywordToken);
 		
 
 		Value returnValue;
@@ -81,4 +82,5 @@ class Interpreter {
 		std::stack<Value> memory;
 		Context *context;
 		bool quit;
+		int loopLevel;
 };
