@@ -74,7 +74,7 @@ class Interpreter {
 		ExpressionResult parseTry(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult parseCatch(const Token &keywordToken, std::queue<Token> &tokens, ExpressionResult &tryResult);
 		ExpressionResult parseFinally(const Token &keywordToken, std::queue<Token> &tokens);
-		
+
 
 		Value returnValue;
 		Value lastValue;

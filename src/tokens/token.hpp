@@ -32,7 +32,10 @@ const std::regex expressionSeparatorRegex("^(\\|)");
 
 // variables
 const std::regex affectTokenRegex("^(=)");
-const std::regex literalRegex("^([a-z][a-zA-Z0-9]*|[A-Z0-9][A-Z0-9_]*)");
+
+const std::string literal = "([a-z][a-zA-Z0-9]*|[A-Z0-9][A-Z0-9_]*)";
+const std::regex path("^"+literal+"(\\."+literal+")+");
+const std::regex literalRegex("^" + literal);
 
 // math operators
 const std::regex operatorRegex("^([+-/*^%])");
@@ -44,7 +47,7 @@ const std::regex lineSeparatorRegex("^(\\n)");
 //comments
 const std::regex commentRegex("^(#)");
 
-#define TOKEN_TYPES 18
+#define TOKEN_TYPES 19
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
@@ -67,6 +70,7 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 	std::make_tuple(operatorRegex, TOKEN_TYPE_OPERATOR),
 	std::make_tuple(expressionSeparatorRegex, TOKEN_TYPE_EXPRESSION_SEPARATOR),
 	std::make_tuple(lineSeparatorRegex, TOKEN_TYPE_END_OF_LINE),
+	std::make_tuple(path, TOKEN_TYPE_PATH),
 	std::make_tuple(literalRegex, TOKEN_TYPE_LITERAL)
 };
 

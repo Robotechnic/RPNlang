@@ -94,18 +94,10 @@ math.pi 2 / math.cos :print
 
 But you can also import a module with a custom namespace:
 ```
-"math" :import "mymath" :as
+"math" "mymath" :importAs
 mymath.pi :print
 5 :mymath.sqrt :print
 mymath.pi 2 / mymath.cos :print
-```
-
-And remove the namespace:
-```
-"math" :import :noNamespace
-pi :print
-5 :sqrt :print
-pi 2 / cos :print
 ```
 
 

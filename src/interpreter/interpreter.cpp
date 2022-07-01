@@ -968,7 +968,7 @@ ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::
 		);
 	}
 	Token functionName = tokens.front();
-	if (functionName.getType() != TOKEN_TYPE_LITERAL) {
+	if (functionName.getType() != TOKEN_TYPE_LITERAL && functionName.getType() != TOKEN_TYPE_PATH) {
 		return ExpressionResult(
 			"Expected function name after ':' keyword",
 			functionName.getRange(),
@@ -1043,6 +1043,13 @@ ExpressionResult Interpreter::parseContinueBreak(const Token &keywordToken) {
 	return ExpressionResult(!continueLoop, continueLoop);
 }
 
+/**
+ * @brief parse try catch finally blocks and check if they are correct
+ * 
+ * @param keywordToken the token which represent the 'try' keyword
+ * @param tokens the list of tokens to parse
+ * @return ExpressionResult if the expression is correct or not
+ */
 ExpressionResult Interpreter::parseTry(const Token &keywordToken, std::queue<Token> &tokens) {
 	if (this->memory.size() != 0) {
 		return ExpressionResult(
@@ -1074,8 +1081,16 @@ ExpressionResult Interpreter::parseTry(const Token &keywordToken, std::queue<Tok
 	return this->parseFinally(catchKeyword, tokens);
 }
 
+/**
+ * @brief parse catch block, check if it is correct and run it if the try block failed
+ * 
+ * @param keywordToken the token which represent the 'catch' keyword
+ * @param tokens the list of tokens to parse
+ * @param tryResult if the try block failed
+ * @return ExpressionResult the result of the catch block
+ */
 ExpressionResult Interpreter::parseCatch(const Token &keywordToken, std::queue<Token> &tokens, ExpressionResult &tryResult) {
-	if (tokens.size() < 1) {
+	if (tokens.size() == 0) {
 		return ExpressionResult(
 			"Expected variable name after 'catch' keyword",
 			keywordToken.getRange(),
@@ -1088,6 +1103,14 @@ ExpressionResult Interpreter::parseCatch(const Token &keywordToken, std::queue<T
 	if (variableName.getType() != TOKEN_TYPE_LITERAL) {
 		return ExpressionResult(
 			"Expected variable name after 'catch' keyword",
+			variableName.getRange(),
+			this->context
+		);
+	}
+
+	if (tokens.size() == 0) {
+		return ExpressionResult(
+			"Expected ':' after variable name",
 			variableName.getRange(),
 			this->context
 		);
@@ -1117,22 +1140,31 @@ ExpressionResult Interpreter::parseCatch(const Token &keywordToken, std::queue<T
 		);
 	}
 
-	if (!tryResult.error()) {
-		if (catchKeyword.getValue() == "finally")
-			return this->parseFinally(catchKeyword, tokens);
-		return ExpressionResult();
+	if (tryResult.error()) {
+		this->context->setValue(
+			variableName.getValue(), 
+			Value(
+				tryResult.getErrorMessage(),
+				tryResult.getRange()
+			)
+		);
+		result = this->interpret(body);
+		if (result.error()) return result;
 	}
 
-	this->context->setValue(
-		variableName.getValue(), 
-		Value(
-			tryResult.getErrorMessage(),
-			tryResult.getRange()
-		)
-	);
-	return this->interpret(body);
+	if (catchKeyword.getValue() == "finally")
+		return this->parseFinally(catchKeyword, tokens);
+	
+	return ExpressionResult();
 }
 
+/**
+ * @brief parse and run the finally block after the try and catch blocks
+ * 
+ * @param keywordToken the token which represent the 'finally' keyword
+ * @param tokens the list of tokens to parse
+ * @return ExpressionResult if the expression is correct or not
+ */
 ExpressionResult Interpreter::parseFinally(const Token &keywordToken, std::queue<Token> &tokens) {
 	std::queue<Token> body;
 	ExpressionResult result = this->extractExpressionBody(keywordToken, tokens, body, "yrt");
@@ -1140,6 +1172,7 @@ ExpressionResult Interpreter::parseFinally(const Token &keywordToken, std::queue
 
 	return this->interpret(body);
 }
+
 
 /**
  * @brief take a list of tokens and interpret them
@@ -1189,6 +1222,7 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_VALUE_TYPE:
 		case TOKEN_TYPE_BIN:
 		case TOKEN_TYPE_HEX:
+		case TOKEN_TYPE_PATH:
 			this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
 			return ExpressionResult();
 		case TOKEN_TYPE_STRING:

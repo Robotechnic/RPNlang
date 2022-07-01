@@ -66,6 +66,10 @@ Value::Value(std::string value, TokenType type, int line, int column) {
 			this->value = (std::string)value;
 			this->type = VARIABLE;
 			break;
+		case TOKEN_TYPE_PATH:
+			this->value = (std::string)value;
+			this->type = PATH;
+			break;
 		default:
 			throw std::runtime_error("Invalid value type");
 	}
@@ -345,6 +349,10 @@ std::string Value::stringType(const ValueType type) {
 			return "string";
 		case VARIABLE:
 			return "variable";
+		case BOOL:
+			return "bool";
+		case PATH:
+			return "path";
 		case FUNCTION:
 			return "function";
 		case NONE:

@@ -8,6 +8,7 @@
 #include "rpnfunctions/rpnfunction.hpp"
 #include "value/value.hpp"
 #include "value/valuetype.hpp"
+#include "modules/module.hpp"
 
 class BuiltinRPNFunction : public RPNFunction {
 	public:
@@ -16,7 +17,7 @@ class BuiltinRPNFunction : public RPNFunction {
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argumentsTypes,
 			ValueType returnType,
-			std::function<RPNFunctionResult(RPNFunctionArgs&, const Context*)> function
+			std::function<RPNFunctionResult(RPNFunctionArgs&, Context*)> function
 		);
 		~BuiltinRPNFunction();
 
@@ -30,5 +31,5 @@ class BuiltinRPNFunction : public RPNFunction {
 		static const std::map<std::string, BuiltinRPNFunction> builtinFunctions;
 
 	private:
-		std::function<RPNFunctionResult(RPNFunctionArgs&, const Context*)> function;
+		std::function<RPNFunctionResult(RPNFunctionArgs&, Context*)> function;
 };

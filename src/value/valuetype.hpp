@@ -7,5 +7,6 @@ enum ValueType {
 	VARIABLE,
 	FUNCTION,
 	BOOL,
+	PATH,
 	NONE
 };

@@ -142,6 +142,8 @@ std::string Token::stringType(TokenType type) {
 			return "expression separator";
 		case TOKEN_TYPE_ARROW:
 			return "arrow";
+		case TOKEN_TYPE_PATH:
+			return "path";
 		default:
 			return "unknown";
 	}

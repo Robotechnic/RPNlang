@@ -110,15 +110,16 @@ ExpressionResult Context::getValue(const Token &name, Value &value) const {
 	if (this->symbols.find(nameStr) != this->symbols.end()) {
 		value = this->symbols.at(nameStr);
 		return ExpressionResult();
-	} else if (this->parent != nullptr) {
-		return this->parent->getValue(name, value);
-	} else {
-		return ExpressionResult(
-			"Undefined variable name:" + nameStr,
-			name.getRange(),
-			this
-		);
 	}
+
+	if (this->parent != nullptr)
+		return this->parent->getValue(name, value);
+	
+	return ExpressionResult(
+		"Undefined variable name : " + nameStr,
+		name.getRange(),
+		this
+	);
 }
 
 ExpressionResult Context::getValue(const Value &name, Value &value) const {
@@ -126,15 +127,31 @@ ExpressionResult Context::getValue(const Value &name, Value &value) const {
 	if (this->symbols.find(nameStr) != this->symbols.end()) {
 		value = this->symbols.at(nameStr);
 		return ExpressionResult();
-	} else if (this->parent != nullptr) {
-		return this->parent->getValue(name, value);
-	} else {
-		return ExpressionResult(
-			"Undefined variable name:" + nameStr,
-			name.getRange(),
-			this
-		);
 	}
+
+	if (this->parent != nullptr)
+		return this->parent->getValue(name, value);
+	
+	return ExpressionResult(
+		"Undefined variable name : " + nameStr,
+		name.getRange(),
+		this
+	);
+}
+
+ExpressionResult Context::getValue(const Token &path, const std::string &name, Value &value) const {
+	if (this->symbols.find(name) != this->symbols.end()) {
+		value = this->symbols.at(name);
+		return ExpressionResult();
+	}
+	if (this->parent != nullptr)
+		return this->parent->getValue(path, name, value);
+	
+	return ExpressionResult(
+		"Undefined variable name : " + name,
+		path.getRange(),
+		this
+	);
 }
 
 /**
@@ -160,8 +177,6 @@ Value Context::getValue(const Value &name) const {
 	}
 	return value;
 }
-
-
 
 std::ostream& operator<<(std::ostream& os, const Context* context) {
 	if (context->getParent() != nullptr) {
