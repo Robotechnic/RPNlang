@@ -37,8 +37,11 @@ class Context {
 		ExpressionResult getValue(const Value &name, Value &value) const;
 		ExpressionResult getValue(const Token &name, Value &value) const;
 		ExpressionResult getValue(const Token &path, const std::string &name, Value &value) const;
+		ExpressionResult getValue(const std::string &name, Value &value) const;
+		bool hasValue(std::string name) const;
 		Value getValue(const Value &name) const;
 		Value getValue(const Token &name) const;
+		Value getValue(const std::string &name) const;
 		
 
 	private:

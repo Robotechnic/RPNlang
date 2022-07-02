@@ -276,25 +276,13 @@ ExpressionResult Interpreter::checkArgs(const Token &literalToken, int argCount,
  * @param functionName the token which represent the function call
  * @return ExpressionResult result of the call
  */
-ExpressionResult Interpreter::callFunction(const Token &functionName) {
+ExpressionResult Interpreter::callFunction(const std::string &name, const RPNFunctionArgs &args, bool builtin) {
 	// check if literal is a function name
 	ExpressionResult result;
-	std::string name = functionName.getValue();
-	int argCount = 0;
-	bool builtin = true;
-
-	result = this->isFunction(functionName, builtin, argCount);
-	if (result.error()) return result;
-
-	RPNFunctionArgs args;
-	result = this->checkArgs(functionName, argCount, args);
-	if (result.error()) return result;
-
-	RPNFunctionResult functionResult = builtin ? 
-		BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->context) :
-		this->context->getValue(functionName).getFunctionValue()->call(args, this->context);
-
 	
+	RPNFunctionResult functionResult = builtin ?
+		BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->context) :
+		this->context->getValue(name).getFunctionValue()->call(args, this->context);
 
 	result = std::get<0>(functionResult);
 	if (result.error()) return result;
@@ -976,7 +964,17 @@ ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::
 		);
 	}
 
-	return this->callFunction(functionName);
+	int argCount = 0;
+	bool builtin = true;
+
+	ExpressionResult result = this->isFunction(functionName, builtin, argCount);
+	if (result.error()) return result;
+
+	RPNFunctionArgs args;
+	result = this->checkArgs(functionName, argCount, args);
+	if (result.error()) return result;
+
+	return this->callFunction(functionName.getValue(), args, builtin);
 }
 
 /**
@@ -1187,11 +1185,11 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	ExpressionResult result;
 
 	std::queue<Token> previous; // save previous tokens to check for while loops and for errors
-	while (tokens.size() > 0 && !quit) {
+	while (tokens.size() > 0 && !quit && !result.error()) {
 		Token tok = tokens.front();
 		tokens.pop();
 		result = this->interpretToken(tok, tokens, previous);
-		if (result.error()) return result;
+		if (result.error()) continue;
 		if (tok.getType() != TOKEN_TYPE_END_OF_LINE)
 			previous.emplace(tok);
 		if (tok.getType() == TOKEN_TYPE_COLON) {
@@ -1199,6 +1197,15 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 			tokens.pop();
 		}
 	}
+
+	// run main function if it exists
+	if (
+		!result.error() && 
+		this->context->getParent() == nullptr &&
+		this->context->hasValue("main")) {
+		result = this->callFunction("main", {}, false);
+	}
+
 	this->clearQueue(previous);
 	ExpressionResult memoryCheck = this->checkMemory();
 	if (memoryCheck.error()) return memoryCheck;

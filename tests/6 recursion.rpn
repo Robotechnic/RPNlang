@@ -17,4 +17,6 @@ fun fibonacci int n -> int:
 	n 1 - :fibonacci n 2 - :fibonacci + return
 nuf
 
-10 :fibonacci f"{}\n" :print
+fun main -> none:
+	10 :fibonacci f"{}\n" :print
+nuf

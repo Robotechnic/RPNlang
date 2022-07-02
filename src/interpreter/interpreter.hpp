@@ -45,7 +45,7 @@ class Interpreter {
 
 		ExpressionResult isFunction(const Token &functionName, bool &builtin, int &argCount);
 		ExpressionResult checkArgs(const Token &literalToken, int argCount, RPNFunctionArgs &args);
-		ExpressionResult callFunction(const Token &functionName);
+		ExpressionResult callFunction(const std::string &name, const RPNFunctionArgs &args, bool builtin);
 		
 		ExpressionResult extractFStringSubstrings(const Token &fStringToken, std::vector<std::string> &substrings);
 		ExpressionResult parseFString(const Token &fStringToken);

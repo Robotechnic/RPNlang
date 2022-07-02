@@ -68,28 +68,30 @@ nuf
 
 lambda fun -> string: "lambda ok\n" return nuf =
 
-# normal function
-:simpleFuncton
-"test2" :paramFunction
-:returnFunction :print
-"test 4" :paramReturnFunction :print
-:lambda :print
+fun main -> none:
+	# normal function
+	:simpleFuncton
+	"test2" :paramFunction
+	:returnFunction :print
+	"test 4" :paramReturnFunction :print
+	:lambda :print
 
 
-# functions with conditions
-true :conditionFunction :print
-false :conditionFunction :print
+	# functions with conditions
+	true :conditionFunction :print
+	false :conditionFunction :print
 
-3 0 5 :conditionFunction1 == :assert
-4 5 0 :conditionFunction1 == :assert
-5 7 7 :conditionFunction1 == :assert
-8 7 6 :conditionFunction1 == :assert
-8 1 3 :conditionFunction1 == :assert
+	3 0 5 :conditionFunction1 == :assert
+	4 5 0 :conditionFunction1 == :assert
+	5 7 7 :conditionFunction1 == :assert
+	8 7 6 :conditionFunction1 == :assert
+	8 1 3 :conditionFunction1 == :assert
 
-# functions with while loop
-"be" 10 :whileLoopFunction f"{}\n" :print
-"yay" 5 :whileLoopFunction f"{}\n" :print
+	# functions with while loop
+	"be" 10 :whileLoopFunction f"{}\n" :print
+	"yay" 5 :whileLoopFunction f"{}\n" :print
 
-# function with for loop
-1 :forLoopFunction
-10 :forLoopFunction
+	# function with for loop
+	1 :forLoopFunction
+	10 :forLoopFunction
+nuf

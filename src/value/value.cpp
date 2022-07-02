@@ -219,6 +219,7 @@ std::string Value::getStringValue() const {
 			return std::get<bool>(this->value) ? "true" : "false";
 		case STRING:
 		case VARIABLE:
+		case PATH:
 			return std::get<std::string>(this->value);
 		case NONE:
 			return "";

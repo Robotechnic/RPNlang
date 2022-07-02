@@ -155,6 +155,18 @@ ExpressionResult Context::getValue(const Token &path, const std::string &name, V
 }
 
 /**
+ * @brief search if a value exist in the context or it's parents
+ * 
+ * @param name the value to search
+ * @return bool if the value exits
+ */
+bool Context::hasValue(std::string name) const {
+	if (this->symbols.find(name) != this->symbols.end()) return true;
+	if (this->parent != nullptr) return this->parent->hasValue(name);
+	return false;
+}
+
+/**
  * @brief get the value from the context or its parents but throw an error if it is not found
  * 
  * @param name the name of the value
@@ -176,6 +188,18 @@ Value Context::getValue(const Value &name) const {
 		throw result.getErrorMessage();
 	}
 	return value;
+}
+
+
+Value Context::getValue(const std::string &name) const {
+	if (this->symbols.find(name) != this->symbols.end()) {
+		return this->symbols.at(name);
+	}
+
+	if (this->parent != nullptr)
+		return this->parent->getValue(name);
+	
+	throw "Undefined variable name '" + name + "'";
 }
 
 std::ostream& operator<<(std::ostream& os, const Context* context) {
