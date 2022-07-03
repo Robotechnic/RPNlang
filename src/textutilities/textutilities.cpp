@@ -46,7 +46,15 @@ std::string extractFileName(std::string path) {
 	size_t lastSlash = path.find_last_of("/");
 	size_t lastDot = path.find_last_of(".");
 	if (lastSlash == std::string::npos) {
-		return path.substr(0, lastDot);
+		return path.substr(0, lastDot - 3);
 	}
-	return path.substr(lastSlash + 1, lastDot - 1);
+	return path.substr(lastSlash + 1, lastDot - 3);
+}
+
+std::string extractFilePath(std::string path) {
+	size_t lastSlash = path.find_last_of("/");
+	if (lastSlash == std::string::npos) {
+		return "";
+	}
+	return path.substr(0, lastSlash);
 }

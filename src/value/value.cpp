@@ -9,15 +9,14 @@ Value::Value(std::string value, ValueType type, int line, int column) :
 	valueRange(line, column, value.length()),
 	type(type)
 {
-	if (type == FLOAT && value[0] == '.') {
-		value = "0" + value;
-	}
-
 	switch (type) {
 		case INT:
 			this->value = (int)std::stoi(value);
 			break;
 		case FLOAT:
+			if (value[0] == '.') {
+				value = "0" + value;
+			}
 			this->value = (float)std::stof(value);
 			break;
 		case BOOL:
@@ -33,10 +32,6 @@ Value::Value(std::string value, ValueType type, int line, int column) :
 
 Value::Value(std::string value, TokenType type, int line, int column) {
 	this->valueRange = TextRange(line, column, value.length());
-	if (value[0] == '.') {
-		value = "0" + value;
-	}
-	
 	switch (type) {
 		case TOKEN_TYPE_INT:
 			this->value = (int)std::stoi(value);
@@ -51,6 +46,9 @@ Value::Value(std::string value, TokenType type, int line, int column) {
 			this->type = INT;
 			break;
 		case TOKEN_TYPE_FLOAT:
+			if (value[0] == '.') {
+				value = "0" + value;
+			}
 			this->value = (float)std::stof(value);
 			this->type = FLOAT;
 			break;
@@ -63,15 +61,15 @@ Value::Value(std::string value, TokenType type, int line, int column) {
 			this->type = STRING;
 			break;
 		case TOKEN_TYPE_LITERAL:
-			this->value = (std::string)value;
+			this->value = value;
 			this->type = VARIABLE;
 			break;
 		case TOKEN_TYPE_PATH:
-			this->value = (std::string)value;
+			this->value = value;
 			this->type = PATH;
 			break;
 		default:
-			throw std::runtime_error("Invalid value type");
+			throw std::runtime_error("Value::Value : Invalid token type");
 	}
 }
 
@@ -348,16 +346,16 @@ std::string Value::stringType(const ValueType type) {
 			return "float";
 		case STRING:
 			return "string";
-		case VARIABLE:
-			return "variable";
 		case BOOL:
 			return "bool";
-		case PATH:
-			return "path";
 		case FUNCTION:
 			return "function";
 		case NONE:
 			return "none";
+		case VARIABLE:
+			return "variable";
+		case PATH:
+			return "path";
 		default:
 			return "<Invalid value type>";
 	}
@@ -376,8 +374,6 @@ ValueType Value::valueType(const std::string type) {
 		return FLOAT;
 	if (type == "string")
 		return STRING;
-	if (type == "variable")
-		return VARIABLE;
 	if (type == "function")
 		return FUNCTION;
 	if (type == "bool")
@@ -422,12 +418,22 @@ void Value::setValue(RPNFunction * function) {
 }
 
 /**
+ * @brief check if the path is a valid path and set the current variable value to the module value
+ * 
+ * @return ExpressionResult if the path is valid
+ */
+ExpressionResult Value::getPathValue(const Context *context) {
+	return Module::getModuleValue(*this, context);
+}
+
+/**
  * @brief check if the value is a valid variable name and if it is, set it's value and type
  * 
  * @param context the context where the symbol table is defined
  * @return ExpressionResult if the variable is valid
  */
 ExpressionResult Value::getVariableValue(const Context *context){
+	if (this->type == PATH) return this->getPathValue(context);
 	if (this->type != VARIABLE) return ExpressionResult();
 
 	Value temp;
@@ -467,17 +473,12 @@ ExpressionResult Value::applyOperator(const Value &other, const Token &operatorT
 		);
 	}
 
-	if (this->type == VARIABLE) {
-		ExpressionResult result = this->getVariableValue(context);
-		if (result.error()) return result;
-	}
+	ExpressionResult result = this->getVariableValue(context);
+	if (result.error()) return result;
 
 	Value otherValue = other;
-
-	if (other.getType() == VARIABLE) {
-		ExpressionResult result = otherValue.getVariableValue(context);
-		if (result.error()) return result;
-	}
+	result = otherValue.getVariableValue(context);
+	if (result.error()) return result;
 
 	this->concatValueRange(other);
 	this->concatValueRange(operatorToken);
@@ -1064,7 +1065,7 @@ Value &operator/=(Value &lhs, const Value &rhs) {
 }
 
 std::ostream &operator<<(std::ostream &os, const Value &value) {
-	os << "( " << value.getType() << "," << value.getStringValue() << " )";
+	os << "( " << Value::stringType(value.getType()) << "," << value.getStringValue() << " )";
 	return os;
 }
 

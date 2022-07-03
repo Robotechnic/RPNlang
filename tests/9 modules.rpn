@@ -1,0 +1,4 @@
+"./9Import.rpn" "test" :importAs
+"Import done\n" :print
+
+test.test f"{}\n" :print

@@ -139,7 +139,7 @@ ExpressionResult Context::getValue(const Value &name, Value &value) const {
 	);
 }
 
-ExpressionResult Context::getValue(const Token &path, const std::string &name, Value &value) const {
+ExpressionResult Context::getValue(const Value &path, const std::string name, Value &value) const {
 	if (this->symbols.find(name) != this->symbols.end()) {
 		value = this->symbols.at(name);
 		return ExpressionResult();
@@ -160,7 +160,7 @@ ExpressionResult Context::getValue(const Token &path, const std::string &name, V
  * @param name the value to search
  * @return bool if the value exits
  */
-bool Context::hasValue(std::string name) const {
+bool Context::hasValue(const std::string name) const {
 	if (this->symbols.find(name) != this->symbols.end()) return true;
 	if (this->parent != nullptr) return this->parent->hasValue(name);
 	return false;
@@ -191,7 +191,7 @@ Value Context::getValue(const Value &name) const {
 }
 
 
-Value Context::getValue(const std::string &name) const {
+Value Context::getValue(const std::string name) const {
 	if (this->symbols.find(name) != this->symbols.end()) {
 		return this->symbols.at(name);
 	}
@@ -199,7 +199,7 @@ Value Context::getValue(const std::string &name) const {
 	if (this->parent != nullptr)
 		return this->parent->getValue(name);
 	
-	throw "Undefined variable name '" + name + "'";
+	throw std::runtime_error("Undefined variable name '" + name + "'");
 }
 
 std::ostream& operator<<(std::ostream& os, const Context* context) {
@@ -208,14 +208,17 @@ std::ostream& operator<<(std::ostream& os, const Context* context) {
 	}
 	switch (context->getType()) {
 		case CONTEXT_TYPE_DEFAULT:
-			os << "In : " << context->getName() << std::endl;
+			os << "In : ";
 			break;
 		case CONTEXT_TYPE_FUNCTION:
-			os << "In function: " << context->getName() << std::endl;
+			os << "In function: ";
 			break;
 		case CONTEXT_TYPE_FILE:
-			os << "In file: " << context->getName() << std::endl;
+			os << "In file: ";
 			break;
+		case CONTEXT_TYPE_MODULE:
+			os <<"In module: ";
 	}
+	os << context->getName() << std::endl;
 	return os;
 }

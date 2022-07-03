@@ -34,7 +34,7 @@ const std::regex expressionSeparatorRegex("^(\\|)");
 const std::regex affectTokenRegex("^(=)");
 
 const std::string literal = "([a-z][a-zA-Z0-9]*|[A-Z0-9][A-Z0-9_]*)";
-const std::regex path("^"+literal+"(\\."+literal+")+");
+const std::regex path("^("+literal+"(?:\\."+literal+")+)");
 const std::regex literalRegex("^" + literal);
 
 // math operators

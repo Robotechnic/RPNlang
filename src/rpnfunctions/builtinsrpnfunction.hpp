@@ -6,9 +6,9 @@
 #include <tuple>
 #include <regex>
 #include "rpnfunctions/rpnfunction.hpp"
-#include "value/value.hpp"
-#include "value/valuetype.hpp"
 #include "modules/module.hpp"
+#include "value/valuetype.hpp"
+#include "value/value.hpp"
 
 class BuiltinRPNFunction : public RPNFunction {
 	public:

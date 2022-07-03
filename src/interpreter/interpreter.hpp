@@ -11,13 +11,14 @@
 #include <algorithm>
 #include "textutilities/escapecharacters.hpp"
 #include "tokens/token.hpp"
-#include "value/value.hpp"
 #include "expressionresult/expressionresult.hpp"
 
 class UserRPNFunction;
 #include "rpnfunctions/rpnfunction.hpp"
-#include "rpnfunctions/builtinsrpnfunction.hpp"
 #include "rpnfunctions/userrpnfunction.hpp"
+#include "rpnfunctions/builtinsrpnfunction.hpp"
+
+#include "value/value.hpp"
 
 class Context;
 #include "context/context.hpp"
@@ -74,7 +75,6 @@ class Interpreter {
 		ExpressionResult parseTry(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult parseCatch(const Token &keywordToken, std::queue<Token> &tokens, ExpressionResult &tryResult);
 		ExpressionResult parseFinally(const Token &keywordToken, std::queue<Token> &tokens);
-
 
 		Value returnValue;
 		Value lastValue;

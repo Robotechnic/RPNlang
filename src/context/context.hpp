@@ -4,6 +4,9 @@
 #include <string>
 #include <ostream>
 #include "context/contexttypes.hpp"
+#include "expressionresult/expressionresult.hpp"
+#include "tokens/token.hpp"
+#include "value/value.hpp"
 
 class Token;
 class Value;
@@ -36,12 +39,12 @@ class Context {
 		
 		ExpressionResult getValue(const Value &name, Value &value) const;
 		ExpressionResult getValue(const Token &name, Value &value) const;
-		ExpressionResult getValue(const Token &path, const std::string &name, Value &value) const;
+		ExpressionResult getValue(const Value &path, const std::string name, Value &value) const;
 		ExpressionResult getValue(const std::string &name, Value &value) const;
-		bool hasValue(std::string name) const;
+		bool hasValue(const std::string name) const;
 		Value getValue(const Value &name) const;
 		Value getValue(const Token &name) const;
-		Value getValue(const std::string &name) const;
+		Value getValue(const std::string name) const;
 		
 
 	private:
@@ -53,8 +56,3 @@ class Context {
 };
 
 std::ostream& operator<<(std::ostream& os, const Context* context);
-
-// I don't know why, but I must include this here else the compiler will not compile the code
-#include "expressionresult/expressionresult.hpp"
-#include "value/value.hpp"
-#include "tokens/token.hpp"

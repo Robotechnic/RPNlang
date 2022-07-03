@@ -1,8 +1,8 @@
 #pragma once
 
 class ExpressionResult;
-class RPNFunction;
 class Token;
+class Module;
 
 #include <string>
 #include <stdexcept>
@@ -13,11 +13,13 @@ class Token;
 #include "tokens/tokentypes.hpp"
 #include "tokens/token.hpp"
 #include "textutilities/textrange.hpp"
-#include "value/valuetype.hpp"
 #include "rpnfunctions/rpnfunction.hpp"
+#include "value/valuetype.hpp"
 #include "context/context.hpp"
 
+class RPNFunction;
 typedef std::variant<int, float, bool, std::string, RPNFunction *> ValueStorage;
+
 
 class Value {
 	public:
@@ -66,6 +68,7 @@ class Value {
 		static std::string stringType(const ValueType type);
 		static ValueType valueType(const std::string type); 
 
+		ExpressionResult getPathValue(const Context *context);
 		ExpressionResult getVariableValue(const Context *context);
 
 		ExpressionResult applyOperator(const Value &other, const Token &operatorToken, const Context *context);
@@ -117,3 +120,5 @@ std::ostream &operator<<(std::ostream &os, const Value &value);
 namespace std {
 	std::string to_string(const Value &value);
 };
+
+#include "modules/module.hpp"

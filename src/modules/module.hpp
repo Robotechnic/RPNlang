@@ -12,6 +12,7 @@ class Module {
 		Module();
 		Module(std::string path, std::string name, const Context * parentContext, TextRange importRange);
 		Module(const Module &other);
+		~Module();
 
 		ExpressionResult load();
 
@@ -19,12 +20,11 @@ class Module {
 
 		static bool isModule(std::string moduleName);
 		static ExpressionResult addModule(std::string modulePath, std::string name, TextRange importRange, const Context* context);
-		static ExpressionResult getModuleValue(const Token &pathToken, Value &value, const Context* parentContext);
+		static ExpressionResult getModuleValue(Value &value, const Context* parentContext);
 
 	private:
 		std::string path;
 		std::string name;
-		const Context * parentContext;
 		TextRange importRange;
 		Context * context;
 

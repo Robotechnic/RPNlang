@@ -1,4 +1,5 @@
 #include <iostream>
+#include <filesystem>
 #include <sstream>
 #include <string>
 #include <csignal>
@@ -7,8 +8,9 @@
 #include "context/context.hpp"
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
+#include "textutilities/textutilities.hpp"
 
-// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/8 tryCatch.rpn"
+#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/9 modules.rpn"
 
 void shellInput() {
 	Context *ctx = new Context("<stdin>");
@@ -44,6 +46,11 @@ void shellInput() {
 	delete ctx;
 }
 
+void setWorkingDirectory(std::string path) {
+	std::string extractedPath = extractFilePath(path);
+	std::filesystem::current_path(extractedPath);
+}
+
 int main(int argc, char **argv) {
 	bool result = true;
 	#ifdef TEST_FILE
@@ -57,6 +64,7 @@ int main(int argc, char **argv) {
 		#else
 			std::string path = argv[1];
 		#endif
+		setWorkingDirectory(path);
 		Context *ctx = new Context(path, CONTEXT_TYPE_FILE);
 		result = Interpreter(ctx).interpretFile(path);
 		delete ctx;

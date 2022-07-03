@@ -1200,6 +1200,7 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 
 	// run main function if it exists
 	if (
+		this->context->getType() != CONTEXT_TYPE_MODULE &&
 		!result.error() && 
 		this->context->getParent() == nullptr &&
 		this->context->hasValue("main")) {

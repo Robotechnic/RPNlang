@@ -3,6 +3,7 @@
 #include <string>
 #include <regex>
 #include <tuple>
+#include <iostream>
 
 #define ESCAPE_CHARACTERS 5
 const std::pair<std::regex, std::string> escapes[] = {

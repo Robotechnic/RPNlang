@@ -4,17 +4,16 @@
 #include <vector>
 #include <map>
 #include <tuple>
-
-class Value;
-
-#include "value/value.hpp"
 #include "value/valuetype.hpp"
-#include "tokens/token.hpp"
-#include "expressionresult/expressionresult.hpp"
-#include "context/context.hpp"
+
+class ExpressionResult;
+class Value;
+class Context;
+class TextRange;
 
 typedef std::vector<Value> RPNFunctionArgs;
 typedef std::tuple<ExpressionResult, Value> RPNFunctionResult;
+
 
 class RPNFunction {
 	public:
@@ -47,3 +46,9 @@ class RPNFunction {
 };
 
 std::ostream& operator<<(std::ostream& os, const RPNFunction& function);
+
+
+#include "tokens/token.hpp"
+#include "expressionresult/expressionresult.hpp"
+#include "context/context.hpp"
+#include "value/value.hpp"

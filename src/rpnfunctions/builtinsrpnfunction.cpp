@@ -205,7 +205,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 	)},
 	{"import", BuiltinRPNFunction(
 		"import",
-		{"value"},
+		{"path"},
 		{ValueType::STRING},
 		ValueType::NONE,
 		[](RPNFunctionArgs args, Context* context) {
@@ -228,7 +228,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 	)},
 	{"importAs", BuiltinRPNFunction(
 		"importAs",
-		{"value"},
+		{"path", "name"},
 		{ValueType::STRING, ValueType::STRING},
 		ValueType::NONE,
 		[](RPNFunctionArgs args, Context* context) {

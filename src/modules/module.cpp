@@ -3,24 +3,27 @@
 Module::Module() :
 	path(""),
 	name(""),
-	parentContext(nullptr),
 	importRange(TextRange(0, 0, 0)),
 	context(nullptr) {}
 
 Module::Module(std::string path, std::string name, const Context * parentContext, TextRange importRange) : 
 	path(path), 
 	name(name),
-	parentContext(parentContext),
 	importRange(importRange) {
-	context = new Context(name, CONTEXT_TYPE_FILE);
+	context = new Context(name, parentContext, CONTEXT_TYPE_MODULE);
 }
 
 Module::Module(const Module &other) : 
 	path(other.path), 
 	name(other.name),
-	parentContext(other.parentContext),
 	importRange(other.importRange),
 	context(other.context) {}
+
+Module::~Module() {
+	if (this->context != nullptr) {
+		// delete this->context;
+	}
+}
 
 /**
  * @brief load the module interpret it
@@ -31,13 +34,13 @@ ExpressionResult Module::load() {
 	if (path == "") {
 		throw std::runtime_error("Module::load: path is empty");
 	}
-	Interpreter moduleLoader = Interpreter(context);
+
+	Interpreter moduleLoader = Interpreter(this->context);
 	if (!moduleLoader.interpretFile(path)) {
-		delete context;
 		return ExpressionResult(
 			"Failed to load module " + name + " at " + path,
 			this->importRange,
-			this->parentContext
+			this->context->getParent()
 		);
 	}
 
@@ -74,12 +77,12 @@ bool Module::isModule(std::string moduleName) {
  * @param parentContext the parent context of the module
  * @return ExpressionResult if the value exists
  */
-ExpressionResult Module::getModuleValue(const Token &pathToken, Value &value, const Context* context){
-	std::vector<std::string> path = split(pathToken.getValue(), '.');
+ExpressionResult Module::getModuleValue(Value &value, const Context* context) {
+	std::vector<std::string> path = split(value.getStringValue(), '.');
 	if (path.size() > 2) {
 		return ExpressionResult(
 			"Maximum path depth is 2",
-			pathToken.getRange(),
+			value.getRange(),
 			context
 		);
 	}
@@ -87,12 +90,12 @@ ExpressionResult Module::getModuleValue(const Token &pathToken, Value &value, co
 	if (!Module::isModule(path[0])) {
 		return ExpressionResult(
 			"Module '" + path[0] + "' does not exist",
-			pathToken.getRange(),
+			value.getRange(),
 			context
 		);
 	}
 	
-	return Module::modules.at(path[0]).getModuleContext()->getValue(pathToken, path[1], value);
+	return Module::modules.at(path[0]).getModuleContext()->getValue(value, path[1], value);
 }
 
 /**
