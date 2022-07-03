@@ -98,6 +98,27 @@ ExpressionResult Module::getModuleValue(Value &value, const Context* context) {
 	return Module::modules.at(path[0]).getModuleContext()->getValue(value, path[1], value);
 }
 
+ExpressionResult Module::getModuleValue(const Token &pathToken, Value &value, const Context* parentContext) {
+	std::vector<std::string> path = split(pathToken.getValue(), '.');
+	if (path.size() > 2) {
+		return ExpressionResult(
+			"Maximum path depth is 2",
+			pathToken.getRange(),
+			parentContext
+		);
+	}
+
+	if (!Module::isModule(path[0])) {
+		return ExpressionResult(
+			"Module '" + path[0] + "' does not exist",
+			pathToken.getRange(),
+			parentContext
+		);
+	}
+
+	return Module::modules.at(path[0]).getModuleContext()->getValue(pathToken, path[1], value);
+}
+
 /**
  * @brief add a module to the module list and load it
  * 

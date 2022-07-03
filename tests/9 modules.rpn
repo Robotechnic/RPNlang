@@ -2,3 +2,4 @@
 "Import done\n" :print
 
 test.test f"{}\n" :print
+:test.bidule

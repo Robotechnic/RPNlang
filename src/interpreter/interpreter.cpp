@@ -213,21 +213,21 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
  */
 ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builtin, int &argCount) {
 	const std::string name = functionName.getValue();
-	Value val;
-	ExpressionResult result = this->context->getValue(functionName, val);
-	if (!result.error()) {
-		builtin = false;
-		if (val.getType() != FUNCTION) {
-			return ExpressionResult(
-				name + " of value " + val.getStringValue() + " with type " +
-				val.getStringValue() + " is not callable", 
-				functionName.getRange(),
-				this->context
-			);
-		}
-		argCount = val.getFunctionValue()->getArgumentsCount();
-	} else if (BuiltinRPNFunction::builtinFunctions.find(name) != BuiltinRPNFunction::builtinFunctions.end()) {
+	//check if the function is a builtin function
+	if (BuiltinRPNFunction::builtinFunctions.find(name) != BuiltinRPNFunction::builtinFunctions.end()) {
 		argCount = BuiltinRPNFunction::builtinFunctions.at(name).getArgumentsCount();
+		return ExpressionResult();
+	}
+	
+	Value val;
+	//check if the function is a user defined function
+	if (functionName.getType() == TOKEN_TYPE_PATH){
+		ExpressionResult result = Module::getModuleValue(functionName, val, this->context);
+		if (result.error()) return result;
+		builtin = false;
+	} else if (!this->context->hasValue(name)) {
+		val = this->context->getValue(name);
+		builtin = false;
 	} else {
 		return ExpressionResult(
 			"Function '" + name + "' not found",
@@ -236,6 +236,15 @@ ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builti
 		);
 	}
 
+	if (val.getType() != FUNCTION) {
+		return ExpressionResult(
+			name + " of value " + val.getStringValue() + " with type " +
+			val.getStringValue() + " is not callable", 
+			functionName.getRange(),
+			this->context
+		);
+	}
+	argCount = val.getFunctionValue()->getArgumentsCount();
 	return ExpressionResult();
 }
 
@@ -283,6 +292,20 @@ ExpressionResult Interpreter::callFunction(const std::string &name, const RPNFun
 	RPNFunctionResult functionResult = builtin ?
 		BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->context) :
 		this->context->getValue(name).getFunctionValue()->call(args, this->context);
+
+	result = std::get<0>(functionResult);
+	if (result.error()) return result;
+	
+	this->memory.push(std::get<1>(functionResult));
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::callModuleFunction(const Token &name, const RPNFunctionArgs &args) {
+	Value function;
+	ExpressionResult result = Module::getModuleValue(name, function, this->context);
+	if (result.error()) return result;
+
+	RPNFunctionResult functionResult = function.getFunctionValue()->call(args, this->context);
 
 	result = std::get<0>(functionResult);
 	if (result.error()) return result;
@@ -966,13 +989,15 @@ ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::
 
 	int argCount = 0;
 	bool builtin = true;
-
 	ExpressionResult result = this->isFunction(functionName, builtin, argCount);
 	if (result.error()) return result;
 
 	RPNFunctionArgs args;
 	result = this->checkArgs(functionName, argCount, args);
 	if (result.error()) return result;
+
+	if (functionName.getType() == TOKEN_TYPE_PATH)
+		return this->callModuleFunction(functionName, args);
 
 	return this->callFunction(functionName.getValue(), args, builtin);
 }

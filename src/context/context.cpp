@@ -154,6 +154,21 @@ ExpressionResult Context::getValue(const Value &path, const std::string name, Va
 	);
 }
 
+ExpressionResult Context::getValue(const Token &path, const std::string name, Value &value) const {
+	if (this->symbols.find(name) != this->symbols.end()) {
+		value = this->symbols.at(name);
+		return ExpressionResult();
+	}
+	if (this->parent != nullptr)
+		return this->parent->getValue(path, name, value);
+	
+	return ExpressionResult(
+		"Undefined variable name : " + name,
+		path.getRange(),
+		this
+	);
+}
+
 /**
  * @brief search if a value exist in the context or it's parents
  * 
