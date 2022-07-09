@@ -10,7 +10,7 @@
 #include "shell/shell.hpp"
 #include "textutilities/textutilities.hpp"
 
-#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/9 modules.rpn"
+// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/9 modules.rpn"
 
 void shellInput() {
 	Context *ctx = new Context("<stdin>");
@@ -66,7 +66,11 @@ int main(int argc, char **argv) {
 		#endif
 		setWorkingDirectory(path);
 		Context *ctx = new Context(path, CONTEXT_TYPE_FILE);
-		result = Interpreter(ctx).interpretFile(path);
+		std::string error;
+		result = Interpreter(ctx).interpretFile(path, error);
+		if (!result) {
+			std::cout << error << std::endl;
+		}
 		delete ctx;
 	}
 

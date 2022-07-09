@@ -1,5 +1,17 @@
-"./9Import.rpn" "test" :importAs
+# user defined modules
+"./9Import.rpn" "testUser" :importAs
 "Import done\n" :print
 
-test.test f"{}\n" :print
-:test.bidule
+testUser.test f"{}\n" :print
+:testUser.bidule
+
+
+# builtins modules
+"test builtin module\n" :print
+"test" :import
+
+"coucou" :test.testFunction
+
+test.testValue f"Test value : {}\n" :print
+
+"modules ok\n" :print

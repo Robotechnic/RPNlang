@@ -29,7 +29,7 @@ class Interpreter {
 		Interpreter(Context *ctx);
 		~Interpreter();
 
-		bool interpretFile(std::string fileName);
+		bool interpretFile(std::string fileName, std::string &errorString);
 		Value getLastValue() const;
 		Value getReturnValue() const;
 
@@ -37,7 +37,7 @@ class Interpreter {
 		ExpressionResult interpret(std::queue<Token> tokens);
 
 	private:
-		bool openFile(std::ifstream &file, std::string fileName);
+		bool openFile(std::ifstream &file, std::string fileName, std::string &error);
 		TextRange mergeRanges(const std::vector<Value> &values);
 
 		ExpressionResult interpretToken(const Token &tok, std::queue<Token> &tokens, std::queue<Token> &previous);

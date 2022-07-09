@@ -2,10 +2,18 @@
 
 #include <stdexcept>
 
+class BuiltinModule;
+
 #include "context/context.hpp"
 #include "expressionresult/expressionresult.hpp"
 #include "textutilities/textrange.hpp"
 #include "interpreter/interpreter.hpp"
+#include "rpnfunctions/typedef.hpp"
+#include "modules/builtinmodule.hpp"
+
+// modules
+#include "modules/math/math.hpp"
+#include "modules/time/time.hpp"
 
 class Module {
 	public:
@@ -30,5 +38,6 @@ class Module {
 		Context * context;
 
 		static std::map<std::string, Module> modules;
+		static std::map<std::string, BuiltinModule> builtinModules;
 };
 

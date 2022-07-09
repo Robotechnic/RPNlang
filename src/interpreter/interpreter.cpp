@@ -6,24 +6,24 @@ Interpreter::Interpreter(Context *ctx) : context(ctx), quit(false), loopLevel(0)
 
 Interpreter::~Interpreter() {}
 
-bool Interpreter::openFile(std::ifstream &file, std::string fileName) {
+bool Interpreter::openFile(std::ifstream &file, std::string fileName, std::string &error) {
 	try {
 		file.open(fileName);
 		if (file.fail()) {
-			std::cout<<"Failled to open file " << fileName << " (" << std::strerror(errno) << ")"<<std::endl;
+			error = "Failled to open file " + fileName + " : " + std::strerror(errno) + "";
 			return false;
 		}
 	} catch (const std::exception &e) {
-		std::cout << "File stream error :" << std::string(e.what()) << std::endl;
+		error = "File stream error :" + std::string(e.what());
 		return false;
 	}
 
 	return true;
 }
 
-bool Interpreter::interpretFile(std::string fileName) {
+bool Interpreter::interpretFile(std::string fileName, std::string &errorString) {
 	std::ifstream file;
-	if (!this->openFile(file, fileName)) {
+	if (!this->openFile(file, fileName, errorString)) {
 		return false;
 	}
 

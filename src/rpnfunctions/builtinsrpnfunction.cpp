@@ -5,7 +5,7 @@ BuiltinRPNFunction::BuiltinRPNFunction(
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argumentsTypes,
 			ValueType returnType,
-			std::function<RPNFunctionResult(RPNFunctionArgs&, Context*)> function
+			BuiltinRPNFunctionType function
 		) : RPNFunction(name, argsName, argumentsTypes, returnType), function(function) {}
 
 BuiltinRPNFunction::~BuiltinRPNFunction() {}
@@ -27,7 +27,6 @@ TextRange BuiltinRPNFunction::getRange() const {
 	return TextRange(0, 0, 0);
 }
 
-// until modules are implemented
 const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunctions = {
 	{"print", BuiltinRPNFunction(
 		"print",

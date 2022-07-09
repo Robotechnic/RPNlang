@@ -5,14 +5,10 @@
 #include <map>
 #include <tuple>
 #include "value/valuetype.hpp"
+#include "rpnfunctions/typedef.hpp"
 
 class ExpressionResult;
-class Value;
-class Context;
 class TextRange;
-
-typedef std::vector<Value> RPNFunctionArgs;
-typedef std::tuple<ExpressionResult, Value> RPNFunctionResult;
 
 
 class RPNFunction {

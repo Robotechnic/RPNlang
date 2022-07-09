@@ -37,7 +37,7 @@ std::string Shell::getCommand() {
 		}
 	}
 	std::cout<<std::endl;
-	if (this->history.back() != command && command != "") {
+	if (command != "" && (this->history.size() == 0 || this->history.back() != command)) {
 		this->history.push_back(command);
 		if (this->history.size() > MAX_HISTORY_SIZE) {
 			this->history.erase(this->history.begin());
@@ -228,7 +228,7 @@ void Shell::arrowLeft(bool ctrl) {
  * 
  */
 void Shell::arrowUp() {
-	if (this->historyIndex > (int)this->history.size()) return;
+	if (this->historyIndex >= (int)this->history.size()) return;
 	if (this->historyIndex <= 0) {
 		this->savedCommand = this->command;
 	}

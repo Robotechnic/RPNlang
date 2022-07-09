@@ -35,16 +35,29 @@ ExpressionResult Module::load() {
 		throw std::runtime_error("Module::load: path is empty");
 	}
 
-	Interpreter moduleLoader = Interpreter(this->context);
-	if (!moduleLoader.interpretFile(path)) {
-		return ExpressionResult(
-			"Failed to load module " + name + " at " + path,
-			this->importRange,
-			this->context->getParent()
-		);
+	if (this->context == nullptr) {
+		throw std::runtime_error("Module::load: context is null");
 	}
 
-	return ExpressionResult();
+	Interpreter moduleLoader = Interpreter(this->context);
+	std::string error;
+	if (moduleLoader.interpretFile(path, error)) return ExpressionResult();
+	
+	if (Module::builtinModules.find(path) != Module::builtinModules.end()) {
+		Module::builtinModules[path].load();
+		const Context *parent = this->context->getParent();
+		delete this->context;
+		this->context = Module::builtinModules[path].getModuleContext();
+		this->context->setParent(parent);
+
+		return ExpressionResult();
+	}
+	
+	return ExpressionResult(
+		"Failed to load module " + name + " at " + path + "(" + error + ")",
+		this->importRange,
+		this->context->getParent()
+	);
 }
 
 /**
@@ -134,3 +147,22 @@ ExpressionResult Module::addModule(std::string modulePath, std::string name, Tex
 }
 
 std::map<std::string, Module>Module::modules = std::map<std::string, Module>();
+
+std::map<std::string, BuiltinModule>Module::builtinModules = std::map<std::string, BuiltinModule>{
+	{"test", BuiltinModule("test", [](BuiltinModule &module) {
+		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](RPNFunctionArgs args, Context* context) {
+			std::cout<<"Test ok : "<<args[0].getStringValue()<<std::endl;
+			return std::make_tuple(ExpressionResult(), Value());
+		});
+
+		module.addVariable("testValue",Value(
+			std::string("testValueOk"),
+			TextRange()
+		));
+		return ExpressionResult();
+	})},
+
+	{"math", BuiltinModule("math", mathLoader)},
+
+	{"time", BuiltinModule("time", timeLoader)}
+};
