@@ -18,7 +18,7 @@ class Module;
 #include "context/context.hpp"
 
 class RPNFunction;
-typedef std::variant<int, float, bool, std::string, RPNFunction *> ValueStorage;
+typedef std::variant<int64_t, float, bool, std::string, RPNFunction *> ValueStorage;
 
 
 class Value {
@@ -30,12 +30,12 @@ class Value {
 		Value(std::string value, int line, int column);
 		Value(std::string value, TextRange range);
 
-		Value(int value, int line, int column);
+		Value(int64_t value, int line, int column);
 		Value(float value, int line, int column);
 		Value(bool value, int line, int column);
 		Value(RPNFunction * function, int line, int column);
 
-		Value(int value, TextRange range);
+		Value(int64_t value, TextRange range);
 		Value(float value, TextRange range);
 		Value(bool value, TextRange range);
 		Value(RPNFunction * function, TextRange range);
@@ -45,7 +45,7 @@ class Value {
 		ValueType getType() const;
 
 		float getFloatValue() const;
-		int getIntValue() const;
+		int64_t getIntValue() const;
 		bool getBoolValue() const;
 		std::string getStringValue() const;
 		const RPNFunction * getFunctionValue() const;
@@ -55,7 +55,7 @@ class Value {
 
 		void setValue(std::string value);
 		void setValue(float value);
-		void setValue(int value);
+		void setValue(int64_t value);
 		void setValue(bool value);
 		void setValue(RPNFunction * function);
 

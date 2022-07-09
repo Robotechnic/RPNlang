@@ -11,16 +11,16 @@ Value::Value(std::string value, ValueType type, int line, int column) :
 {
 	switch (type) {
 		case INT:
-			this->value = (int)std::stoi(value);
+			this->value = static_cast<int64_t>(std::stoi(value));
 			break;
 		case FLOAT:
 			if (value[0] == '.') {
 				value = "0" + value;
 			}
-			this->value = (float)std::stof(value);
+			this->value = static_cast<float>(std::stof(value));
 			break;
 		case BOOL:
-			this->value = (bool)(value == "true");
+			this->value = static_cast<bool>((value == "true"));
 			break;
 		case STRING:
 			this->value = value;
@@ -34,26 +34,26 @@ Value::Value(std::string value, TokenType type, int line, int column) {
 	this->valueRange = TextRange(line, column, value.length());
 	switch (type) {
 		case TOKEN_TYPE_INT:
-			this->value = (int)std::stoi(value);
+			this->value = static_cast<int64_t>(std::stoi(value));
 			this->type = INT;
 			break;
 		case TOKEN_TYPE_HEX:
-			this->value = (int)std::stoi(value, nullptr, 16);
+			this->value = static_cast<int64_t>(std::stoi(value, nullptr, 16));
 			this->type = INT;
 			break;
 		case TOKEN_TYPE_BIN:
-			this->value = (int)std::stoi(value, nullptr, 2);
+			this->value = static_cast<int64_t>(std::stoi(value, nullptr, 2));
 			this->type = INT;
 			break;
 		case TOKEN_TYPE_FLOAT:
 			if (value[0] == '.') {
 				value = "0" + value;
 			}
-			this->value = (float)std::stof(value);
+			this->value = static_cast<float>(std::stof(value));
 			this->type = FLOAT;
 			break;
 		case TOKEN_TYPE_BOOL:
-			this->value = (bool)(value == "true");
+			this->value = static_cast<bool>((value == "true"));
 			this->type = BOOL;
 			break;
 		case TOKEN_TYPE_STRING:
@@ -83,7 +83,7 @@ Value::Value(std::string value, TextRange range) :
 	valueRange(range),
 	type(STRING) {}
 
-Value::Value(int value, int line, int column) : 
+Value::Value(int64_t value, int line, int column) : 
 	value(value),
 	valueRange(line, column, std::to_string(value).length()),
 	type(INT) {}
@@ -103,7 +103,7 @@ Value::Value(RPNFunction * function, int line, int column) :
 	valueRange(function->getRange()),
 	type(FUNCTION) {}
 
-Value::Value(int value, TextRange range) : 
+Value::Value(int64_t value, TextRange range) : 
 	value(value),
 	valueRange(range),
 	type(INT) {}
@@ -142,11 +142,11 @@ void Value::clean() {
 float Value::getFloatValue() const {
 	switch (this->type) {
 		case INT:
-			return (float)std::get<int>(this->value);
+			return static_cast<float>(std::get<int64_t>(this->value));
 		case FLOAT:
 			return std::get<float>(this->value);
 		case BOOL:
-			return (float)std::get<bool>(this->value);
+			return static_cast<float>(std::get<bool>(this->value));
 		case STRING:
 			try {
 				return std::stod(std::get<std::string>(this->value));
@@ -163,14 +163,14 @@ float Value::getFloatValue() const {
  * 
  * @return int the value as an int
  */
-int Value::getIntValue() const {
+int64_t Value::getIntValue() const {
 	switch (this->type) {
 		case INT:
-			return std::get<int>(this->value);
+			return std::get<int64_t>(this->value);
 		case FLOAT:
-			return (int)std::get<float>(this->value);
+			return static_cast<int64_t>(std::get<float>(this->value));
 		case BOOL:
-			return (int)std::get<bool>(this->value);
+			return static_cast<int64_t>(std::get<bool>(this->value));
 		case STRING:
 			try {
 				return std::stoi(std::get<std::string>(this->value));
@@ -190,7 +190,7 @@ int Value::getIntValue() const {
 bool Value::getBoolValue() const {
 	switch (this->type) {
 		case INT:
-			return std::get<int>(this->value) != 0;
+			return std::get<int64_t>(this->value) != 0;
 		case FLOAT:
 			return std::get<float>(this->value) != 0;
 		case BOOL:
@@ -210,7 +210,7 @@ bool Value::getBoolValue() const {
 std::string Value::getStringValue() const {
 	switch (this->type) {
 		case INT:
-			return std::to_string(std::get<int>(this->value));
+			return std::to_string(std::get<int64_t>(this->value));
 		case FLOAT:
 			return std::to_string(std::get<float>(this->value));
 		case BOOL:
@@ -402,7 +402,7 @@ void Value::setValue(float value) {
 	this->type = FLOAT;
 }
 
-void Value::setValue(int value) {
+void Value::setValue(int64_t value) {
 	this->value = value;
 	this->type = INT;
 }
@@ -697,7 +697,7 @@ ExpressionResult Value::oppow(const Value &other, const Context *context) {
 		);
 	} else {
 		this->setValue(
-			(int)std::pow(this->getIntValue(), other.getIntValue())
+			(int64_t)std::pow(this->getIntValue(), other.getIntValue())
 		);
 	}
 

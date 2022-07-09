@@ -56,7 +56,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		{ValueType::STRING},
 		ValueType::INT,
 		[](RPNFunctionArgs args, Context* context) {
-			return std::make_tuple(ExpressionResult(), Value((int)args[0].getStringValue().size(), 0, 0));
+			return std::make_tuple(ExpressionResult(), Value(static_cast<int64_t>(args[0].getStringValue().size()), 0, 0));
 		}
 	)},
 	{"substr", BuiltinRPNFunction(
@@ -167,7 +167,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 				),
 				Value()
 			);
-			return std::make_tuple(ExpressionResult(), Value((int)args[0].getStringValue()[0], 0, 0));
+			return std::make_tuple(ExpressionResult(), Value(static_cast<int64_t>(args[0].getStringValue()[0]), 0, 0));
 		}
 	)},
 	{"chr", BuiltinRPNFunction(
