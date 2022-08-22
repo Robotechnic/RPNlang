@@ -4,7 +4,14 @@ Interpreter::Interpreter() : context(new Context("main", CONTEXT_TYPE_DEFAULT)),
 
 Interpreter::Interpreter(Context *ctx) : context(ctx), quit(false), loopLevel(0) {}
 
-Interpreter::~Interpreter() {}
+Interpreter::~Interpreter() {
+	delete lastValue;
+	delete returnValue;
+	while (!memory.empty()) {
+		delete memory.top();
+		memory.pop();
+	}
+}
 
 bool Interpreter::openFile(std::ifstream &file, std::string fileName, std::string &error) {
 	try {
@@ -59,11 +66,11 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
  * 
  * @return Value the last value in the stack
  */
-Value Interpreter::getLastValue() const {
+Value *Interpreter::getLastValue() const {
 	return this->lastValue;
 }
 
-Value Interpreter::getReturnValue() const {
+Value *Interpreter::getReturnValue() const {
 	return this->returnValue;
 }
 
@@ -100,6 +107,7 @@ void Interpreter::clearQueue(std::queue<Token> &tokens) {
  */
 void Interpreter::clearMemory() {
 	while (!this->memory.empty()) {
+		delete this->memory.top();
 		this->memory.pop();
 	}
 }
@@ -110,12 +118,12 @@ void Interpreter::clearMemory() {
  * @param values values that the text range will be calculated from
  * @return TextRange text range of the tokens list
  */
-TextRange Interpreter::mergeRanges(const std::vector<Value> &values) {
+TextRange Interpreter::mergeRanges(const std::vector<Value*> &values) {
 	if (values.size() == 0) return TextRange();
 	
-	TextRange range = values.begin()->getRange();
-	for (const Value &token : values) {
-		range.merge(token.getRange());
+	TextRange range = values[0]->getRange();
+	for (const Value *value : values) {
+		range.merge(value->getRange());
 	}
 	
 	return range;
@@ -128,7 +136,7 @@ TextRange Interpreter::mergeRanges(const std::vector<Value> &values) {
  */
 ExpressionResult Interpreter::checkMemory() {
 	if (memory.size() > 1) {
-		TextRange lastTokenRange = memory.top().getRange();
+		TextRange lastTokenRange = memory.top()->getRange();
 		lastTokenRange.columnStart = 0;
 		return ExpressionResult(
 			"To much remaining elements: " + std::to_string(memory.size()), 
@@ -138,12 +146,57 @@ ExpressionResult Interpreter::checkMemory() {
 	}
 
 	if (memory.size() == 1) {
-		ExpressionResult result = memory.top().getVariableValue(this->context);
-		if (result.error()) return result;
+		// ExpressionResult result = this->context->getValue(memory.top()->getStringValue(), memory.top());
+		// if (result.error()) return result;
 		this->lastValue = memory.top();
 	}
 
 	this->clearMemory();
+
+	return ExpressionResult();
+}
+
+/**
+ * @brief add a value to the interpreter memory
+ * 
+ * @param tok the toke to add in the memory
+ * @return ExpressionResult if the value was added or not
+ */
+ExpressionResult Interpreter::pushValue(const Token &tok) {
+	std::string value = tok.getValue();
+	switch (tok.getType()) {
+		case TOKEN_TYPE_INT:
+			this->memory.push(new Int(value, tok.getRange()));
+			break;
+		case TOKEN_TYPE_BIN:
+			this->memory.push(new Int(std::stoll(value, nullptr, 2), tok.getRange()));
+			break;
+		case TOKEN_TYPE_HEX:
+			this->memory.push(new Int(std::stoll(value, nullptr, 16), tok.getRange()));
+			break;
+		case TOKEN_TYPE_FLOAT:
+			this->memory.push(new Float(value, tok.getRange()));
+			break;
+		case TOKEN_TYPE_BOOL:
+			this->memory.push(new Bool(value, tok.getRange()));
+			break;
+		case TOKEN_TYPE_STRING:
+			this->memory.push(new String(escapeCharacters(tok.getValue()), tok.getRange()));
+			break;
+		case TOKEN_TYPE_LITERAL:
+		case TOKEN_TYPE_VALUE_TYPE:
+			this->memory.push(new Variable(VARIABLE, value, tok.getRange()));
+			break;
+		case TOKEN_TYPE_PATH:
+			this->memory.push(new Variable(PATH, value, tok.getRange()));
+			break;
+		default:
+			return ExpressionResult(
+				"Invalid token '" + tok.getValue() + "'",
+				tok.getRange(),
+				this->context
+			);
+	};
 
 	return ExpressionResult();
 }
@@ -162,10 +215,28 @@ ExpressionResult Interpreter::applyOperator(const Token &mathOperator) {
 			this->context
 		);
 	}
-	ExpressionResult result;
-	Value second = memory.top();
+
+	ExpressionResult result = this->setTopVariableValue();
+	if (result.error()) return result;
+	Value *second = memory.top();
 	memory.pop();
-	return this->memory.top().applyOperator(second, mathOperator, this->context);
+
+	result = this->setTopVariableValue();
+	if (result.error()) {
+		delete second;
+		return result;
+	}
+	operatorReturn returnValue = this->memory.top()->applyOperator(second, mathOperator, this->context);
+	delete this->memory.top();
+	this->memory.pop();
+
+	if (std::get<0>(returnValue).error()) {
+		delete second;
+		return std::get<0>(returnValue);
+	}
+
+	this->memory.push(std::get<1>(returnValue));
+	return ExpressionResult();
 }
 
 /**
@@ -183,23 +254,45 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
 		);
 	}
 
-	Value second = memory.top();
-	ExpressionResult result = second.getVariableValue(this->context);
+	ExpressionResult result = this->setTopVariableValue();
 	if (result.error()) return result;
+
+	Value *affectValue = memory.top();
 	memory.pop();
 
-	if (memory.top().getType() != VARIABLE) {
+	if (memory.top()->getType() != VARIABLE) {
+		delete affectValue;
 		return ExpressionResult(
-			"Expected variable name but got (" + std::to_string(memory.top()) + ")", 
+			"Expected variable name but got \"" + std::to_string(memory.top()) + "\" instead", 
 			affectToken.getRange(),
 			this->context
 		);
 	}
 
-	this->context->setValue(this->memory.top(), second);
-	memory.pop();
-	memory.push(second);
+	this->context->setValue(this->memory.top()->getStringValue(), affectValue);
+	delete this->memory.top();
+	this->memory.pop();
+	this->memory.push(affectValue->copy());
 
+	return ExpressionResult();
+}
+
+/**
+ * @brief check if the top value is a variable and if it is, set the top of the stack to the value of the variable
+ * 
+ * @return ExpressionResult if the variable exists
+ */
+ExpressionResult Interpreter::setTopVariableValue() {
+	if (memory.top()->getType() != VARIABLE) return ExpressionResult();
+
+	Value *value;
+	ExpressionResult result = this->context->getValue(memory.top(), value);
+	if (result.error()) return result;
+
+	delete memory.top();
+	memory.pop();
+
+	memory.push(value->copy());
 	return ExpressionResult();
 }
 
@@ -219,7 +312,7 @@ ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builti
 		return ExpressionResult();
 	}
 	
-	Value val;
+	Value *val;
 	//check if the function is a user defined function
 	if (functionName.getType() == TOKEN_TYPE_PATH){
 		ExpressionResult result = Module::getModuleValue(functionName, val, this->context);
@@ -236,15 +329,15 @@ ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builti
 		);
 	}
 
-	if (val.getType() != FUNCTION) {
+	if (val->getType() != FUNCTION) {
 		return ExpressionResult(
-			name + " of value " + val.getStringValue() + " with type " +
-			val.getStringValue() + " is not callable", 
+			name + " of value " + val->getStringValue() + " with type " +
+			val->getStringValue() + " is not callable", 
 			functionName.getRange(),
 			this->context
 		);
 	}
-	argCount = val.getFunctionValue()->getArgumentsCount();
+	argCount = static_cast<Function *>(val)->getValue()->getArgumentsCount();
 	return ExpressionResult();
 }
 
@@ -267,11 +360,11 @@ ExpressionResult Interpreter::checkArgs(const Token &literalToken, int argCount,
 
 	ExpressionResult result;
 
-	Value arg;
+	Value *arg;
 	for (int i = 0; i < argCount; i++) {
-		arg = memory.top();
-		result = arg.getVariableValue(this->context);
+		result = this->setTopVariableValue();
 		if (result.error()) return result;
+		arg = memory.top();
 		args.insert(args.begin(), arg);
 		memory.pop();
 	}
@@ -291,7 +384,7 @@ ExpressionResult Interpreter::callFunction(const std::string &name, const RPNFun
 	
 	RPNFunctionResult functionResult = builtin ?
 		BuiltinRPNFunction::builtinFunctions.at(name).call(args, this->context) :
-		this->context->getValue(name).getFunctionValue()->call(args, this->context);
+		static_cast<Function *>(this->context->getValue(name))->getValue()->call(args, this->context);
 
 	result = std::get<0>(functionResult);
 	if (result.error()) return result;
@@ -301,11 +394,11 @@ ExpressionResult Interpreter::callFunction(const std::string &name, const RPNFun
 }
 
 ExpressionResult Interpreter::callModuleFunction(const Token &name, const RPNFunctionArgs &args) {
-	Value function;
+	Value *function;
 	ExpressionResult result = Module::getModuleValue(name, function, this->context);
 	if (result.error()) return result;
 
-	RPNFunctionResult functionResult = function.getFunctionValue()->call(args, this->context);
+	RPNFunctionResult functionResult = static_cast<Function *>(function)->getValue()->call(args, this->context);
 
 	result = std::get<0>(functionResult);
 	if (result.error()) return result;
@@ -380,8 +473,14 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 		);
 	}
 
-	std::vector<Value> args(argCount);
+	std::vector<Value*> args(argCount);
 	for (int i = argCount - 1; i >= 0; i--) {
+		result = this->setTopVariableValue();
+		if (result.error()) {
+			for (Value *val : args)
+				delete val;
+			return result;
+		}
 		args.at(i) = memory.top();
 		memory.pop();
 	}
@@ -390,14 +489,13 @@ ExpressionResult Interpreter::parseFString(const Token &fStringToken) {
 	for (size_t i = 0; i < substrings.size(); i++) {
 		formatedResult << escapeCharacters(substrings.at(i));
 		if (i < args.size()) {
-			result = args.at(i).getVariableValue(this->context);
-			if (result.error()) return result;
-			formatedResult << args.at(i).getStringValue();
+			formatedResult << args.at(i)->getStringValue();
 		}
 	}
 
-	memory.push(Value(formatedResult.str(), this->mergeRanges(args).merge(fStringToken.getRange())));
-
+	memory.push(new String(formatedResult.str(), this->mergeRanges(args).merge(fStringToken.getRange())));
+	for (Value *val : args)
+		delete val;
 	return ExpressionResult();
 }
 
@@ -643,10 +741,10 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 		);
 	}
 
-	Value condition = this->memory.top();
-	this->memory.pop();
-	ExpressionResult result = condition.getVariableValue(this->context);
+	ExpressionResult result = this->setTopVariableValue();
 	if (result.error()) return result;
+	Value *condition = this->memory.top();
+	this->memory.pop();
 	
 	//extract if body
 	std::queue<Token> ifBody;
@@ -663,7 +761,7 @@ ExpressionResult Interpreter::parseIf(const Token &keywordToken, std::queue<Toke
 	}
 
 	// run if body if condition is true
-	bool conditionValue = condition.getBoolValue();
+	bool conditionValue = static_cast<Bool *>(condition->to(BOOL))->getValue();
 	if (conditionValue) {
 		result = this->interpret(ifBody);
 		if (result.error()) return result;
@@ -709,7 +807,7 @@ ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<To
  * @param range the range of the for loop
  * @return ExpressionResult 
  */
-ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std::string &incrementName, Value range[3] ) {
+ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std::string &incrementName, Value *range[3] ) {
 	if (this->memory.size() < 4) {
 		return ExpressionResult(
 			"Exprected start, end and step values before 'for' statement",
@@ -720,30 +818,30 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
 
 	ExpressionResult result;
 	for (int i = 0; i < 3; i++) {
+		result = this->setTopVariableValue();
+		if (result.error()) return result;
 		range[i] = this->memory.top();
 		this->memory.pop();
-		result = range[i].getVariableValue(this->context);
-		if (result.error()) return result;
-		if (!range[i].isNumber()) {
+		if (!range[i]->isNumber()) {
 			return ExpressionResult(
 				"Expected number value for 'for' statement",
-				range[i].getRange(),
+				range[i]->getRange(),
 				this->context
 			);
 		}
 	}
 
-	Value increment = this->memory.top();
+	Value *increment = this->memory.top();
 	this->memory.pop();
-	if (increment.getType() != VARIABLE) {
+	if (increment->getType() != VARIABLE) {
 		return ExpressionResult(
 			"Expected variable name to store incement",
-			increment.getRange(),
+			increment->getRange(),
 			this->context
 		);
 	}
 
-	incrementName = increment.getStringValue();
+	incrementName = increment->getStringValue();
 
 	return ExpressionResult();
 }
@@ -757,7 +855,7 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
  */
 ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Token> &tokens) {
 	std::string incrementName;
-	Value range[3];
+	Value *range[3];
 	ExpressionResult result = this->parseForParameters(keywordToken, incrementName, range);
 	if (result.error()) return result;
 
@@ -768,19 +866,19 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 	if (result.error()) return result;
 
 	// run for body for each value in range
-	for (Value value = range[2]; range[2] < range[1] ? value < range[1] : value > range[1]; value += range[0]) {
-		this->context->setValue(incrementName, value);
-		result = this->interpret(forBody);
-		if (result.error()) return result;
-		if (result.breakingLoop()) {
-			this->quit = false;
-			break;
-		}
-		if (result.continuingLoop()) {
-			this->quit = false;
-		}
-	}
-	this->loopLevel--;
+	// for (Value *value = range[2]; range[2] < range[1] ? value < range[1] : value > range[1]; value += range[0]) {
+	// 	this->context->setValue(incrementName, value);
+	// 	result = this->interpret(forBody);
+	// 	if (result.error()) return result;
+	// 	if (result.breakingLoop()) {
+	// 		this->quit = false;
+	// 		break;
+	// 	}
+	// 	if (result.continuingLoop()) {
+	// 		this->quit = false;
+	// 	}
+	// }
+	// this->loopLevel--;
 	return ExpressionResult();
 }
 
@@ -802,17 +900,17 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 	}
 
 	this->loopLevel++;
-	Value condition = this->memory.top();
-	this->memory.pop();
-	ExpressionResult result = condition.getVariableValue(this->context);
+	ExpressionResult result = this->setTopVariableValue();
 	if (result.error()) return result;
+	Value *condition = this->memory.top();
+	this->memory.pop();
 
 	// extract while body
 	std::queue<Token> whileBody;
 	result = this->extractExpressionBody(keywordToken, tokens, whileBody, "elihw");
 	if (result.error()) return result;
 
-	bool continueLoop = condition.getBoolValue();
+	bool continueLoop = static_cast<Bool *>(condition->to(BOOL))->getValue();
 	while (continueLoop) {
 		result = this->interpret(whileBody);
 		if (result.error()) return result;
@@ -827,7 +925,7 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 		result = this->interpret(previous);
 		if (result.error()) return result;
 
-		continueLoop = this->lastValue.getBoolValue();
+		continueLoop = static_cast<Bool *>(condition->to(BOOL))->getValue();
 	}
 	this->loopLevel--;
 	return ExpressionResult();
@@ -941,7 +1039,7 @@ ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::que
 
 
 	// build the function
-	Value definedFunction = Value(
+	Value *definedFunction = new Function(
 		new UserRPNFunction(
 			name,
 			argsNames,
@@ -1021,18 +1119,18 @@ ExpressionResult Interpreter::parseReturn(const Token &keywordToken, std::queue<
 	if (this->memory.size() > 1) {
 		return ExpressionResult(
 			"To much return values",
-			this->memory.top().getRange(),
+			this->memory.top()->getRange(),
 			this->context
 		);
 	}
 
 	if (this->memory.size() == 1) {
-		ExpressionResult result = this->memory.top().getVariableValue(this->context);
+		ExpressionResult result = this->setTopVariableValue();
 		if (result.error()) return result;
 		this->returnValue = this->memory.top();
 		this->memory.pop();
 	} else {
-		this->returnValue = Value();
+		this->returnValue = new None(keywordToken.getRange());
 	}
 	this->quit = true;
 
@@ -1050,7 +1148,7 @@ ExpressionResult Interpreter::parseContinueBreak(const Token &keywordToken) {
 	if (this->memory.size() != 0) {
 		return ExpressionResult(
 			"unexpected value before '" + keywordToken.getValue() + "' keyword",
-			this->memory.top().getRange(),
+			this->memory.top()->getRange(),
 			this->context
 		);
 	}
@@ -1077,7 +1175,7 @@ ExpressionResult Interpreter::parseTry(const Token &keywordToken, std::queue<Tok
 	if (this->memory.size() != 0) {
 		return ExpressionResult(
 			"unexpected value before 'try' keyword",
-			this->memory.top().getRange(),
+			this->memory.top()->getRange(),
 			this->context
 		);
 	}
@@ -1166,7 +1264,7 @@ ExpressionResult Interpreter::parseCatch(const Token &keywordToken, std::queue<T
 	if (tryResult.error()) {
 		this->context->setValue(
 			variableName.getValue(), 
-			Value(
+			new String(
 				tryResult.getErrorMessage(),
 				tryResult.getRange()
 			)
@@ -1205,8 +1303,8 @@ ExpressionResult Interpreter::parseFinally(const Token &keywordToken, std::queue
  */
 ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	this->clearMemory();
-	this->returnValue = Value();
-	this->lastValue = Value();
+	this->returnValue = new None(TextRange());
+	this->lastValue = new None(TextRange());
 	ExpressionResult result;
 
 	std::queue<Token> previous; // save previous tokens to check for while loops and for errors
@@ -1248,24 +1346,6 @@ ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
  */
 ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token> &tokens, std::queue<Token> &previous) {
 	switch (tok.getType()) {
-		case TOKEN_TYPE_FLOAT:
-		case TOKEN_TYPE_INT:
-		case TOKEN_TYPE_BOOL:
-		case TOKEN_TYPE_LITERAL:
-		case TOKEN_TYPE_VALUE_TYPE:
-		case TOKEN_TYPE_BIN:
-		case TOKEN_TYPE_HEX:
-		case TOKEN_TYPE_PATH:
-			this->memory.push(Value(tok.getValue(), tok.getType(), tok.getLine(), tok.getColumn()));
-			return ExpressionResult();
-		case TOKEN_TYPE_STRING:
-			this->memory.push(Value(
-				escapeCharacters(tok.getValue()),
-				tok.getType(),
-				tok.getLine(),
-				tok.getColumn()
-			));
-			return ExpressionResult();
 		case TOKEN_TYPE_FSTRING:
 			return this->parseFString(tok);
 		case TOKEN_TYPE_OPERATOR:
@@ -1285,10 +1365,6 @@ ExpressionResult Interpreter::interpretToken(const Token &tok, std::queue<Token>
 		case TOKEN_TYPE_INDENT:
 			return ExpressionResult();
 		default:
-			return ExpressionResult(
-				"Invalid token '" + tok.getValue() + "'",
-				tok.getRange(),
-				this->context
-			);
+			return this->pushValue(tok);
 	}
 }

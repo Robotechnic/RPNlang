@@ -3,6 +3,7 @@ list(APPEND includes
 )
 
 include(${CMAKE_CURRENT_LIST_DIR}/modules/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/value/types/CMakeLists.txt)
 
 list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/textutilities/textutilities.cpp

@@ -30,7 +30,7 @@ RPNFunctionResult UserRPNFunction::call(
 	Context *context
 ) const {
 	ExpressionResult result = this->checkArgs(args, context);
-	if (result.error()) return std::make_tuple(result, Value());
+	if (result.error()) return std::make_tuple(result, nullptr);
 
 	context->setChild(new Context(this->name, context, CONTEXT_TYPE_FUNCTION));
 
@@ -39,47 +39,47 @@ RPNFunctionResult UserRPNFunction::call(
 	Interpreter interpreter(context->getChild());
 	result = interpreter.interpret(this->body);
 
-	if (result.error()) return std::make_tuple(result, Value());
+	if (result.error()) return std::make_tuple(result, nullptr);
 
 	//check the return type	
-	Value returnValue = interpreter.getReturnValue();
+	Value *returnValue = interpreter.getReturnValue();
 
-	if (returnValue.getType() == NONE && this->returnType != NONE) {
+	if (returnValue->getType() == NONE && this->returnType != NONE) {
 		return std::make_tuple(
 			ExpressionResult(
 				"Function " + this->name + " does not return any value",
 				this->body.back().getRange(),
 				context
 			),
-			Value()
+			nullptr
 		);
 	}
 	
-	if (returnValue.getType() != NONE && this->returnType == NONE) {
+	if (returnValue->getType() != NONE && this->returnType == NONE) {
 		return std::make_tuple(
 			ExpressionResult(
 				"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
-				returnValue.getRange(),
+				returnValue->getRange(),
 				context
 			),
-			Value()
+			nullptr
 		);
 	}
 
-	if (!returnValue.isCastableTo(this->returnType)) {
+	if (!returnValue->isCastableTo(this->returnType)) {
 		return std::make_tuple(
 			ExpressionResult(
-				"Return type must be " + Value::stringType(this->returnType) + " but got " + Value::stringType(returnValue.getType()),
-				returnValue.getRange(),
+				"Return type must be " + Value::stringType(this->returnType) + " but got " + Value::stringType(returnValue->getType()),
+				returnValue->getRange(),
 				context
 			),
-			Value()
+			nullptr
 		);
 	}
 	
 	
 
-	return std::make_tuple(ExpressionResult(), returnValue.to(this->returnType));
+	return std::make_tuple(ExpressionResult(), returnValue->to(this->returnType));
 }
 
 TextRange UserRPNFunction::getRange() const {

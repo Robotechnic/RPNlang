@@ -24,7 +24,7 @@ class BuiltinModule {
 			ValueType returnType,
 			BuiltinRPNFunctionType function
 		);
-		void addVariable(std::string name, Value value);
+		void addVariable(std::string name, Value *value);
 
 		Context * getModuleContext();
 

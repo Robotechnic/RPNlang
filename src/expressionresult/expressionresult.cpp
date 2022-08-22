@@ -3,6 +3,8 @@
 
 ExpressionResult::ExpressionResult() : 
 	isError(false),
+	errorMessage(""),
+	errorRange(TextRange()),
 	breakLoop(false),
 	continueLoop(false)
 {
@@ -131,6 +133,15 @@ void ExpressionResult::displayArrow(TextRange range, std::string lineString) con
 	std::cout << std::endl;
 }
 
-const Context* ExpressionResult::getContext() const {
+const Context *ExpressionResult::getContext() const {
 	return this->context;
+}
+
+void ExpressionResult::operator=(const ExpressionResult &other) {
+	this->isError = other.isError;
+	this->errorMessage = other.errorMessage;
+	this->errorRange = other.errorRange;
+	this->breakLoop = other.breakLoop;
+	this->continueLoop = other.continueLoop;
+	this->context = other.context;
 }

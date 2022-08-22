@@ -63,7 +63,7 @@ ExpressionResult Module::load() {
 /**
  * @brief return the module context
  * 
- * @return Context* the module context
+ * @return Context *the module context
  */
 Context * Module::getModuleContext() {
 	if (context == nullptr) {
@@ -90,12 +90,12 @@ bool Module::isModule(std::string moduleName) {
  * @param parentContext the parent context of the module
  * @return ExpressionResult if the value exists
  */
-ExpressionResult Module::getModuleValue(Value &value, const Context* context) {
-	std::vector<std::string> path = split(value.getStringValue(), '.');
+ExpressionResult Module::getModuleValue(Value *value, const Context *context) {
+	std::vector<std::string> path = split(value->getStringValue(), '.');
 	if (path.size() > 2) {
 		return ExpressionResult(
 			"Maximum path depth is 2",
-			value.getRange(),
+			value->getRange(),
 			context
 		);
 	}
@@ -103,7 +103,7 @@ ExpressionResult Module::getModuleValue(Value &value, const Context* context) {
 	if (!Module::isModule(path[0])) {
 		return ExpressionResult(
 			"Module '" + path[0] + "' does not exist",
-			value.getRange(),
+			value->getRange(),
 			context
 		);
 	}
@@ -111,7 +111,7 @@ ExpressionResult Module::getModuleValue(Value &value, const Context* context) {
 	return Module::modules.at(path[0]).getModuleContext()->getValue(value, path[1], value);
 }
 
-ExpressionResult Module::getModuleValue(const Token &pathToken, Value &value, const Context* parentContext) {
+ExpressionResult Module::getModuleValue(const Token &pathToken, Value *value, const Context *parentContext) {
 	std::vector<std::string> path = split(pathToken.getValue(), '.');
 	if (path.size() > 2) {
 		return ExpressionResult(
@@ -141,7 +141,7 @@ ExpressionResult Module::getModuleValue(const Token &pathToken, Value &value, co
  * @param parentContext the parent context of the module import
  * @return ExpressionResult if the module is loaded correctly
  */
-ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const Context* parentContext) {
+ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const Context *parentContext) {
 	Module::modules[name] = Module(modulePath, name, parentContext, importRange);
 	return Module::modules[name].load();
 }
@@ -150,12 +150,12 @@ std::map<std::string, Module>Module::modules = std::map<std::string, Module>();
 
 std::map<std::string, BuiltinModule>Module::builtinModules = std::map<std::string, BuiltinModule>{
 	{"test", BuiltinModule("test", [](BuiltinModule &module) {
-		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](RPNFunctionArgs args, Context* context) {
-			std::cout<<"Test ok : "<<args[0].getStringValue()<<std::endl;
-			return std::make_tuple(ExpressionResult(), Value());
+		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](RPNFunctionArgs args, Context *context) {
+			std::cout<<"Test ok : "<<args[0]->getStringValue()<<std::endl;
+			return std::make_tuple(ExpressionResult(), nullptr);
 		});
 
-		module.addVariable("testValue",Value(
+		module.addVariable("testValue",new String(
 			std::string("testValueOk"),
 			TextRange()
 		));

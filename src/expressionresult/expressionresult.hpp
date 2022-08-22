@@ -19,7 +19,7 @@ class ExpressionResult {
 		bool success() const;
 		std::string getErrorMessage() const;
 		TextRange getRange() const;
-		const Context* getContext() const;
+		const Context *getContext() const;
 
 		void setRange(const TextRange &range);
 
@@ -28,6 +28,8 @@ class ExpressionResult {
 
 		bool breakingLoop() const;
 		bool continuingLoop() const;
+
+		void operator=(const ExpressionResult &other);
 
 	private:
 		void displayArrow(TextRange range, std::string lineString) const;

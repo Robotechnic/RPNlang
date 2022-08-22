@@ -1,0 +1,16 @@
+3 2 + f"{}\n" :print
+8 9 - f"{}\n" :print
+
+4.8 5 + f"{}\n" :print
+
+5 7.5 / f"{}\n" :print
+8 3.2 % f"{}\n" :print
+
+a 8 =
+b 7.5 =
+a b + f"{}\n" :print
+a b / f"{}\n" :print
+
+a "cou" =
+a a a + =
+a f"{}\n" :print

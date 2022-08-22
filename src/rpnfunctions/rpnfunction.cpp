@@ -27,9 +27,9 @@ RPNFunctionResult RPNFunction::call(
 ) const {
 	TextRange range(0, 0, 0);
 	if (args.size() != 0) {
-		range = args[0].getRange();
+		range = args[0]->getRange();
 		if (args.size() > 1) {
-			range.columnEnd = args[args.size() - 1].getRange().columnEnd;
+			range.columnEnd = args[args.size() - 1]->getRange().columnEnd;
 		}
 	}
 	context->setChild(new Context(this->name, context, CONTEXT_TYPE_FUNCTION));
@@ -38,7 +38,7 @@ RPNFunctionResult RPNFunction::call(
 			range,
 			context->getChild()
 		),
-		Value()
+		nullptr
 	);
 }
 
@@ -52,9 +52,9 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Conte
 	if (args.size() != this->argsName.size()) {
 		TextRange range(0, 0, 0);
 		if (args.size() != 0) {
-			range = args[0].getRange();
+			range = args[0]->getRange();
 			if (args.size() > 1) {
-				range.merge(args[args.size() - 1].getRange());
+				range.merge(args[args.size() - 1]->getRange());
 			}
 		}
 
@@ -83,13 +83,13 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Conte
  */
 ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Context *context) const{
 	for (size_t i = 0; i < args.size(); i++) {
-		if (args[i].getType() != this->parameterTypes[i]) {
-			if (!args[i].isCastableTo(this->parameterTypes[i])) {
+		if (args[i]->getType() != this->parameterTypes[i]) {
+			if (!args[i]->isCastableTo(this->parameterTypes[i])) {
 				return ExpressionResult(
 					"Function call argument type mismatch, expected " + 
 					Value::stringType(this->parameterTypes[i]) + 
-					" but got " + Value::stringType(args[i].getType()),
-					args[i].getRange(),
+					" but got " + Value::stringType(args[i]->getType()),
+					args[i]->getRange(),
 					context
 				);
 			}

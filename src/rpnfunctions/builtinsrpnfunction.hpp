@@ -7,9 +7,10 @@
 #include <regex>
 #include "rpnfunctions/rpnfunction.hpp"
 #include "modules/module.hpp"
-#include "value/valuetype.hpp"
+#include "value/valuetypes.hpp"
 #include "value/value.hpp"
 #include "rpnfunctions/typedef.hpp"
+#include "tokens/regex.hpp"
 
 class BuiltinRPNFunction : public RPNFunction {
 	public:

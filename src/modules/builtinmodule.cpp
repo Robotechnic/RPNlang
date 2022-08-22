@@ -39,7 +39,7 @@ void BuiltinModule::addFunction(
 	) {
 	context->setValue(
 		name,
-		Value(
+		new Function(
 			new BuiltinRPNFunction(
 				name,
 				argsName,
@@ -58,7 +58,7 @@ void BuiltinModule::addFunction(
  * @param name the name of the variable
  * @param value the value of the variable
  */
-void BuiltinModule::addVariable(std::string name, Value value) {
+void BuiltinModule::addVariable(std::string name, Value *value) {
 	context->setValue(name, value);
 }
 

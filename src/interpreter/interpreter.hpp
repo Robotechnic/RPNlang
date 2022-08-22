@@ -19,6 +19,7 @@ class UserRPNFunction;
 #include "rpnfunctions/builtinsrpnfunction.hpp"
 
 #include "value/value.hpp"
+#include "value/types.hpp"
 
 class Context;
 #include "context/context.hpp"
@@ -30,19 +31,23 @@ class Interpreter {
 		~Interpreter();
 
 		bool interpretFile(std::string fileName, std::string &errorString);
-		Value getLastValue() const;
-		Value getReturnValue() const;
+		Value *getLastValue() const;
+		Value *getReturnValue() const;
 
 		ExpressionResult interpret(std::string line, int lineNumber = 0);
 		ExpressionResult interpret(std::queue<Token> tokens);
 
 	private:
 		bool openFile(std::ifstream &file, std::string fileName, std::string &error);
-		TextRange mergeRanges(const std::vector<Value> &values);
+		TextRange mergeRanges(const std::vector<Value*> &values);
 
 		ExpressionResult interpretToken(const Token &tok, std::queue<Token> &tokens, std::queue<Token> &previous);
+
+		ExpressionResult pushValue(const Token &tok);
+
 		ExpressionResult applyOperator(const Token &mathOperator);
 		ExpressionResult affectVariable(const Token &affectToken);
+		ExpressionResult setTopVariableValue();
 
 		ExpressionResult isFunction(const Token &functionName, bool &builtin, int &argCount);
 		ExpressionResult checkArgs(const Token &literalToken, int argCount, RPNFunctionArgs &args);
@@ -60,7 +65,7 @@ class Interpreter {
 		ExpressionResult parseIf(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult parseElse(const Token &keywordToken, std::queue<Token> &tokens, bool skipElse);
 
-		ExpressionResult parseForParameters(const Token &keywordToken, std::string &incrementName, Value range[3]);
+		ExpressionResult parseForParameters(const Token &keywordToken, std::string &incrementName, Value *range[3]);
 		ExpressionResult parseFor(const Token &keywordToken, std::queue<Token> &tokens);
 
 		ExpressionResult parseWhile(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous);
@@ -77,14 +82,14 @@ class Interpreter {
 		ExpressionResult parseCatch(const Token &keywordToken, std::queue<Token> &tokens, ExpressionResult &tryResult);
 		ExpressionResult parseFinally(const Token &keywordToken, std::queue<Token> &tokens);
 
-		Value returnValue;
-		Value lastValue;
+		Value *returnValue;
+		Value *lastValue;
 		
 		void clearQueue(std::queue<Token> &tokens);
 		void clearMemory();
 		ExpressionResult checkMemory();
 
-		std::stack<Value> memory;
+		std::stack<Value*> memory;
 		Context *context;
 		bool quit;
 		int loopLevel;

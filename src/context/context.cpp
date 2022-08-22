@@ -17,7 +17,7 @@ Context::Context(std::string name, ContextType type) :
 	child(nullptr)
 	{}
 
-Context::Context(std::string name, const Context* parent, ContextType type) :
+Context::Context(std::string name, const Context *parent, ContextType type) :
 	name(name),
 	symbols(),
 	type(type),
@@ -33,7 +33,7 @@ Context::Context(std::string name, symbolTable symbols, ContextType type) :
 	child(nullptr)
 	{}
 
-Context::Context(std::string name, symbolTable symbols, const Context* parent, ContextType type) :
+Context::Context(std::string name, symbolTable symbols, const Context *parent, ContextType type) :
 	name(name),
 	symbols(symbols),
 	type(type),
@@ -46,7 +46,8 @@ Context::~Context() {
 		delete this->child;
 	}
 	for (auto it = this->symbols.begin(); it != this->symbols.end(); it++) {
-		it->second.clean();
+		it->second->clean();
+		delete it->second;
 	}
 }
 
@@ -58,11 +59,11 @@ std::string Context::getName() const {
 	return this->name;
 }
 
-void Context::setParent(const Context* parent) {
+void Context::setParent(const Context *parent) {
 	this->parent = parent;
 }
 
-void Context::setChild(Context* child) {
+void Context::setChild(Context *child) {
 	if (this->child != nullptr) {
 		delete this->child;
 	}
@@ -73,7 +74,7 @@ ContextType Context::getType() const {
 	return this->type;
 }
 
-const Context* Context::getParent() const {
+const Context *Context::getParent() const {
 	return this->parent;
 }
 
@@ -86,15 +87,15 @@ Context * Context::getChild() const {
  * @param name the name of the value
  * @param value the value to set
  */
-void Context::setValue(std::string name, Value value) {
+void Context::setValue(std::string name, Value *value) {
 	this->symbols[name] = value;
 }
 
-void Context::setValue(const Token &name, Value value) {
+void Context::setValue(const Token &name, Value *value) {
 	this->symbols[name.getValue()] = value;
 }
 
-void Context::setValue(const Value &name, Value value) {
+void Context::setValue(const Value &name, Value *value) {
 	this->symbols[name.getStringValue()] = value;
 }
 
@@ -105,7 +106,7 @@ void Context::setValue(const Value &name, Value value) {
  * @param value a reference to the value to set
  * @return ExpressionResult if the value was found
  */
-ExpressionResult Context::getValue(const Token &name, Value &value) const {
+ExpressionResult Context::getValue(const Token &name, Value *&value) const {
 	std::string nameStr = name.getValue();
 	if (this->symbols.find(nameStr) != this->symbols.end()) {
 		value = this->symbols.at(nameStr);
@@ -122,8 +123,8 @@ ExpressionResult Context::getValue(const Token &name, Value &value) const {
 	);
 }
 
-ExpressionResult Context::getValue(const Value &name, Value &value) const {
-	std::string nameStr = name.getStringValue();
+ExpressionResult Context::getValue(const Value *name, Value *&value) const {
+	std::string nameStr = name->getStringValue();
 	if (this->symbols.find(nameStr) != this->symbols.end()) {
 		value = this->symbols.at(nameStr);
 		return ExpressionResult();
@@ -134,12 +135,12 @@ ExpressionResult Context::getValue(const Value &name, Value &value) const {
 	
 	return ExpressionResult(
 		"Undefined variable name : " + nameStr,
-		name.getRange(),
+		name->getRange(),
 		this
 	);
 }
 
-ExpressionResult Context::getValue(const Value &path, const std::string name, Value &value) const {
+ExpressionResult Context::getValue(const Value *path, const std::string name, Value *&value) const {
 	if (this->symbols.find(name) != this->symbols.end()) {
 		value = this->symbols.at(name);
 		return ExpressionResult();
@@ -149,12 +150,12 @@ ExpressionResult Context::getValue(const Value &path, const std::string name, Va
 	
 	return ExpressionResult(
 		"Undefined variable name : " + name,
-		path.getRange(),
+		path->getRange(),
 		this
 	);
 }
 
-ExpressionResult Context::getValue(const Token &path, const std::string name, Value &value) const {
+ExpressionResult Context::getValue(const Token &path, const std::string name, Value *&value) const {
 	if (this->symbols.find(name) != this->symbols.end()) {
 		value = this->symbols.at(name);
 		return ExpressionResult();
@@ -187,8 +188,8 @@ bool Context::hasValue(const std::string name) const {
  * @param name the name of the value
  * @return Value the desired value
  */
-Value Context::getValue(const Token &name) const {
-	Value value;
+Value *Context::getValue(const Token &name) const {
+	Value *value;
 	ExpressionResult result = this->getValue(name, value);
 	if (result.error()) {
 		throw result.getErrorMessage();
@@ -196,8 +197,8 @@ Value Context::getValue(const Token &name) const {
 	return value;
 }
 
-Value Context::getValue(const Value &name) const {
-	Value value;
+Value *Context::getValue(const Value *name) const {
+	Value *value;
 	ExpressionResult result = this->getValue(name, value);
 	if (result.error()) {
 		throw result.getErrorMessage();
@@ -206,7 +207,7 @@ Value Context::getValue(const Value &name) const {
 }
 
 
-Value Context::getValue(const std::string name) const {
+Value *Context::getValue(const std::string name) const {
 	if (this->symbols.find(name) != this->symbols.end()) {
 		return this->symbols.at(name);
 	}
@@ -217,7 +218,7 @@ Value Context::getValue(const std::string name) const {
 	throw std::runtime_error("Undefined variable name '" + name + "'");
 }
 
-std::ostream& operator<<(std::ostream& os, const Context* context) {
+std::ostream& operator<<(std::ostream& os, const Context *context) {
 	if (context->getParent() != nullptr) {
 		os << context->getParent();
 	}

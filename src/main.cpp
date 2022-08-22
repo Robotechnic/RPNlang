@@ -10,7 +10,7 @@
 #include "shell/shell.hpp"
 #include "textutilities/textutilities.hpp"
 
-// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/9 modules.rpn"
+#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/1 variablesAndAritmetic.rpn"
 
 void shellInput() {
 	Context *ctx = new Context("<stdin>");
@@ -24,7 +24,7 @@ void shellInput() {
 		if (result.error()) {
 			result.displayLineError(instruction);
 		} else {
-			switch (i.getLastValue().getType()) {
+			switch (i.getLastValue()->getType()) {
 				case INT:
 				case FLOAT:
 					input<<MAGENTA;
@@ -38,7 +38,7 @@ void shellInput() {
 				default:
 					break;
 			};
-			input<<i.getLastValue().getStringValue()<<DEFAULT<<std::endl;
+			input<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
 		}
 
 		input>>instruction;
