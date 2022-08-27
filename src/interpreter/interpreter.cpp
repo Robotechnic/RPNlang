@@ -1,11 +1,21 @@
 #include "interpreter/interpreter.hpp"
 
-Interpreter::Interpreter() : context(new Context("main", CONTEXT_TYPE_DEFAULT)), quit(false), loopLevel(0) {}
+Interpreter::Interpreter() : 
+	context(new Context("main", CONTEXT_TYPE_DEFAULT)), 
+	quit(false), 
+	loopLevel(0),
+	returnValue(new None(TextRange()))
 
-Interpreter::Interpreter(Context *ctx) : context(ctx), quit(false), loopLevel(0) {}
+{}
+
+Interpreter::Interpreter(Context *ctx) : 
+	context(ctx), 
+	quit(false), 
+	loopLevel(0),
+	returnValue(new None(TextRange()))
+{}
 
 Interpreter::~Interpreter() {
-	delete lastValue;
 	delete returnValue;
 	while (!memory.empty()) {
 		delete memory.top();
@@ -107,7 +117,7 @@ void Interpreter::clearQueue(std::queue<Token> &tokens) {
  */
 void Interpreter::clearMemory() {
 	while (!this->memory.empty()) {
-		delete this->memory.top();
+		if (this->memory.top() != nullptr) delete this->memory.top();
 		this->memory.pop();
 	}
 }
@@ -145,10 +155,8 @@ ExpressionResult Interpreter::checkMemory() {
 		);
 	}
 
-	if (memory.size() == 1) {
-		// ExpressionResult result = this->context->getValue(memory.top()->getStringValue(), memory.top());
-		// if (result.error()) return result;
-		this->lastValue = memory.top();
+	if (memory.size() == 1 && memory.top() != nullptr) {
+		this->lastValue = memory.top()->copy();
 	}
 
 	this->clearMemory();
@@ -940,7 +948,7 @@ ExpressionResult Interpreter::parseWhile(const Token &keywordToken, std::queue<T
 		result = this->interpret(previous);
 		if (result.error()) return result;
 
-		continueLoop = static_cast<Bool *>(condition->to(BOOL))->getValue();
+		continueLoop = static_cast<Bool *>(this->lastValue->to(BOOL))->getValue();
 	}
 	this->loopLevel--;
 	return ExpressionResult();
@@ -1142,7 +1150,7 @@ ExpressionResult Interpreter::parseReturn(const Token &keywordToken, std::queue<
 	if (this->memory.size() == 1) {
 		ExpressionResult result = this->setTopVariableValue();
 		if (result.error()) return result;
-		this->returnValue = this->memory.top();
+		this->returnValue = this->memory.top()->copy();
 		this->memory.pop();
 	} else {
 		this->returnValue = new None(keywordToken.getRange());
@@ -1319,7 +1327,6 @@ ExpressionResult Interpreter::parseFinally(const Token &keywordToken, std::queue
 ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	this->clearMemory();
 	this->returnValue = new None(TextRange());
-	this->lastValue = new None(TextRange());
 	ExpressionResult result;
 
 	std::queue<Token> previous; // save previous tokens to check for while loops and for errors
