@@ -1,10 +1,20 @@
+"Test 1\n" :print
 true if
-	"ok\n" :print
+	"ok 1\n" :print
 else
 	"not ok\n" :print
 	1 :exit
-end
+fi
 
+"Test 2\n" :print
+false if
+	"not ok\n" :print
+	1 :exit
+else
+	"ok 2\n" :print
+fi
+
+"Test 3\n" :print
 1 8 / 5 + 3 <= if
 	"not ok\n" :print
 	1 :exit
@@ -12,17 +22,20 @@ else false if
 	"not ok \n" :print
 	1 :exit
 else true if
-	"ok \n" :print
+	"ok 3\n" :print
 else
 	"not ok\n" :print
 	1 :exit
-fi fi fi fi
+fi fi fi
 
-
+"Test 4\n" :print
 a 4 =
-a 4 == if
-	"ok\n" :print
+a 8 <= a 0 >= :and if
+	"ok 4\n" :print
 else
 	"not ok\n" :print
 	1 :exit
 fi
+
+
+"conditions ok\n" :print
