@@ -874,14 +874,10 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 		return result;
 	}
 
-	if (range[2] > range[1]) std::swap(range[1], range[2]);
-
-
-	for (int i = 0; i<3; i++)
-		std::cout<<static_cast<Int *>(range[i].getValue())->getValue()<<std::endl;
+	std::swap(range[1], range[2]);
 
 	// run for body for each value in range
-	for (CPPInterface value = range[1]; value < range[2]; value += range[0]) {
+	for (CPPInterface value = range[1]; range[0] > &Int::emptyInt ? value < range[2] : value > range[2]; value += range[0]) {
 		this->context->setValue(incrementName, value.getValue());
 		result = this->interpret(forBody);
 		if (result.error()) return result;
@@ -893,12 +889,11 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 		if (result.continuingLoop()) {
 			this->quit = false;
 		}
-
-		return ExpressionResult();
 	}
 
 	this->loopLevel--;
-	for (int i = 0; i<3; i++) delete range[i].getValue();
+	for (int i = 1; i < 3; i++) delete range[i].getValue();
+	this->context->setValue(incrementName, range[0].getValue());
 	return ExpressionResult();
 }
 

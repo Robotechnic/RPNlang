@@ -45,6 +45,7 @@ Context::~Context() {
 	if (this->child != nullptr) {
 		delete this->child;
 	}
+	
 	for (auto it = this->symbols.begin(); it != this->symbols.end(); it++) {
 		it->second->clean();
 		delete it->second;
