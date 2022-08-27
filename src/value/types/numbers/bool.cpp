@@ -39,7 +39,7 @@ std::string Bool::getStringValue() const {
 	return  value ? "true" : "false";
 }
 
-operatorReturn Bool::opadd(const Value *other, const Context *context) {
+operatorResult Bool::opadd(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -71,7 +71,7 @@ operatorReturn Bool::opadd(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::opsub(const Value *other, const Context *context) {
+operatorResult Bool::opsub(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -103,7 +103,7 @@ operatorReturn Bool::opsub(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::opmul(const Value *other, const Context *context) {
+operatorResult Bool::opmul(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -135,7 +135,7 @@ operatorReturn Bool::opmul(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::opdiv(const Value *other, const Context *context) {
+operatorResult Bool::opdiv(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -200,7 +200,7 @@ operatorReturn Bool::opdiv(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::opmod(const Value *other, const Context *context) {
+operatorResult Bool::opmod(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -265,7 +265,7 @@ operatorReturn Bool::opmod(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::oppow(const Value *other, const Context *context) {
+operatorResult Bool::oppow(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -297,7 +297,7 @@ operatorReturn Bool::oppow(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::opgt(const Value *other, const Context *context) {
+operatorResult Bool::opgt(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -329,7 +329,7 @@ operatorReturn Bool::opgt(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::opge(const Value *other, const Context *context) {
+operatorResult Bool::opge(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -361,7 +361,7 @@ operatorReturn Bool::opge(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::oplt(const Value *other, const Context *context) {
+operatorResult Bool::oplt(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -393,7 +393,7 @@ operatorReturn Bool::oplt(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::ople(const Value *other, const Context *context) {
+operatorResult Bool::ople(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -425,7 +425,7 @@ operatorReturn Bool::ople(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::opne(const Value *other, const Context *context) {
+operatorResult Bool::opne(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(),
@@ -453,7 +453,7 @@ operatorReturn Bool::opne(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Bool::opeq(const Value *other, const Context *context) {
+operatorResult Bool::opeq(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(),

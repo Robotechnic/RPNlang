@@ -10,7 +10,7 @@
 #include "shell/shell.hpp"
 #include "textutilities/textutilities.hpp"
 
-#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/1 variablesAndAritmetic.rpn"
+#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/3 forLoop.rpn"
 
 void shellInput() {
 	Context *ctx = new Context("<stdin>");

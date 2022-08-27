@@ -30,18 +30,18 @@ class Bool : public Value {
 
 		bool getValue() const { return value; };
 
-		operatorReturn opadd(const Value *other, const Context *context) override;
-		operatorReturn opsub(const Value *other, const Context *context) override;
-		operatorReturn opmul(const Value *other, const Context *context) override;
-		operatorReturn opdiv(const Value *other, const Context *context) override;
-		operatorReturn opmod(const Value *other, const Context *context) override;
-		operatorReturn oppow(const Value *other, const Context *context) override;
-		operatorReturn opgt(const Value *other, const Context *context) override;
-		operatorReturn opge(const Value *other, const Context *context) override;
-		operatorReturn oplt(const Value *other, const Context *context) override;
-		operatorReturn ople(const Value *other, const Context *context) override;
-		operatorReturn opne(const Value *other, const Context *context) override;
-		operatorReturn opeq(const Value *other, const Context *context) override;
+		operatorResult opadd(const Value *other, const Context *context) override;
+		operatorResult opsub(const Value *other, const Context *context) override;
+		operatorResult opmul(const Value *other, const Context *context) override;
+		operatorResult opdiv(const Value *other, const Context *context) override;
+		operatorResult opmod(const Value *other, const Context *context) override;
+		operatorResult oppow(const Value *other, const Context *context) override;
+		operatorResult opgt(const Value *other, const Context *context) override;
+		operatorResult opge(const Value *other, const Context *context) override;
+		operatorResult oplt(const Value *other, const Context *context) override;
+		operatorResult ople(const Value *other, const Context *context) override;
+		operatorResult opne(const Value *other, const Context *context) override;
+		operatorResult opeq(const Value *other, const Context *context) override;
 
 		static Bool emptyBool;
 

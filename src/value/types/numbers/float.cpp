@@ -39,7 +39,7 @@ std::string Float::getStringValue() const {
 	return  std::to_string(value);
 }
 
-operatorReturn Float::opadd(const Value *other, const Context *context) {
+operatorResult Float::opadd(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -71,7 +71,7 @@ operatorReturn Float::opadd(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::opsub(const Value *other, const Context *context) {
+operatorResult Float::opsub(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -103,7 +103,7 @@ operatorReturn Float::opsub(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::opmul(const Value *other, const Context *context) {
+operatorResult Float::opmul(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -135,7 +135,7 @@ operatorReturn Float::opmul(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::opdiv(const Value *other, const Context *context) {
+operatorResult Float::opdiv(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -200,7 +200,7 @@ operatorReturn Float::opdiv(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::opmod(const Value *other, const Context *context) {
+operatorResult Float::opmod(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -265,7 +265,7 @@ operatorReturn Float::opmod(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::oppow(const Value *other, const Context *context) {
+operatorResult Float::oppow(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -297,7 +297,7 @@ operatorReturn Float::oppow(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::opgt(const Value *other, const Context *context) {
+operatorResult Float::opgt(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -329,7 +329,7 @@ operatorReturn Float::opgt(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::opge(const Value *other, const Context *context) {
+operatorResult Float::opge(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -361,7 +361,7 @@ operatorReturn Float::opge(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::oplt(const Value *other, const Context *context) {
+operatorResult Float::oplt(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -393,7 +393,7 @@ operatorReturn Float::oplt(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::ople(const Value *other, const Context *context) {
+operatorResult Float::ople(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -425,7 +425,7 @@ operatorReturn Float::ople(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::opne(const Value *other, const Context *context) {
+operatorResult Float::opne(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(),
@@ -453,7 +453,7 @@ operatorReturn Float::opne(const Value *other, const Context *context) {
 	};
 }
 
-operatorReturn Float::opeq(const Value *other, const Context *context) {
+operatorResult Float::opeq(const Value *other, const Context *context) {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(),

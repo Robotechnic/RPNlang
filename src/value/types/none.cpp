@@ -21,7 +21,7 @@ Value *None::copy() const {
 	return new None(range);
 }
 
-operatorReturn None::opadd(const Value *other, const Context *context) {
+operatorResult None::opadd(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot add value of type" + Value::stringType(other->getType()) + " to NONE",
@@ -32,7 +32,7 @@ operatorReturn None::opadd(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn None::opsub(const Value *other, const Context *context) {
+operatorResult None::opsub(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot subtract value of type" + Value::stringType(other->getType()) + " from NONE",
@@ -43,7 +43,7 @@ operatorReturn None::opsub(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn None::opmul(const Value *other, const Context *context) {
+operatorResult None::opmul(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot multiply value of type" + Value::stringType(other->getType()) + " with NONE",
@@ -54,7 +54,7 @@ operatorReturn None::opmul(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn None::opdiv(const Value *other, const Context *context) {
+operatorResult None::opdiv(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot divide None value by value of type" + Value::stringType(other->getType()),
@@ -65,7 +65,7 @@ operatorReturn None::opdiv(const Value *other, const Context *context) {
 	);	
 }
 
-operatorReturn None::opmod(const Value *other, const Context *context) {
+operatorResult None::opmod(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot modulo None value by value of type" + Value::stringType(other->getType()),
@@ -76,7 +76,7 @@ operatorReturn None::opmod(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn None::oppow(const Value *other, const Context *context) {
+operatorResult None::oppow(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot power None value by value of type" + Value::stringType(other->getType()),
@@ -87,7 +87,7 @@ operatorReturn None::oppow(const Value *other, const Context *context) {
 	);	
 }
 
-operatorReturn None::opgt(const Value *other, const Context *context) {
+operatorResult None::opgt(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare None value with value of type" + Value::stringType(other->getType()),
@@ -98,7 +98,7 @@ operatorReturn None::opgt(const Value *other, const Context *context) {
 	);		
 }
 
-operatorReturn None::opge(const Value *other, const Context *context) {
+operatorResult None::opge(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare None value with value of type" + Value::stringType(other->getType()),
@@ -109,7 +109,7 @@ operatorReturn None::opge(const Value *other, const Context *context) {
 	);			
 }
 
-operatorReturn None::oplt(const Value *other, const Context *context) {
+operatorResult None::oplt(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare None value with value of type" + Value::stringType(other->getType()),
@@ -120,7 +120,7 @@ operatorReturn None::oplt(const Value *other, const Context *context) {
 	);				
 }
 
-operatorReturn None::ople(const Value *other, const Context *context) {
+operatorResult None::ople(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare None value with value of type" + Value::stringType(other->getType()),
@@ -131,14 +131,14 @@ operatorReturn None::ople(const Value *other, const Context *context) {
 	);						
 }
 
-operatorReturn None::opne(const Value *other, const Context *context) {
+operatorResult None::opne(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(),
 		new Bool(other->getType() != NONE, other->getRange())
 	);
 }
 
-operatorReturn None::opeq(const Value *other, const Context *context) {
+operatorResult None::opeq(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(),
 		new Bool(other->getType() == NONE, other->getRange())

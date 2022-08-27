@@ -86,7 +86,7 @@ void Value::concatValueRange(const Token &other) {
  * @param variables variables to use in the operation
  * @return ExpressionResult if the operation was successful
  */
-operatorReturn Value::applyOperator(const Value *other, const Token &operatorToken, const Context *context) {
+operatorResult Value::applyOperator(const Value *other, const Token &operatorToken, const Context *context) {
 	std::string op = operatorToken.getValue();
 
 	this->concatValueRange(other);

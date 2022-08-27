@@ -21,6 +21,9 @@ class UserRPNFunction;
 #include "value/value.hpp"
 #include "value/types.hpp"
 
+class CPPInterface;
+#include "value/types/numbers/cppinterface.hpp"
+
 class Context;
 #include "context/context.hpp"
 
@@ -65,7 +68,7 @@ class Interpreter {
 		ExpressionResult parseIf(const Token &keywordToken, std::queue<Token> &tokens);
 		ExpressionResult parseElse(const Token &keywordToken, std::queue<Token> &tokens, bool skipElse);
 
-		ExpressionResult parseForParameters(const Token &keywordToken, std::string &incrementName, Value *range[3]);
+		ExpressionResult parseForParameters(const Token &keywordToken, std::string &incrementName, CPPInterface range[3]);
 		ExpressionResult parseFor(const Token &keywordToken, std::queue<Token> &tokens);
 
 		ExpressionResult parseWhile(const Token &keywordToken, std::queue<Token> &tokens, const std::queue<Token> &previous);

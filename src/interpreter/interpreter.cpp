@@ -226,7 +226,7 @@ ExpressionResult Interpreter::applyOperator(const Token &mathOperator) {
 		delete second;
 		return result;
 	}
-	operatorReturn returnValue = this->memory.top()->applyOperator(second, mathOperator, this->context);
+	operatorResult returnValue = this->memory.top()->applyOperator(second, mathOperator, this->context);
 	delete this->memory.top();
 	this->memory.pop();
 
@@ -807,7 +807,7 @@ ExpressionResult Interpreter::parseElse(const Token &keywordToken, std::queue<To
  * @param range the range of the for loop
  * @return ExpressionResult 
  */
-ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std::string &incrementName, Value *range[3] ) {
+ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std::string &incrementName, CPPInterface range[3] ) {
 	if (this->memory.size() < 4) {
 		return ExpressionResult(
 			"Exprected start, end and step values before 'for' statement",
@@ -822,10 +822,10 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
 		if (result.error()) return result;
 		range[i] = this->memory.top();
 		this->memory.pop();
-		if (!range[i]->isNumber()) {
+		if (!range[i].getValue()->isNumber()) {
 			return ExpressionResult(
 				"Expected number value for 'for' statement",
-				range[i]->getRange(),
+				range[i].getValue()->getRange(),
 				this->context
 			);
 		}
@@ -842,9 +842,11 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
 	}
 
 	incrementName = increment->getStringValue();
+	delete increment;
 
 	return ExpressionResult();
 }
+
 
 /**
  * @brief extract for body and run it as a normal for loop does
@@ -855,30 +857,48 @@ ExpressionResult Interpreter::parseForParameters(const Token &keywordToken, std:
  */
 ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Token> &tokens) {
 	std::string incrementName;
-	Value *range[3];
+	CPPInterface range[3];
+
 	ExpressionResult result = this->parseForParameters(keywordToken, incrementName, range);
-	if (result.error()) return result;
+	if (result.error()) {
+		for (int i = 0; i<3; i++) delete range[i].getValue();
+		return result;
+	}
 
 	this->loopLevel++;
 	// extract for body
 	std::queue<Token> forBody;
 	result = this->extractExpressionBody(keywordToken, tokens, forBody, "rof");
-	if (result.error()) return result;
+	if (result.error()) {
+		for (int i = 0; i<3; i++) delete range[i].getValue();
+		return result;
+	}
+
+	if (range[2] > range[1]) std::swap(range[1], range[2]);
+
+
+	for (int i = 0; i<3; i++)
+		std::cout<<static_cast<Int *>(range[i].getValue())->getValue()<<std::endl;
 
 	// run for body for each value in range
-	// for (Value *value = range[2]; range[2] < range[1] ? value < range[1] : value > range[1]; value += range[0]) {
-	// 	this->context->setValue(incrementName, value);
-	// 	result = this->interpret(forBody);
-	// 	if (result.error()) return result;
-	// 	if (result.breakingLoop()) {
-	// 		this->quit = false;
-	// 		break;
-	// 	}
-	// 	if (result.continuingLoop()) {
-	// 		this->quit = false;
-	// 	}
-	// }
-	// this->loopLevel--;
+	for (CPPInterface value = range[1]; value < range[2]; value += range[0]) {
+		this->context->setValue(incrementName, value.getValue());
+		result = this->interpret(forBody);
+		if (result.error()) return result;
+		if (result.breakingLoop()) {
+			this->quit = false;
+			break;
+		}
+
+		if (result.continuingLoop()) {
+			this->quit = false;
+		}
+
+		return ExpressionResult();
+	}
+
+	this->loopLevel--;
+	for (int i = 0; i<3; i++) delete range[i].getValue();
 	return ExpressionResult();
 }
 

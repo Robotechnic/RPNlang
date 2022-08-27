@@ -36,7 +36,7 @@ std::string Function::getStringValue() const {
 }
 
 
-operatorReturn Function::opadd(const Value *other, const Context *context) {
+operatorResult Function::opadd(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot add value of type " + Value::stringType(other->getType()) + " to a function",
@@ -47,7 +47,7 @@ operatorReturn Function::opadd(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::opsub(const Value *other, const Context *context) {
+operatorResult Function::opsub(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot subtract value of type " + Value::stringType(other->getType()) + " from a function",
@@ -58,7 +58,7 @@ operatorReturn Function::opsub(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::opmul(const Value *other, const Context *context) {
+operatorResult Function::opmul(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot multiply a function by a value of type " + Value::stringType(other->getType()),
@@ -69,7 +69,7 @@ operatorReturn Function::opmul(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::opdiv(const Value *other, const Context *context) {
+operatorResult Function::opdiv(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot divide a function by a value of type " + Value::stringType(other->getType()),
@@ -80,7 +80,7 @@ operatorReturn Function::opdiv(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::opmod(const Value *other, const Context *context) {
+operatorResult Function::opmod(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot modulo a function by a value of type " + Value::stringType(other->getType()),
@@ -91,7 +91,7 @@ operatorReturn Function::opmod(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::oppow(const Value *other, const Context *context) {
+operatorResult Function::oppow(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot exponentiate a function by a value of type " + Value::stringType(other->getType()),
@@ -102,7 +102,7 @@ operatorReturn Function::oppow(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::opgt(const Value *other, const Context *context) {
+operatorResult Function::opgt(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare a function to a value of type " + Value::stringType(other->getType()),
@@ -113,7 +113,7 @@ operatorReturn Function::opgt(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::opge(const Value *other, const Context *context) {
+operatorResult Function::opge(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare a function to a value of type " + Value::stringType(other->getType()),
@@ -124,7 +124,7 @@ operatorReturn Function::opge(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::oplt(const Value *other, const Context *context) {
+operatorResult Function::oplt(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare a function to a value of type " + Value::stringType(other->getType()),
@@ -135,7 +135,7 @@ operatorReturn Function::oplt(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::ople(const Value *other, const Context *context) {
+operatorResult Function::ople(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare a function to a value of type " + Value::stringType(other->getType()),
@@ -146,7 +146,7 @@ operatorReturn Function::ople(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::opne(const Value *other, const Context *context) {
+operatorResult Function::opne(const Value *other, const Context *context) {
 	if (other->getType() != FUNCTION)
 		return std::make_tuple(
 			ExpressionResult(),
@@ -159,7 +159,7 @@ operatorReturn Function::opne(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Function::opeq(const Value *other, const Context *context) {
+operatorResult Function::opeq(const Value *other, const Context *context) {
 	if (other->getType() != FUNCTION)
 		return std::make_tuple(
 			ExpressionResult(),

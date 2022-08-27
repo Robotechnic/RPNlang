@@ -18,7 +18,7 @@ class Module;
 #include "context/context.hpp"
 
 class Value;
-typedef std::tuple<ExpressionResult, Value*> operatorReturn;
+typedef std::tuple<ExpressionResult, Value*> operatorResult;
 
 class Value {
 	public:
@@ -44,23 +44,23 @@ class Value {
 		void concatValueRange(const Value *other);
 		void concatValueRange(const Token &other);
 
-		operatorReturn applyOperator(const Value *other, const Token &operatorToken, const Context *context);
+		operatorResult applyOperator(const Value *other, const Token &operatorToken, const Context *context);
 	
-	
-	protected:
-		virtual operatorReturn opadd(const Value *other, const Context *context) = 0;
-		virtual operatorReturn opsub(const Value *other, const Context *context) = 0;
-		virtual operatorReturn opmul(const Value *other, const Context *context) = 0;
-		virtual operatorReturn opdiv(const Value *other, const Context *context) = 0;
-		virtual operatorReturn opmod(const Value *other, const Context *context) = 0;
-		virtual operatorReturn oppow(const Value *other, const Context *context) = 0;
-		virtual operatorReturn opgt(const Value *other, const Context *context) = 0;
-		virtual operatorReturn opge(const Value *other, const Context *context) = 0;
-		virtual operatorReturn oplt(const Value *other, const Context *context) = 0;
-		virtual operatorReturn ople(const Value *other, const Context *context) = 0;
-		virtual operatorReturn opne(const Value *other, const Context *context) = 0;
-		virtual operatorReturn opeq(const Value *other, const Context *context) = 0;
+		virtual operatorResult opadd(const Value *other, const Context *context) = 0;
+		virtual operatorResult opsub(const Value *other, const Context *context) = 0;
+		virtual operatorResult opmul(const Value *other, const Context *context) = 0;
+		virtual operatorResult opdiv(const Value *other, const Context *context) = 0;
+		virtual operatorResult opmod(const Value *other, const Context *context) = 0;
+		virtual operatorResult oppow(const Value *other, const Context *context) = 0;
+		
+		virtual operatorResult opgt(const Value *other, const Context *context) = 0;
+		virtual operatorResult opge(const Value *other, const Context *context) = 0;
+		virtual operatorResult oplt(const Value *other, const Context *context) = 0;
+		virtual operatorResult ople(const Value *other, const Context *context) = 0;
+		virtual operatorResult opne(const Value *other, const Context *context) = 0;
+		virtual operatorResult opeq(const Value *other, const Context *context) = 0;
 
+	protected:
 		TextRange range;
 		ValueType type;
 };

@@ -21,7 +21,7 @@ Value *Variable::copy() const {
 	return new Variable(type, value, range);
 }
 
-operatorReturn Variable::opadd(const Value *other, const Context *context) {
+operatorResult Variable::opadd(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -32,7 +32,7 @@ operatorReturn Variable::opadd(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::opsub(const Value *other, const Context *context) {
+operatorResult Variable::opsub(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -43,7 +43,7 @@ operatorReturn Variable::opsub(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::opmul(const Value *other, const Context *context) {
+operatorResult Variable::opmul(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -54,7 +54,7 @@ operatorReturn Variable::opmul(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::opdiv(const Value *other, const Context *context) {
+operatorResult Variable::opdiv(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -65,7 +65,7 @@ operatorReturn Variable::opdiv(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::opmod(const Value *other, const Context *context) {
+operatorResult Variable::opmod(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -76,7 +76,7 @@ operatorReturn Variable::opmod(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::oppow(const Value *other, const Context *context) {
+operatorResult Variable::oppow(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -87,7 +87,7 @@ operatorReturn Variable::oppow(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::opgt(const Value *other, const Context *context) {
+operatorResult Variable::opgt(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -98,7 +98,7 @@ operatorReturn Variable::opgt(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::opge(const Value *other, const Context *context) {
+operatorResult Variable::opge(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -109,7 +109,7 @@ operatorReturn Variable::opge(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::oplt(const Value *other, const Context *context) {
+operatorResult Variable::oplt(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -120,7 +120,7 @@ operatorReturn Variable::oplt(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::ople(const Value *other, const Context *context) {
+operatorResult Variable::ople(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -131,7 +131,7 @@ operatorReturn Variable::ople(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::opne(const Value *other, const Context *context) {
+operatorResult Variable::opne(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
@@ -142,7 +142,7 @@ operatorReturn Variable::opne(const Value *other, const Context *context) {
 	);
 }
 
-operatorReturn Variable::opeq(const Value *other, const Context *context) {
+operatorResult Variable::opeq(const Value *other, const Context *context) {
 	return std::make_tuple(
 		ExpressionResult(
 			"variable object just hold variable name in memory, replace it by another value to use it",
