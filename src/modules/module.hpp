@@ -28,8 +28,8 @@ class Module {
 
 		static bool isModule(std::string moduleName);
 		static ExpressionResult addModule(std::string modulePath, std::string name, TextRange importRange, const Context *context);
-		static ExpressionResult getModuleValue(Value *value, const Context *parentContext);
-		static ExpressionResult getModuleValue(const Token &pathToken, Value *value, const Context *parentContext);
+		static ExpressionResult getModuleValue(Value *&value, const Context *parentContext);
+		static ExpressionResult getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext);
 
 	private:
 		std::string path;

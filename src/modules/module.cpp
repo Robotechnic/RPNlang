@@ -20,9 +20,9 @@ Module::Module(const Module &other) :
 	context(other.context) {}
 
 Module::~Module() {
-	if (this->context != nullptr) {
-		// delete this->context;
-	}
+	// if (this->context != nullptr) {
+	// 	delete this->context;
+	// }
 }
 
 /**
@@ -90,7 +90,7 @@ bool Module::isModule(std::string moduleName) {
  * @param parentContext the parent context of the module
  * @return ExpressionResult if the value exists
  */
-ExpressionResult Module::getModuleValue(Value *value, const Context *context) {
+ExpressionResult Module::getModuleValue(Value *&value, const Context *context) {
 	std::vector<std::string> path = split(value->getStringValue(), '.');
 	if (path.size() > 2) {
 		return ExpressionResult(
@@ -111,7 +111,7 @@ ExpressionResult Module::getModuleValue(Value *value, const Context *context) {
 	return Module::modules.at(path[0]).getModuleContext()->getValue(value, path[1], value);
 }
 
-ExpressionResult Module::getModuleValue(const Token &pathToken, Value *value, const Context *parentContext) {
+ExpressionResult Module::getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext) {
 	std::vector<std::string> path = split(pathToken.getValue(), '.');
 	if (path.size() > 2) {
 		return ExpressionResult(
@@ -152,7 +152,7 @@ std::map<std::string, BuiltinModule>Module::builtinModules = std::map<std::strin
 	{"test", BuiltinModule("test", [](BuiltinModule &module) {
 		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](RPNFunctionArgs args, Context *context) {
 			std::cout<<"Test ok : "<<args[0]->getStringValue()<<std::endl;
-			return std::make_tuple(ExpressionResult(), nullptr);
+			return std::make_tuple(ExpressionResult(), None::empty());
 		});
 
 		module.addVariable("testValue",new String(

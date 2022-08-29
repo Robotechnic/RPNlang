@@ -1,11 +1,3 @@
-# user defined modules
-"./9Import.rpn" "testUser" :importAs
-"Import done\n" :print
-
-testUser.test f"{}\n" :print
-:testUser.bidule
-
-
 # builtins modules
 "test builtin module\n" :print
 "test" :import
@@ -15,3 +7,10 @@ testUser.test f"{}\n" :print
 test.testValue f"Test value : {}\n" :print
 
 "modules ok\n" :print
+
+# user defined modules
+"./9Import.rpn" "testUser" :importAs
+"Import done\n" :print
+
+testUser.test f"{}\n" :print
+:testUser.bidule
