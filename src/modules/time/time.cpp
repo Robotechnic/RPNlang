@@ -3,7 +3,7 @@
 ExpressionResult timeLoader(BuiltinModule &module) {
 	module.addFunction("sleep", {"time"}, {FLOAT}, NONE, [](RPNFunctionArgs args, Context *context) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<Int *>(args[0])->getValue()));
-		return std::make_tuple(ExpressionResult(), nullptr);
+		return std::make_tuple(ExpressionResult(), None::empty());
 	});
 
 	module.addFunction("time", {}, {}, INT, [](RPNFunctionArgs args, Context *context) {

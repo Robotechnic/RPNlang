@@ -30,7 +30,7 @@ RPNFunctionResult UserRPNFunction::call(
 	Context *context
 ) const {
 	ExpressionResult result = this->checkArgs(args, context);
-	if (result.error()) return std::make_tuple(result, nullptr);
+	if (result.error()) return std::make_tuple(result, None::empty());
 
 	context->setChild(new Context(this->name, context, CONTEXT_TYPE_FUNCTION));
 
@@ -39,7 +39,7 @@ RPNFunctionResult UserRPNFunction::call(
 	Interpreter interpreter(context->getChild());
 	result = interpreter.interpret(this->body);
 
-	if (result.error()) return std::make_tuple(result, nullptr);
+	if (result.error()) return std::make_tuple(result, None::empty());
 
 	//check the return type	
 	Value *returnValue = interpreter.getReturnValue();
@@ -53,7 +53,7 @@ RPNFunctionResult UserRPNFunction::call(
 				this->body.back().getRange(),
 				context
 			),
-			nullptr
+			None::empty()
 		);
 	}
 
@@ -64,7 +64,7 @@ RPNFunctionResult UserRPNFunction::call(
 				returnValue->getRange(),
 				context
 			),
-			nullptr
+			None::empty()
 		);
 	}
 

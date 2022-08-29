@@ -38,7 +38,7 @@ RPNFunctionResult RPNFunction::call(
 			range,
 			context->getChild()
 		),
-		nullptr
+		None::empty()
 	);
 }
 
