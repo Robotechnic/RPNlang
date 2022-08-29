@@ -2,17 +2,16 @@
 
 Interpreter::Interpreter() : 
 	context(new Context("main", CONTEXT_TYPE_DEFAULT)), 
+	returnValue(nullptr),
 	quit(false), 
-	loopLevel(0),
-	returnValue(new None(TextRange()))
-
+	loopLevel(0)
 {}
 
 Interpreter::Interpreter(Context *ctx) : 
 	context(ctx), 
-	quit(false), 
-	loopLevel(0),
-	returnValue(new None(TextRange()))
+	returnValue(nullptr),
+	quit(false),
+	loopLevel(0)
 {}
 
 Interpreter::~Interpreter() {
@@ -160,7 +159,6 @@ ExpressionResult Interpreter::checkMemory() {
 	}
 
 	this->clearMemory();
-
 	return ExpressionResult();
 }
 
@@ -326,7 +324,7 @@ ExpressionResult Interpreter::isFunction(const Token &functionName, bool &builti
 		ExpressionResult result = Module::getModuleValue(functionName, val, this->context);
 		if (result.error()) return result;
 		builtin = false;
-	} else if (!this->context->hasValue(name)) {
+	} else if (this->context->hasValue(name)) {
 		val = this->context->getValue(name);
 		builtin = false;
 	} else {
@@ -885,7 +883,7 @@ ExpressionResult Interpreter::parseFor(const Token &keywordToken, std::queue<Tok
 	std::swap(range[1], range[2]);
 
 	// run for body for each value in range
-	for (CPPInterface value = range[1]; range[0] > &Int::emptyInt ? value < range[2] : value > range[2]; value += range[0]) {
+	for (CPPInterface value = range[1]; range[0] > Int::empty() ? value < range[2] : value > range[2]; value += range[0]) {
 		this->context->setValue(incrementName, value.getValue());
 		result = this->interpret(forBody);
 		if (result.error()) return result;
@@ -1073,7 +1071,7 @@ ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::que
 		keywordToken.getRange().merge(body.back().getRange())
 	);
 
-	this->memory.push(definedFunction);
+	this->memory.push(definedFunction->copy());
 	
 	if (name.size() == 0) return ExpressionResult();
 	this->context->setValue(
@@ -1092,13 +1090,14 @@ ExpressionResult Interpreter::createFunction(const Token &keywordToken, std::que
  * @return ExpressionResult if the function is correct and called wihout errors
  */
 ExpressionResult Interpreter::parseFunctionCall(const Token &keywordToken, std::queue<Token> &tokens) {
-	if (tokens.size() < 1) {
+	if (tokens.size() == 0) {
 		return ExpressionResult(
 			"Expected function name",
 			keywordToken.getRange(),
 			this->context
 		);
 	}
+
 	Token functionName = tokens.front();
 	if (functionName.getType() != TOKEN_TYPE_LITERAL && functionName.getType() != TOKEN_TYPE_PATH) {
 		return ExpressionResult(
@@ -1326,6 +1325,7 @@ ExpressionResult Interpreter::parseFinally(const Token &keywordToken, std::queue
  */
 ExpressionResult Interpreter::interpret(std::queue<Token> tokens) {
 	this->clearMemory();
+	this->lastValue = new None(TextRange());
 	this->returnValue = new None(TextRange());
 	ExpressionResult result;
 
