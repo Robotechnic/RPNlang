@@ -21,6 +21,13 @@ fun paramReturnFunction string param -> string:
 	1 :exit
 nuf
 
+fun paramArithmeticFunction float param -> none:
+	a param 1 + =
+	param param a - =
+	param -1 == :assert
+	param f"paramArithmeticFunction ok: {}\n" :print
+nuf
+
 fun conditionFunction bool param -> string:
 	param if
 		"conditionFunction true\n" return
@@ -75,6 +82,7 @@ fun main -> none:
 	:returnFunction :print
 	"test 4" :paramReturnFunction :print
 	:lambda :print
+	12.5 :paramArithmeticFunction
 
 
 	# functions with conditions

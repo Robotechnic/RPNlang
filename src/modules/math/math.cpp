@@ -250,40 +250,32 @@ ExpressionResult mathLoader(BuiltinModule &module){
 	});
 
 	module.addVariable("PI",
-			new Float(
-				
-		(float)M_PI,
-		TextRange()
-	
-			)
-		);
+		new Float(
+			(float)M_PI,
+			TextRange()
+		)
+	);
 
 	module.addVariable("E",
-			new Float(
-				
-		(float)M_E,
-		TextRange()
-	
-			)
-		);
+		new Float(
+			(float)M_E,
+			TextRange()
+		)
+	);
 
 	module.addVariable("PHI",
-			new Float(
-				
-		1.618033988749f,
-		TextRange()
-	
-			)
-		);
+		new Float(
+			1.618033988749f,
+			TextRange()
+		)
+	);
 
 	module.addVariable("TAU",
-			new Float(
-				
-		(float)M_PI_2,
-		TextRange()
-	
-			)
-		);
+		new Float(
+			(float)M_PI_2,
+			TextRange()
+		)
+	);
 
 	return ExpressionResult();
 }

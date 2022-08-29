@@ -35,7 +35,7 @@ ExpressionResult timeLoader(BuiltinModule &module) {
 					args[0]->getRange(),
 					context
 				), 
-				&String::emptyString
+				String::empty()
 			);
 	});
 		

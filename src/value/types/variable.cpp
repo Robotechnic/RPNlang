@@ -152,5 +152,3 @@ operatorResult Variable::opeq(const Value *other, const Context *context) {
 		nullptr
 	);
 }
-
-Variable Variable::emptyVariable = Variable(VARIABLE, "", TextRange());

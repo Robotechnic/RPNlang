@@ -12,7 +12,7 @@ bool None::isCastableTo(ValueType type) const {
 
 Value *None::to(ValueType type) {
 	if (type == NONE)
-		return this;
+		return new None(this->range);
 	
 	throw std::runtime_error("Invalid value type");
 }
@@ -144,6 +144,3 @@ operatorResult None::opeq(const Value *other, const Context *context) {
 		new Bool(other->getType() == NONE, other->getRange())
 	);
 }
-
-
-None None::emptyNone = None(TextRange());

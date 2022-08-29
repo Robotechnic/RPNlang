@@ -28,10 +28,14 @@ class Int : public Value {
 
 		Value *to(ValueType type);
 		Value *copy() const override;
+
+		static Int *empty() {
+			return new Int(0, TextRange());
+		}
+
 		std::string getStringValue() const;
 
 		int64_t getValue() const { return value; };
-		
 
 		operatorResult opadd(const Value *other, const Context *context) override;
 		operatorResult opsub(const Value *other, const Context *context) override;
@@ -45,8 +49,6 @@ class Int : public Value {
 		operatorResult ople(const Value *other, const Context *context) override;
 		operatorResult opne(const Value *other, const Context *context) override;
 		operatorResult opeq(const Value *other, const Context *context) override;
-
-		static Int emptyInt;
 
 	private:
 		int64_t value;

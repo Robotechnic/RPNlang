@@ -32,7 +32,6 @@ class Variable : public Value {
 		operatorResult opeq(const Value *other, const Context *context) override;
 
 
-		static Variable emptyVariable;
 	private:
 		std::string value;
 };

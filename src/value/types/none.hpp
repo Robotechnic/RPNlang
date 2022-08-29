@@ -18,6 +18,10 @@ class None : public Value {
 		Value *to(ValueType type);
 		Value *copy() const override;
 
+		static None *empty() {
+			return new None(TextRange());
+		}
+
 		operatorResult opadd(const Value *other, const Context *context) override;
 		operatorResult opsub(const Value *other, const Context *context) override;
 		operatorResult opmul(const Value *other, const Context *context) override;
@@ -30,7 +34,4 @@ class None : public Value {
 		operatorResult ople(const Value *other, const Context *context) override;
 		operatorResult opne(const Value *other, const Context *context) override;
 		operatorResult opeq(const Value *other, const Context *context) override;
-
-
-		static None emptyNone;
 };

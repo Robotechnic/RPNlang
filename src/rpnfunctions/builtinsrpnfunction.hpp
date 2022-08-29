@@ -5,6 +5,7 @@
 #include <vector>
 #include <tuple>
 #include <regex>
+#include <cassert>
 #include "rpnfunctions/rpnfunction.hpp"
 #include "modules/module.hpp"
 #include "value/valuetypes.hpp"

@@ -25,7 +25,7 @@ Value *Int::to(ValueType type) {
 		case FLOAT:
 			return new Float(value, range);
 		case BOOL:
-			return new Int(value != 0, range);
+			return new Bool(value != 0, range);
 		default:
 			throw std::runtime_error("Invalid value type");
 	};
@@ -156,7 +156,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) {
 						other->getRange(),
 						context
 					),
-					&Int::emptyInt
+					Int::empty()
 				);
 			return std::make_tuple(
 				ExpressionResult(),
@@ -172,7 +172,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) {
 						other->getRange(),
 						context
 					),
-					&Int::emptyInt
+					Int::empty()
 				);
 			return std::make_tuple(
 				ExpressionResult(),
@@ -188,7 +188,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) {
 						other->getRange(),
 						context
 					),
-					&Float::emptyFloat
+					Float::empty()
 				);
 			return std::make_tuple(
 				ExpressionResult(),
@@ -253,7 +253,7 @@ operatorResult Int::opmod(const Value *other, const Context *context) {
 						other->getRange(),
 						context
 					),
-					&Float::emptyFloat
+					Float::empty()
 				);
 			return std::make_tuple(
 				ExpressionResult(),
@@ -480,5 +480,3 @@ operatorResult Int::opeq(const Value *other, const Context *context) {
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
-
-Int Int::emptyInt = Int(0, TextRange());

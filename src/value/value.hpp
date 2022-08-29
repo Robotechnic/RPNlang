@@ -35,6 +35,8 @@ class Value {
 		
 		virtual std::string getStringValue() const = 0;
 
+		static Value *empty();
+
 		static std::string stringType(const ValueType type);
 		static ValueType valueType(const std::string type); 
 

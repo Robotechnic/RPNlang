@@ -18,16 +18,16 @@ std::string String::getStringValue() const {
 Value *String::to(ValueType type) {
 	switch (type) {
 		case STRING:
-			return this;
+			return new String(this->value, this->range);
 		case BOOL:
-			return new Bool(value == "true", range);
+			return new Bool(this->value == "true", this->range);
 		default:
 			throw std::runtime_error("Invalid value type");
 	};
 }
 
 Value *String::copy() const {
-	return new String(value, range);
+	return new String(this->value, this->range);
 }
 
 operatorResult String::opadd(const Value *other, const Context *context) {
@@ -175,5 +175,3 @@ operatorResult String::opeq(const Value *other, const Context *context) {
 		new Bool(value == other->getStringValue(), range.merge(other->getRange()))
 	);
 }
-
-String String::emptyString = String("", TextRange());

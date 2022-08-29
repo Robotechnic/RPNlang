@@ -17,8 +17,13 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	context->setChild(new Context(this->name, context, CONTEXT_TYPE_FUNCTION));
 
 	ExpressionResult result = this->checkArgs(args, context);
-	if (result.error()) return std::make_tuple(result, nullptr);
+	if (result.error()) return std::make_tuple(result, None::empty());
 	RPNFunctionResult functionResult = this->function(args, context->getChild());
+	
+	assert(
+		std::get<1>(functionResult) != nullptr &&
+		"BuiltinRPNFunction::call: functionResult.second is nullptr"
+	);
 
 	return functionResult;
 }
@@ -35,7 +40,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		ValueType::NONE,
 		[](RPNFunctionArgs args, Context *context) {
 			std::cout << args[0]->getStringValue();
-			return std::make_tuple(ExpressionResult(), nullptr);
+			return std::make_tuple(ExpressionResult(), None::empty());
 		}
 	)},
 	{"input", BuiltinRPNFunction(
@@ -96,7 +101,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 					args[0]->getRange(),
 					context
 				),
-				&Int::emptyInt
+				Int::empty()
 			);
 		}
 	)},
@@ -115,7 +120,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 					args[0]->getRange(),
 					context
 				),
-				&Float::emptyFloat
+				Float::empty()
 			);
 		}
 	)},
@@ -184,7 +189,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 					"string must have length of 1", args[0]->getRange(),
 					context
 				),
-				&Int::emptyInt
+				Int::empty()
 			);
 			return std::make_tuple(
 				ExpressionResult(),
@@ -218,7 +223,7 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 		[](RPNFunctionArgs args, Context *context) {
 			exit(static_cast<Int*>(args[0])->getValue());
 			// Should never reach this point
-			return std::make_tuple(ExpressionResult(), nullptr);
+			return std::make_tuple(ExpressionResult(), None::empty());
 		}
 	)},
 	{"assert",BuiltinRPNFunction(
@@ -234,10 +239,10 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 						args[0]->getRange(), 
 						context->getParent()
 					), 
-					&None::emptyNone
+					None::empty()
 				);
 			
-			return std::make_tuple(ExpressionResult(), new None(TextRange()));
+			return std::make_tuple(ExpressionResult(), None::empty());
 		}
 	)},
 	{"import", BuiltinRPNFunction(
@@ -254,12 +259,12 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 						args[0]->getRange(), 
 						context
 					), 
-					nullptr
+					None::empty()
 				);
 			}
 			return std::make_tuple(
 				Module::addModule(path, extractFileName(path), args[0]->getRange(), context->getParent()),
-				nullptr
+				None::empty()
 			);
 		}
 	)},
@@ -277,12 +282,12 @@ const std::map<std::string, BuiltinRPNFunction> BuiltinRPNFunction::builtinFunct
 						args[0]->getRange(), 
 						context
 					), 
-					nullptr
+					None::empty()
 				);
 			}
 			return std::make_tuple(
 				Module::addModule(path, args[1]->getStringValue(), args[0]->getRange(), context->getParent()),
-				nullptr
+				None::empty()
 			);
 		}
 	)}

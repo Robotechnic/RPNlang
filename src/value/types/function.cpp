@@ -4,9 +4,11 @@ Function::Function(RPNFunction* function, TextRange range) :
 	Value(FUNCTION, range),
 	function(function) {}
 
-void Function::clean() {
-	delete function;
-}
+Function::Function(std::shared_ptr<RPNFunction> function, TextRange range) :
+	Value(FUNCTION, range),
+	function(function) {}
+
+void Function::clean() {}
 
 bool Function::isCastableTo(ValueType type) const {
 	return type == FUNCTION || type == STRING;
@@ -15,7 +17,7 @@ bool Function::isCastableTo(ValueType type) const {
 Value *Function::to(ValueType type) {
 	switch (type) {
 		case FUNCTION:
-			return this;
+			return new Function(this->function, this->range);
 		case STRING:
 			return new String(function->getName(), range);
 		default:
@@ -34,6 +36,10 @@ std::string Function::getStringValue() const {
 
 	return "<function " + function->getName() + ">";
 }
+
+std::shared_ptr<RPNFunction> Function::getValue() const {
+	return this->function;
+}	
 
 
 operatorResult Function::opadd(const Value *other, const Context *context) {

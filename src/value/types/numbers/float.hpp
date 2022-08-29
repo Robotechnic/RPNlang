@@ -29,6 +29,11 @@ class Float : public Value {
 
 		Value *to(ValueType type);
 		Value *copy() const override;
+
+		static Float *empty() {
+			return new Float(0, TextRange());
+		}
+
 		std::string getStringValue() const;
 
 		float getValue() const { return value; };
@@ -45,8 +50,6 @@ class Float : public Value {
 		operatorResult ople(const Value *other, const Context *context) override;
 		operatorResult opne(const Value *other, const Context *context) override;
 		operatorResult opeq(const Value *other, const Context *context) override;
-
-		static Float emptyFloat;
 
 	private:
 		float value;

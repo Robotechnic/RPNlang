@@ -15,6 +15,10 @@ class String : public Value {
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };
 
+		static String *empty() {
+			return new String("", TextRange());
+		}
+
 		Value *to(ValueType type);
 		Value *copy() const override;
 
@@ -31,8 +35,6 @@ class String : public Value {
 		operatorResult opne(const Value *other, const Context *context) override;
 		operatorResult opeq(const Value *other, const Context *context) override;
 
-
-		static String emptyString;
 	private:
 		std::string value;
 };

@@ -26,6 +26,11 @@ class Bool : public Value {
 
 		Value *to(ValueType type);
 		Value *copy() const override;
+
+		static Bool *empty() {
+			return new Bool(false, TextRange());
+		}
+
 		std::string getStringValue() const;
 
 		bool getValue() const { return value; };
@@ -42,8 +47,6 @@ class Bool : public Value {
 		operatorResult ople(const Value *other, const Context *context) override;
 		operatorResult opne(const Value *other, const Context *context) override;
 		operatorResult opeq(const Value *other, const Context *context) override;
-
-		static Bool emptyBool;
 
 	private:
 		bool value;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "textutilities/textrange.hpp"
 #include "value/value.hpp"
 #include "rpnfunctions/typedef.hpp"
@@ -10,6 +12,7 @@
 class Function : public Value {
 	public:
 		Function(RPNFunction* function, TextRange range);
+		Function(std::shared_ptr<RPNFunction> function, TextRange range);
 
 		void clean();
 
@@ -21,7 +24,7 @@ class Function : public Value {
 
 		std::string getStringValue() const;
 
-		RPNFunction* getValue() const { return function; };
+		std::shared_ptr<RPNFunction> getValue() const;
 
 		operatorResult opadd(const Value *other, const Context *context) override;
 		operatorResult opsub(const Value *other, const Context *context) override;
@@ -37,5 +40,5 @@ class Function : public Value {
 		operatorResult opeq(const Value *other, const Context *context) override;
 
 	private:
-		RPNFunction* function;
+		std::shared_ptr<RPNFunction> function;
 };
