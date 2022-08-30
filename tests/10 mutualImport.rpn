@@ -1,0 +1,3 @@
+"./10 mutualImport/test1.rpn" "test1" :importAs
+
+test1.name :print
