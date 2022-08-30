@@ -13,7 +13,7 @@
 //#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/10 mutualImport.rpn"
 
 void shellInput() {
-	Context *ctx = new Context("<stdin>");
+	Context *ctx = new Context("main", "<stdin>");
 	Interpreter i(ctx);
 	Shell input;
 	std::string instruction;
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 			std::string path = argv[1];
 		#endif
 		setWorkingDirectory(path);
-		Context *ctx = new Context(path, CONTEXT_TYPE_FILE);
+		Context *ctx = new Context(extractFileName(path), path, CONTEXT_TYPE_FILE);
 		std::string error;
 		result = Interpreter(ctx).interpretFile(path, error);
 		if (!result) {

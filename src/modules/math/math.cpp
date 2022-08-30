@@ -212,24 +212,25 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	// module.addFunction("abs", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, Context *context) {
-	// 	if (args[0]->getType() == FLOAT)
-	// 		return std::make_tuple(
-	// 			ExpressionResult(),
-	// 			new Float(
-	// 				std::abs(static_cast<Float *>(args[0])->getValue()), 
-	// 				TextRange()
-	// 			)
-	// 		);
-	// 	else
-	// 		return std::make_tuple(
-	// 			ExpressionResult(), 
-	// 			new Int(
-	// 				std::abs(static_cast<Int *>(args[0])->getValue()), 
-	// 				TextRange()
-	// 			)
-	// 		);
-	// });
+	module.addFunction("abs", {"value"}, {INT}, INT, [](RPNFunctionArgs args, Context *context) {
+		return std::make_tuple(
+			ExpressionResult(), 
+			new Int(
+				std::abs(static_cast<Int *>(args[0])->getValue()), 
+				TextRange()
+			)
+		);
+	});
+
+	module.addFunction("fabs", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, Context *context) {
+		return std::make_tuple(
+			ExpressionResult(),
+			new Float(
+				std::abs(static_cast<Float *>(args[0])->getValue()), 
+				TextRange()
+			)
+		);
+	});
 
 	module.addFunction("deg", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, Context *context) {
 		return std::make_tuple(
