@@ -204,6 +204,6 @@ std::map<std::string, BuiltinModule>Module::builtinModules = std::map<std::strin
 	})},
 
 	{"math", BuiltinModule("math", mathLoader)},
-
-	{"time", BuiltinModule("time", timeLoader)}
+	{"time", BuiltinModule("time", timeLoader)},
+	{"random", BuiltinModule("random", randomLoader)}
 };
