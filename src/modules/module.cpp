@@ -90,9 +90,9 @@ bool Module::isModule(std::string moduleName) {
  * @param parentContext the parent context of the module
  * @return ExpressionResult if the value exists
  */
-ExpressionResult Module::getModuleValue(Value *&value, const Context *context) {
-	std::vector<std::string> path = split(value->getStringValue(), '.');
-	if (path.size() > 2) {
+ExpressionResult Module::getModuleValue(const Value *path,  Value *&value, const Context *context) {
+	std::vector<std::string> sPath = split(path->getStringValue(), '.');
+	if (sPath.size() > 2) {
 		return ExpressionResult(
 			"Maximum path depth is 2",
 			value->getRange(),
@@ -100,15 +100,15 @@ ExpressionResult Module::getModuleValue(Value *&value, const Context *context) {
 		);
 	}
 
-	if (!Module::isModule(path[0])) {
+	if (!Module::isModule(sPath[0])) {
 		return ExpressionResult(
-			"Module '" + path[0] + "' does not exist",
+			"Module '" + sPath[0] + "' does not exist",
 			value->getRange(),
 			context
 		);
 	}
 	
-	return Module::modules.at(path[0]).getModuleContext()->getValue(value, path[1], value);
+	return Module::modules.at(sPath[0]).getModuleContext()->getValue(path, sPath[1], value);
 }
 
 ExpressionResult Module::getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext) {

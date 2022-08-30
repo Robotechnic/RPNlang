@@ -289,13 +289,20 @@ ExpressionResult Interpreter::affectVariable(const Token &affectToken) {
  * @return ExpressionResult if the variable exists
  */
 ExpressionResult Interpreter::setTopVariableValue() {
-	if (memory.top()->getType() != VARIABLE) return ExpressionResult();
-
+	Value *variable = memory.top();
 	Value *value;
-	ExpressionResult result = this->context->getValue(memory.top(), value);
-	if (result.error()) return result;
 
-	delete memory.top();
+	if (variable->getType() == VARIABLE) {
+		ExpressionResult result = this->context->getValue(memory.top(), value);
+		if (result.error()) return result;
+	} else if (variable->getType() == PATH) {
+		ExpressionResult result = Module::getModuleValue(variable, value, context);
+		if (result.error()) return result;
+	} else {
+		return ExpressionResult();
+	}
+
+	delete variable;
 	memory.pop();
 
 	memory.push(value->copy());
