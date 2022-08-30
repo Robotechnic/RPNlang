@@ -1,15 +1,15 @@
 #include "interpreter/interpreter.hpp"
 
-Interpreter::Interpreter() : 
-	context(new Context("main", CONTEXT_TYPE_DEFAULT)), 
+Interpreter::Interpreter() :
 	returnValue(nullptr),
+	context(new Context("main", CONTEXT_TYPE_DEFAULT)), 
 	quit(false), 
 	loopLevel(0)
 {}
 
 Interpreter::Interpreter(Context *ctx) : 
-	context(ctx), 
 	returnValue(nullptr),
+	context(ctx), 
 	quit(false),
 	loopLevel(0)
 {}
@@ -155,6 +155,8 @@ ExpressionResult Interpreter::checkMemory() {
 	}
 
 	if (memory.size() == 1 && memory.top() != nullptr) {
+		ExpressionResult result = this->setTopVariableValue();
+		if (result.error()) return result;
 		this->lastValue = memory.top()->copy();
 	}
 

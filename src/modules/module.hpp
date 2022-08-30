@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <filesystem>
 
 class BuiltinModule;
 
@@ -25,8 +26,10 @@ class Module {
 		ExpressionResult load();
 
 		Context * getModuleContext();
+		std::string getPath() { return path; };
 
 		static bool isModule(std::string moduleName);
+		static bool isImported(std::string modulePath, std::string &moduleName);
 		static ExpressionResult addModule(std::string modulePath, std::string name, TextRange importRange, const Context *context);
 		static ExpressionResult getModuleValue(const Value *path, Value *&value, const Context *parentContext);
 		static ExpressionResult getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext);
@@ -37,7 +40,7 @@ class Module {
 		TextRange importRange;
 		Context * context;
 
-		static std::map<std::string, Module> modules;
+		static std::map<std::string, std::shared_ptr<Module>> modules;
 		static std::map<std::string, BuiltinModule> builtinModules;
 };
 

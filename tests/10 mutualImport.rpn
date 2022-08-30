@@ -1,3 +1,4 @@
-"./10 mutualImport/test1.rpn" "test1" :importAs
+"./10 mutualImport/test1.rpn" :import
 
-test1.name :print
+test1.name f"{}\n" :print
+:test1.moduleCalculation f"{}\n" :print/.

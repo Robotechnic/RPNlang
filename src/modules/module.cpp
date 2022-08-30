@@ -95,7 +95,7 @@ ExpressionResult Module::getModuleValue(const Value *path,  Value *&value, const
 	if (sPath.size() > 2) {
 		return ExpressionResult(
 			"Maximum path depth is 2",
-			value->getRange(),
+			path->getRange(),
 			context
 		);
 	}
@@ -103,12 +103,12 @@ ExpressionResult Module::getModuleValue(const Value *path,  Value *&value, const
 	if (!Module::isModule(sPath[0])) {
 		return ExpressionResult(
 			"Module '" + sPath[0] + "' does not exist",
-			value->getRange(),
+			path->getRange(),
 			context
 		);
 	}
 	
-	return Module::modules.at(sPath[0]).getModuleContext()->getValue(path, sPath[1], value);
+	return Module::modules.at(sPath[0])->getModuleContext()->getValue(path, sPath[1], value);
 }
 
 ExpressionResult Module::getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext) {
@@ -129,7 +129,23 @@ ExpressionResult Module::getModuleValue(const Token &pathToken, Value *&value, c
 		);
 	}
 
-	return Module::modules.at(path[0]).getModuleContext()->getValue(pathToken, path[1], value);
+	return Module::modules.at(path[0])->getModuleContext()->getValue(pathToken, path[1], value);
+}
+
+/**
+ * @brief check if a given file is already loaded to avoid loading it twice or bugs with mutual imports
+ * 
+ * @param modulePath the path to check
+ * @return bool true if the file is already loaded
+ */
+bool Module::isImported(std::string modulePath, std::string &moduleName) {
+	auto it = std::find_if(Module::modules.begin(), Module::modules.end(), [modulePath](auto module) -> bool {
+		return std::filesystem::equivalent(std::get<1>(module)->getPath(), modulePath);
+	});
+	if (it == Module::modules.end()) return false;
+	
+	moduleName = it->first;
+	return true;
 }
 
 /**
@@ -142,11 +158,18 @@ ExpressionResult Module::getModuleValue(const Token &pathToken, Value *&value, c
  * @return ExpressionResult if the module is loaded correctly
  */
 ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const Context *parentContext) {
-	Module::modules[name] = Module(modulePath, name, parentContext, importRange);
-	return Module::modules[name].load();
+	std::string importedName;
+	if (Module::isImported(modulePath, importedName)) {
+		if (importedName != name)
+			Module::modules[name] = Module::modules[importedName];
+		return ExpressionResult();
+	}
+
+	Module::modules[name] = std::make_shared<Module>(Module(modulePath, name, parentContext, importRange));
+	return Module::modules[name]->load();
 }
 
-std::map<std::string, Module>Module::modules = std::map<std::string, Module>();
+std::map<std::string, std::shared_ptr<Module>>Module::modules = std::map<std::string, std::shared_ptr<Module>>();
 
 std::map<std::string, BuiltinModule>Module::builtinModules = std::map<std::string, BuiltinModule>{
 	{"test", BuiltinModule("test", [](BuiltinModule &module) {
