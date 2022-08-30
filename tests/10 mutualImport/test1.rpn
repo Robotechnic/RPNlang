@@ -2,7 +2,6 @@
 
 name "test1" =
 
-
 fun moduleCalculation -> string:
-	test2.bidule " " + name + return
+	test2.bidule " " + name  return
 nuf

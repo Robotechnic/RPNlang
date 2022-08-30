@@ -22,7 +22,7 @@ class ExpressionResult {
 		const Context *getContext() const;
 
 		void displayLineError(std::string line) const;
-		void display (std::string fileName) const;
+		void display () const;
 
 		bool breakingLoop() const;
 		bool continuingLoop() const;

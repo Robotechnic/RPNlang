@@ -14,7 +14,7 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	RPNFunctionArgs args,
 	Context *context
 ) const {
-	context->setChild(new Context(this->name, context, CONTEXT_TYPE_FUNCTION));
+	context->setChild(new Context(this->name, "<builtin>", context, CONTEXT_TYPE_FUNCTION));
 
 	ExpressionResult result = this->checkArgs(args, context);
 	if (result.error()) return std::make_tuple(result, None::empty());

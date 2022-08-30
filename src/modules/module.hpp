@@ -30,9 +30,12 @@ class Module {
 
 		static bool isModule(std::string moduleName);
 		static bool isImported(std::string modulePath, std::string &moduleName);
+
+		static std::string checkPath(std::vector<std::string> path);
 		static ExpressionResult addModule(std::string modulePath, std::string name, TextRange importRange, const Context *context);
 		static ExpressionResult getModuleValue(const Value *path, Value *&value, const Context *parentContext);
 		static ExpressionResult getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext);
+		static ExpressionResult getModuleContext(const Token &pathToken, const Context *parentContext, Context *&moduleContext);
 
 	private:
 		std::string path;

@@ -32,7 +32,7 @@ RPNFunctionResult UserRPNFunction::call(
 	ExpressionResult result = this->checkArgs(args, context);
 	if (result.error()) return std::make_tuple(result, None::empty());
 
-	context->setChild(new Context(this->name, context, CONTEXT_TYPE_FUNCTION));
+	context->setChild(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
 
 	this->addParameters(args, context->getChild());
 

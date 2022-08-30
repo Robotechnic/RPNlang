@@ -17,17 +17,23 @@ typedef std::map<std::string, Value*> symbolTable;
 class Context {
 	public:
 		Context(const Context &other);
-		Context(std::string name, ContextType type = CONTEXT_TYPE_DEFAULT);
-		Context(std::string name, const Context *parent, ContextType type = CONTEXT_TYPE_DEFAULT);
-		Context(std::string name, symbolTable symbols, ContextType type = CONTEXT_TYPE_DEFAULT);
-		Context(std::string name, symbolTable symbols, const Context *parent, ContextType type = CONTEXT_TYPE_DEFAULT);
+		Context(const Context *other);
+		Context(std::string name, std::string filePath, ContextType type = CONTEXT_TYPE_DEFAULT);
+		Context(std::string name, std::string filePath, const Context *parent, ContextType type = CONTEXT_TYPE_DEFAULT);
+		Context(std::string name, std::string filePath, symbolTable symbols, ContextType type = CONTEXT_TYPE_DEFAULT);
+		Context(std::string name, std::string filePath, symbolTable symbols, const Context *parent, ContextType type = CONTEXT_TYPE_DEFAULT);
 		~Context();
 
 		void setName(std::string name);
 		std::string getName() const;
 
+		void setFilePath(std::string filePath);
+		std::string getFilePath() const;
+
 		void setParent(const Context *parent);
 		void setChild(Context *child);
+		void clearChild();
+
 		Context *getChild() const;
 		const Context *getParent() const;
 
@@ -49,7 +55,7 @@ class Context {
 		
 
 	private:
-		std::string name;
+		std::string name, filePath;
 		symbolTable symbols;
 		ContextType type;
 		const Context *parent;

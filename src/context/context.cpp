@@ -3,38 +3,52 @@
 
 Context::Context(const Context &other) :
 	name(other.name),
+	filePath(other.filePath),
 	symbols(other.symbols),
 	type(other.type),
 	parent(other.parent),
 	child(nullptr)
 	{}
 
-Context::Context(std::string name, ContextType type) :
+Context::Context(const Context *other) :
+	name(other->name),
+	filePath(other->filePath),
+	symbols(other->symbols),
+	type(other->type),
+	parent(other->parent),
+	child(nullptr)
+	{}
+
+Context::Context(std::string name, std::string filePath, ContextType type) :
 	name(name),
+	filePath(filePath),
 	symbols(),
 	type(type),
 	parent(nullptr),
 	child(nullptr)
 	{}
 
-Context::Context(std::string name, const Context *parent, ContextType type) :
+Context::Context(std::string name, std::string filePath, const Context *parent, ContextType type) :
 	name(name),
+	filePath(filePath),
 	symbols(),
 	type(type),
 	parent(parent),
 	child(nullptr)
 	{}
 
-Context::Context(std::string name, symbolTable symbols, ContextType type) :
+Context::Context(std::string name, std::string filePath, symbolTable symbols, ContextType type) :
 	name(name),
+	filePath(filePath),
 	symbols(symbols),
 	type(type),
 	parent(nullptr),
 	child(nullptr)
 	{}
 
-Context::Context(std::string name, symbolTable symbols, const Context *parent, ContextType type) :
+Context::Context(std::string name, std::string filePath, symbolTable symbols, const Context *parent, ContextType type) :
 	name(name),
+	filePath(filePath),
 	symbols(symbols),
 	type(type),
 	parent(parent),
@@ -60,6 +74,20 @@ std::string Context::getName() const {
 	return this->name;
 }
 
+void Context::setFilePath(std::string filePath) {
+	this->filePath = filePath;
+}
+
+std::string Context::getFilePath() const {
+	if (this->type == CONTEXT_TYPE_FILE || this->type == CONTEXT_TYPE_MODULE)
+		return this->filePath;
+	
+	if (this->parent != nullptr)
+		return this->parent->getFilePath();
+	
+	throw std::runtime_error("Context::getFilePath() - Context has no file path");
+}
+
 void Context::setParent(const Context *parent) {
 	this->parent = parent;
 }
@@ -69,6 +97,14 @@ void Context::setChild(Context *child) {
 		delete this->child;
 	}
 	this->child = child;
+}
+
+/**
+ * @brief clear the current child to avoid deletion when another child is set
+ * 
+ */
+void Context::clearChild() {
+	this->child = nullptr;
 }
 
 ContextType Context::getType() const {
@@ -237,7 +273,20 @@ std::ostream& operator<<(std::ostream& os, const Context *context) {
 			break;
 		case CONTEXT_TYPE_MODULE:
 			os <<"In module: ";
+			break;
 	}
-	os << context->getName() << std::endl;
+
+	os << context->getName();
+	switch (context->getType()) {
+		case CONTEXT_TYPE_FILE:
+		case CONTEXT_TYPE_MODULE:
+			os << " (" << context->getFilePath() << ")";
+			break;
+		default:
+			break;
+	}
+
+	std::cout<<std::endl;
+
 	return os;
 }

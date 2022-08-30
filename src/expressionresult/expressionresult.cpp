@@ -89,11 +89,12 @@ void ExpressionResult::displayLineError(std::string code) const {
  * @param fileName the file which contains the errored code
 
  */
-void ExpressionResult::display(std::string fileName) const {
+void ExpressionResult::display() const {
 	std::cout<<std::endl;
-	std::ifstream file(fileName);
 
 	std::cout<<this->context;
+
+	std::ifstream file(this->context->getFilePath());
 	TextRange range = this->getRange();
 	std::cout << "Error : " << this->errorMessage<<std::endl;
 	std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;

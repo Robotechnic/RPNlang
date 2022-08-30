@@ -1,4 +1,7 @@
 "./10 mutualImport/test1.rpn" :import
 
 test1.name f"{}\n" :print
-:test1.moduleCalculation f"{}\n" :print/.
+
+# do it two times to test if the context isn't deleted
+:test1.moduleCalculation f"{}\n" :print
+:test1.moduleCalculation f"{}\n" :print

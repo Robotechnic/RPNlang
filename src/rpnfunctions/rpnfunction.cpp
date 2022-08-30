@@ -32,7 +32,7 @@ RPNFunctionResult RPNFunction::call(
 			range.columnEnd = args[args.size() - 1]->getRange().columnEnd;
 		}
 	}
-	context->setChild(new Context(this->name, context, CONTEXT_TYPE_FUNCTION));
+	context->setChild(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
 	return std::make_tuple(ExpressionResult(
 			"Function is not callable", 
 			range,

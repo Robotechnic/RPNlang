@@ -10,7 +10,7 @@ Module::Module(std::string path, std::string name, const Context * parentContext
 	path(path), 
 	name(name),
 	importRange(importRange) {
-	context = new Context(name, parentContext, CONTEXT_TYPE_MODULE);
+	context = new Context(name, path, parentContext, CONTEXT_TYPE_MODULE);
 }
 
 Module::Module(const Module &other) : 
@@ -83,6 +83,24 @@ bool Module::isModule(std::string moduleName) {
 }
 
 /**
+ * @brief check if a given path is correct or not
+ * 
+ * @param path the path to check
+ * @return std::string contains the error message, empty if there is not
+ */
+std::string Module::checkPath(std::vector<std::string> path) {
+	if (path.size() > 2) {
+		return "Maximum path depth is 2";
+	}
+
+	if (!Module::isModule(path[0])) {
+		return "Module '" + path[0] + "' does not exist";
+	}
+
+	return "";
+}
+
+/**
  * @brief return the value of a module if it exists
  * 
  * @param pathToken the token containing the path to the module
@@ -92,17 +110,10 @@ bool Module::isModule(std::string moduleName) {
  */
 ExpressionResult Module::getModuleValue(const Value *path,  Value *&value, const Context *context) {
 	std::vector<std::string> sPath = split(path->getStringValue(), '.');
-	if (sPath.size() > 2) {
+	std::string error = Module::checkPath(sPath);
+	if (error != "") {
 		return ExpressionResult(
-			"Maximum path depth is 2",
-			path->getRange(),
-			context
-		);
-	}
-
-	if (!Module::isModule(sPath[0])) {
-		return ExpressionResult(
-			"Module '" + sPath[0] + "' does not exist",
+			error,
 			path->getRange(),
 			context
 		);
@@ -113,23 +124,30 @@ ExpressionResult Module::getModuleValue(const Value *path,  Value *&value, const
 
 ExpressionResult Module::getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext) {
 	std::vector<std::string> path = split(pathToken.getValue(), '.');
-	if (path.size() > 2) {
+	std::string error = Module::checkPath(path);
+	if (error != "") {
 		return ExpressionResult(
-			"Maximum path depth is 2",
-			pathToken.getRange(),
-			parentContext
-		);
-	}
-
-	if (!Module::isModule(path[0])) {
-		return ExpressionResult(
-			"Module '" + path[0] + "' does not exist",
+			error,
 			pathToken.getRange(),
 			parentContext
 		);
 	}
 
 	return Module::modules.at(path[0])->getModuleContext()->getValue(pathToken, path[1], value);
+}
+
+ExpressionResult Module::getModuleContext(const Token &pathToken, const Context *parentContext, Context *&moduleContext) {
+	std::vector<std::string> path = split(pathToken.getValue(), '.');
+	std::string error = Module::checkPath(path);
+	if (error != "") {
+		return ExpressionResult(
+			error,
+			pathToken.getRange(),
+			parentContext
+		);
+	}
+	moduleContext = Module::modules.at(path[0])->getModuleContext();
+	return ExpressionResult();
 }
 
 /**

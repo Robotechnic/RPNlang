@@ -2,7 +2,7 @@
 
 Interpreter::Interpreter() :
 	returnValue(nullptr),
-	context(new Context("main", CONTEXT_TYPE_DEFAULT)), 
+	context(new Context("main", "<stdin>")), 
 	quit(false), 
 	loopLevel(0)
 {}
@@ -52,22 +52,23 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 		line++;
 		result = Token::tokenize(line, instruction, tokens, this->context);
 		if (result.error()) {
-			result.display(fileName);
+			result.display();
 			error = true;
 		}
 		tokens.push(Token(line, instruction.size(), TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	file.close();
 	
-	if (!error) {
-		result = this->interpret(tokens);
-		if (result.error()) {
-			result.display(fileName);
-			error = true;
-		}
+	if (error) 
+		return false;
+
+	result = this->interpret(tokens);
+	if (result.error()) {
+		result.display();
+		error = true;
 	}
 
-	return !error;
+	return true;
 }
 
 /**
@@ -413,11 +414,18 @@ ExpressionResult Interpreter::callModuleFunction(const Token &name, const RPNFun
 	ExpressionResult result = Module::getModuleValue(name, function, this->context);
 	if (result.error()) return result;
 
-	RPNFunctionResult functionResult = static_cast<Function *>(function)->getValue()->call(args, this->context);
+	Context *moduleContext;
+	result = Module::getModuleContext(name, this->context, moduleContext);
+	if (result.error()) return result;
+
+	RPNFunctionResult functionResult = static_cast<Function *>(function)
+									   ->getValue()
+									   ->call(args, moduleContext);
 
 	result = std::get<0>(functionResult);
 	if (result.error()) return result;
-	
+
+	this->context->clearChild();	
 	this->memory.push(std::get<1>(functionResult));
 	return ExpressionResult();
 }
