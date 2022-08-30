@@ -177,7 +177,7 @@ bool Module::isImported(std::string modulePath, std::string &moduleName) {
  */
 ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const Context *parentContext) {
 	std::string importedName;
-	if (Module::isImported(modulePath, importedName)) {
+	if (modulePath != name && Module::isImported(modulePath, importedName)) {
 		if (importedName != name)
 			Module::modules[name] = Module::modules[importedName];
 		return ExpressionResult();

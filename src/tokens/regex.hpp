@@ -11,7 +11,7 @@ const std::regex hexNumRegex("^(0x[0-9a-fA-F]+)");
 const std::regex boolRegex("^(true|false)");
 const std::regex stringRegex("^(?:\")([^\"]*)(?:\")");
 const std::regex fStringRegex("^f(?:\")([^\"]*)(?:\")");
-const std::regex typeRegex("^(int|float|bool|string|none)");
+const std::regex typeRegex("^(int|float|bool|string|function|none)");
 
 // control structures
 const std::regex indentBlockRegex("^(\t)");

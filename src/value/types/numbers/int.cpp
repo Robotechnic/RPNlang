@@ -23,7 +23,7 @@ Value *Int::to(ValueType type) {
 		case INT:
 			return new Int(value, range);
 		case FLOAT:
-			return new Float(value, range);
+			return new Float(static_cast<float>(value), range);
 		case BOOL:
 			return new Bool(value != 0, range);
 		default:

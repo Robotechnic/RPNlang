@@ -1,0 +1,18 @@
+"time" :import
+"random" :import
+
+fun chrono function toChrono -> float:
+	start :time.timeMicros =
+	:toChrono
+	:time.timeMicros start - 1000000.0 / return
+nuf
+
+fun test -> none:
+	"test\n" :print
+	100 1500 :random.randRange :time.sleep
+nuf
+
+fun main -> none:
+	:random.rseed
+	test :chrono f"Time to run test: {}s \n" :print
+nuf

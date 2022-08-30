@@ -79,7 +79,7 @@ void Context::setFilePath(std::string filePath) {
 }
 
 std::string Context::getFilePath() const {
-	if (this->type == CONTEXT_TYPE_FILE || this->type == CONTEXT_TYPE_MODULE)
+	if ((this->type == CONTEXT_TYPE_FILE || this->type == CONTEXT_TYPE_MODULE) && this->filePath != "<builtin>")
 		return this->filePath;
 	
 	if (this->parent != nullptr)

@@ -21,7 +21,7 @@ UserRPNFunction::~UserRPNFunction() {}
  */
 void UserRPNFunction::addParameters(const RPNFunctionArgs &args, Context *context) const {
 	for (size_t i = 0; i < args.size(); i++) {
-		context->setValue(this->argsName[i], args[i]);
+		context->setValue(this->argsName[i], args[i]->to(this->parameterTypes[i]));
 	}
 }
 
@@ -33,7 +33,6 @@ RPNFunctionResult UserRPNFunction::call(
 	if (result.error()) return std::make_tuple(result, None::empty());
 
 	context->setChild(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
-
 	this->addParameters(args, context->getChild());
 
 	Interpreter interpreter(context->getChild());
@@ -44,7 +43,7 @@ RPNFunctionResult UserRPNFunction::call(
 	//check the return type	
 	Value *returnValue = interpreter.getReturnValue();
 
-	if (returnValue->getType() != this->returnType) {
+	if (returnValue->getType() == NONE && returnValue->getType() != this->returnType) {
 		return std::make_tuple(
 			ExpressionResult(
 				returnValue->getType() == NONE ? 

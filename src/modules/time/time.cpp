@@ -17,6 +17,17 @@ ExpressionResult timeLoader(BuiltinModule &module) {
 		);
 	});
 
+	module.addFunction("timeMicros", {}, {}, INT, [](RPNFunctionArgs args, Context *context) {
+		using namespace std::chrono;
+		return std::make_tuple(
+			ExpressionResult(), 
+			new Int(
+				duration_cast<microseconds>(system_clock::now().time_since_epoch()).count(), 
+				TextRange()
+			)
+		);
+	});
+
 	module.addFunction("strTime", {"format"}, {STRING}, STRING, [](RPNFunctionArgs args, Context *context) {
 		std::time_t t = std::time(nullptr);
 		char buffer[100];

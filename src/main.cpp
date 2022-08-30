@@ -10,7 +10,7 @@
 #include "shell/shell.hpp"
 #include "textutilities/textutilities.hpp"
 
-//#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/10 mutualImport.rpn"
+//#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/examples/chrono.rpn"
 
 void shellInput() {
 	Context *ctx = new Context("main", "<stdin>");

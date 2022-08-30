@@ -50,7 +50,7 @@ ExpressionResult randomLoader(BuiltinModule &module) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
-				min->getValue() + static_cast <float>(std::rand()) / static_cast <float>(RAND_MAX / (max->getValue() - min->getValue())),
+				min->getValue() + std::rand() / (static_cast <float> (RAND_MAX / (max->getValue() - min->getValue()))),
 				TextRange()
 			)
 		);
