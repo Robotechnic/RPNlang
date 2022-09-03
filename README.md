@@ -128,7 +128,5 @@ There are a few types in this language:
 | `float` | Floating point number |
 | `string` | String |
 | `bool` | Boolean value |
-| `array` | Array of elements |
 | `function` | Function |
-| `module` | Module |
 | `none` | Empty value |
