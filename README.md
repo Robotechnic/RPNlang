@@ -109,18 +109,22 @@ RPNlang is also a strongly typed language, each variable has a type (if you defi
 
 ## Language keywords
 In this languages there are just a few language specific keywords, everithing else is a function.
-| Keyword | Description |
-|:-------:|:-----------:|
-|  `if`   | If the condition is true, execute the block of instruction after it. Else skip it |
-| `else`  | If the previous condition is false, execute the block of instruction after it.|
-|  `fi`   | End of an if/else block |
-|  `for`  | Execute the block of instruction for each increment in a given range |
-|  `rof`  | End of a for loop |
-|  `while`| Execute the block of instruction while the condition is true |
-|  `elihw`| End of a while loop |
-|  `fun`  | Define a function |
-|  `nuf`  | End of a function block|
-|  `->`   | Define function return type|
+| Keyword  | Description |
+|:--------:|:-----------:|
+|  `if`    | If the condition is true, execute the block of instruction after it. Else skip it |
+| `else`   | If the previous condition is false, execute the block of instruction after it.|
+|  `fi`    | End of an if/else block |
+|  `for`   | Execute the block of instruction for each increment in a given range |
+|  `rof`   | End of a for loop |
+|  `while` | Execute the block of instruction while the condition is true |
+|  `elihw` | End of a while loop |
+|  `fun`   | Define a function |
+|  `nuf`   | End of a function block|
+|  `->`    | Define function return type|
+| `try`    | start of a try catch block |
+| `catch`  | start of catch block |
+| `finally`| start of a finally block |
+| `yrt`    | end of try catch block |
 
 ## Types
 There are a few types in this language:
