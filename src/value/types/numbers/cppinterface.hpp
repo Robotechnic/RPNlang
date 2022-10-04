@@ -1,6 +1,7 @@
 #pragma once
 
 #include "value/value.hpp"
+#include "value/types/numbers/bool.hpp"
 #include "expressionresult/expressionresult.hpp"
 
 class CPPInterface {

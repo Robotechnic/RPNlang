@@ -1,4 +1,5 @@
 "Test 1\n" :print
+
 true if
 	"ok 1\n" :print
 else

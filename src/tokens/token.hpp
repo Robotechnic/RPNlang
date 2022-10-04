@@ -8,13 +8,8 @@
 #include <queue>
 #include "tokens/tokentypes.hpp"
 #include "tokens/regex.hpp"
-#include "tokens/keywords.hpp"
 #include "textutilities/textrange.hpp"
-#include "context/context.hpp"
-
-class ExpressionResult;
-#include "expressionresult/expressionresult.hpp"
-
+#include "textutilities/escapecharacters.hpp"
 
 #define TOKEN_TYPES 19
 /* order matter because some tokens can be substrings of others
@@ -48,11 +43,12 @@ class Token {
 		Token();
 		Token(int line, int column, TokenType type, std::string value);
 		Token(const Token &other);
-
 		~Token();
 
+		void setValue(std::string value);
 		std::string getValue() const;
 		TokenType getType() const;
+		void setType(TokenType type);
 		std::string getStringType() const;
 
 		int getLine() const;
@@ -61,8 +57,6 @@ class Token {
 		TextRange getRange() const;
 
 		static std::string stringType(TokenType type);
-
-		static ExpressionResult tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context *context);
 
 	private:
 		std::string value;

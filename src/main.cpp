@@ -3,14 +3,15 @@
 #include <sstream>
 #include <string>
 #include <csignal>
+
+#include "textutilities/textutilities.hpp"
 #include "expressionresult/expressionresult.hpp"
 #include "interpreter/interpreter.hpp"
 #include "context/context.hpp"
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
-#include "textutilities/textutilities.hpp"
 
-//#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/examples/chrono.rpn"
+#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/1 variablesAndAritmetic.rpn"
 
 void shellInput() {
 	Context *ctx = new Context("main", "<stdin>");
@@ -20,7 +21,7 @@ void shellInput() {
 	input>>instruction;
 
 	while (instruction != "exit") {
-		ExpressionResult result = i.interpret(instruction);
+		ExpressionResult result = i.interpretLine(instruction);
 		if (result.error()) {
 			result.displayLineError(instruction);
 		} else {
@@ -38,7 +39,7 @@ void shellInput() {
 				default:
 					break;
 			};
-			input<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
+			//input<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
 		}
 
 		input>>instruction;

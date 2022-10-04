@@ -1,5 +1,5 @@
 test 12 =
 
-fun bidule -> none:
+bidule -> none fun
 	"Bidule Ok \n" :print
 nuf

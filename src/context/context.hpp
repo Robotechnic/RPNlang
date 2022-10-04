@@ -3,12 +3,10 @@
 #include <map>
 #include <string>
 #include <ostream>
-#include "context/contexttypes.hpp"
-#include "expressionresult/expressionresult.hpp"
 #include "tokens/token.hpp"
+#include "context/contexttypes.hpp"
 #include "value/value.hpp"
 
-class Token;
 class Value;
 class ExpressionResult;
 
@@ -63,3 +61,5 @@ class Context {
 };
 
 std::ostream& operator<<(std::ostream& os, const Context *context);
+
+#include "expressionresult/expressionresult.hpp"

@@ -2,6 +2,6 @@
 
 name "test1" =
 
-fun moduleCalculation -> string:
+moduleCalculation -> string fun
 	test2.bidule " " + name  return
 nuf

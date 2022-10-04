@@ -1,12 +1,12 @@
-fun simpleFuncton -> none:
+simpleFuncton -> none fun
 	"simpleFuncton ok\n" :print
 nuf
 
-fun paramFunction string param -> none:
+paramFunction string param -> none fun
 	param f"paramFunction ok: {}\n" :print
 nuf
 
-fun returnFunction -> string:
+returnFunction -> string fun
 	"returnFunction\n" :print
 	"returnFunction ok\n" return
 
@@ -14,21 +14,21 @@ fun returnFunction -> string:
 	1 :exit
 nuf
 
-fun paramReturnFunction string param -> string:
+paramReturnFunction string param -> string fun
 	param f"paramReturnFunction ok: {}\n" :print
 	"paramReturnFunction ok\n" return
 	"paramReturnFunction failled\n" :print
 	1 :exit
 nuf
 
-fun paramArithmeticFunction float param -> none:
+paramArithmeticFunction float param -> none fun
 	a param 1 + =
 	param param a - =
 	param -1 == :assert
 	param f"paramArithmeticFunction ok: {}\n" :print
 nuf
 
-fun conditionFunction bool param -> string:
+conditionFunction bool param -> string fun
 	param if
 		"conditionFunction true\n" return
 	else
@@ -36,7 +36,7 @@ fun conditionFunction bool param -> string:
 	fi
 nuf
 
-fun conditionFunction1 int a int b -> int:
+conditionFunction1 int a int b -> int fun
 	a b f"conditionFunction with params {} and {}\n" :print
 	a 0 == if
 		"A null\n" :print
@@ -53,7 +53,7 @@ fun conditionFunction1 int a int b -> int:
 	8 return
 nuf
 
-fun whileLoopFunction string param int maxSize -> string:
+whileLoopFunction string param int maxSize -> string fun
 	final param =
 	final :len maxSize <= while
 		final :len f"{}\n" :print
@@ -64,7 +64,7 @@ fun whileLoopFunction string param int maxSize -> string:
 nuf
 
 
-fun forLoopFunction int a -> none:
+forLoopFunction int a -> none fun
 	summ 0 =
 	i 0 a 1 + 1 for
 		summ i summ + =
@@ -73,9 +73,9 @@ fun forLoopFunction int a -> none:
 nuf
 
 
-lambda fun -> string: "lambda ok\n" return nuf =
+lambda -> string fun "lambda ok\n" return nuf =
 
-fun main -> none:
+main -> none fun
 	# normal function
 	:simpleFuncton
 	"test2" :paramFunction

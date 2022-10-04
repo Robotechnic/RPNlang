@@ -4,6 +4,8 @@
 #include "textutilities/textrange.hpp"
 #include "value/value.hpp"
 
+#include "value/types/numbers/bool.hpp"
+
 class None : public Value {
 	public:
 		None(TextRange range);

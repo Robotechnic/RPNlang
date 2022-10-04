@@ -4,6 +4,8 @@
 #include "textutilities/textrange.hpp"
 #include "value/value.hpp"
 
+#include "value/types/numbers/bool.hpp"
+
 class Variable : public Value {
 	public:
 		Variable(ValueType type, std::string value, TextRange range);

@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <tuple>
+#include "tokens/token.hpp"
 #include "value/valuetypes.hpp"
 #include "rpnfunctions/typedef.hpp"
 
@@ -43,8 +44,6 @@ class RPNFunction {
 
 std::ostream& operator<<(std::ostream& os, const RPNFunction& function);
 
-
-#include "tokens/token.hpp"
 #include "expressionresult/expressionresult.hpp"
 #include "context/context.hpp"
 #include "value/value.hpp"

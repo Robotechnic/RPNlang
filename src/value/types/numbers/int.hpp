@@ -5,8 +5,6 @@
 #include "textutilities/textrange.hpp"
 
 #include "value/value.hpp"
-
-class Bool;
 #include "value/types/numbers/bool.hpp"
 
 class Float;

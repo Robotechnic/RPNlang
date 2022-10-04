@@ -4,8 +4,6 @@
 #include <fstream>
 #include <string>
 #include "textutilities/textrange.hpp"
-
-class Context;
 #include "context/context.hpp"
 
 class ExpressionResult {

@@ -24,57 +24,12 @@ Token::Token(const Token &other) :
 
 Token::~Token(){}
 
-/**
- * @brief take a line of code and convert it to a vector of tokens
- * 
- * @param line the current line number
- * @param lineString the current line of code
- * @param tokens the vector of tokens to fill
- * @return ExpressionResult if the line is a valid expression
- */
-ExpressionResult Token::tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context *context) {
-	int column = 0;
-	std::smatch match;
-	while (lineString.size() > 0) {
-		int i = 0;
-		match = std::smatch();
-		while (match.size() == 0 && i < TOKEN_TYPES) {
-			std::regex regex = std::get<0>(tokenRegexes[i]);
-			if (std::regex_search(lineString, match, regex)) {
-				TokenType type = std::get<1>(tokenRegexes[i]);
-				std::string value = match.str(1);
-				if (type == TOKEN_TYPE_COMMENT) {
-					return ExpressionResult();
-				} else if (type == TOKEN_TYPE_LITERAL && std::regex_search(value, keywordsRegex)) {
-					type = TOKEN_TYPE_KEYWORD;
-				}
-				tokens.push(Token(line, column, type, value));
-			}
-			i++;
-		}
-		
-		if (match.size() == 0) {
-			return ExpressionResult(
-				"Unexpected char",
-				TextRange(line, column, 1),
-				context
-			);
-		}
-
-		column += match.str().size();
-		lineString = lineString.substr(match.str().size(), lineString.size() - 1);
-		
-		while (lineString[0] == ' ') {
-			lineString = lineString.substr(1, lineString.size() - 1);
-			column++;
-		}
-	}
-
-	return ExpressionResult();
-}
-
 bool Token::isNumber() const{
 	return this->type == TOKEN_TYPE_FLOAT || this->type == TOKEN_TYPE_INT;
+}
+
+void Token::setValue(std::string value) {
+	this->value = value;
 }
 
 std::string Token::getValue() const {
@@ -83,6 +38,10 @@ std::string Token::getValue() const {
 
 TokenType Token::getType() const {
 	return this->type;
+}
+
+void Token::setType(TokenType type) {
+	this->type = type;
 }
 
 int Token::getLine() const {
@@ -130,8 +89,6 @@ std::string Token::stringType(TokenType type) {
 			return "value type";
 		case TOKEN_TYPE_END_OF_LINE:
 			return "end of line";
-		case TOKEN_TYPE_KEYWORD:
-			return "language keyword";
 		case TOKEN_TYPE_BOOLEAN_OPERATOR:
 			return "boolean operator";
 		case TOKEN_TYPE_COMMENT:

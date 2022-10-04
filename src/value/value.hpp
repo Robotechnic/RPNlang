@@ -1,20 +1,15 @@
 #pragma once
 
 class ExpressionResult;
-class Token;
-class Module;
+class Context;
 
 #include <string>
 #include <stdexcept>
 #include <tuple>
-#include <functional>
-#include <variant>
-#include <cmath>
-#include "tokens/tokentypes.hpp"
 #include "tokens/token.hpp"
-#include "textutilities/textrange.hpp"
-#include "rpnfunctions/rpnfunction.hpp"
+#include "tokens/tokentypes.hpp"
 #include "value/valuetypes.hpp"
+#include "textutilities/textrange.hpp"
 #include "context/context.hpp"
 
 class Value;
@@ -72,5 +67,3 @@ std::ostream &operator<<(std::ostream &os, const Value *value);
 namespace std {
 	std::string to_string(const Value *value);
 };
-
-#include "modules/module.hpp"

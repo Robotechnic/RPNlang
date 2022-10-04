@@ -57,13 +57,13 @@ rof
 
 **Functions**:
 ```
-fun hello a string -> none:
+hello a string -> none fun
 	a f"hello {a}" :print
 nuf
 ```
 
 ```
-fun pow a float b int -> float:
+pow a float b int -> float fun
 	b 0 == if
 		1 return
 	fi
@@ -75,7 +75,7 @@ nuf
 ```
 
 ```
-divide fun nb float -> float: nb .5 / return nuf =
+divide nb float -> float fun nb .5 / return nuf =
 ```
 
 **Functions call**:

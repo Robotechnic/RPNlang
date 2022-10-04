@@ -1,4 +1,4 @@
-fun fizzBuz int nb -> string:
+fizzBuz int nb -> string fun
 	result "" =
 	nb 3 % :not if
 		result "Fizz" =

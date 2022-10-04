@@ -16,3 +16,4 @@ const std::pair<std::regex, std::string> escapes[] = {
 };
 
 std::string escapeCharacters(std::string str);
+std::string removeEscapeCharacters(std::string const &str);
