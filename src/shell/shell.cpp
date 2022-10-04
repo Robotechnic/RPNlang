@@ -109,6 +109,17 @@ bool Shell::isSpecialChar(char c) {
 }
 
 /**
+ * @brief go to line beginning and rewrite the line
+ * 
+ */
+void Shell::updateLine() {
+	std::cout<<"\033[0K";
+	for (size_t i = this->cursorPosition; i < this->command.size(); i++)
+		std::cout<<command[i];
+	this->setCursorPosition(this->cursorPosition + 1);
+}
+
+/**
  * @brief treat a given special character to handle his action
  * 
  * @param c the special character to treat
@@ -307,12 +318,7 @@ void Shell::popChar() {
 	// delete char
 	this->command.erase(this->cursorPosition - 1, 1);
 	this->mooveLeft();
-	// update the screen
-	std::cout<<"\033[0K";
-	for (size_t i = this->cursorPosition - 1; i < this->command.size(); i++)
-		std::cout<<command[i];
-	this->setCursorPosition(this->cursorPosition);
-	this->cursorPosition--;
+	this->updateLine();
 }
 
 /**
@@ -332,11 +338,7 @@ void Shell::popWord() {
 		this->cursorPosition = 0;
 	}
 
-	// update the screen
-	std::cout<<"\033[0K";
-	for (size_t i = this->cursorPosition; i < this->command.size(); i++)
-		std::cout<<command[i];
-	this->setCursorPosition(this->cursorPosition + 1);
+	this->updateLine();
 }
 
 /**
@@ -352,11 +354,7 @@ void Shell::popCharRight() {
 		this->cursorPosition = this->command.size();
 	}
 
-	// update the screen
-	std::cout<<"\033[0K";
-	for (size_t i = this->cursorPosition; i < this->command.size(); i++)
-		std::cout<<command[i];
-	this->setCursorPosition(this->cursorPosition + 1);
+	this->updateLine();
 }
 
 /**
@@ -370,11 +368,7 @@ void Shell::popWordRight() {
 		this->command.erase(this->cursorPosition, 1);
 	} while (this->cursorPosition < (int)this->command.size() && this->command[this->cursorPosition] != ' ');
 
-	// update the screen
-	std::cout<<"\033[0K";
-	for (size_t i = this->cursorPosition; i < this->command.size(); i++)
-		std::cout<<command[i];
-	this->setCursorPosition(this->cursorPosition + 1);
+	this->updateLine();
 }
 
 /**

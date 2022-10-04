@@ -27,6 +27,8 @@ class Shell {
 		char getChar();
 		bool isSpecialChar(char c);
 
+		void updateLine();
+
 		void handleSpecialChar(char c);
 		void arrowManagement();
 
