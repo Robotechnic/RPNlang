@@ -8,7 +8,7 @@
 
 class Variable : public Value {
 	public:
-		Variable(ValueType type, std::string value, TextRange range);
+		Variable(std::string value, TextRange range);
 
 		void clean(){};
 

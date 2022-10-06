@@ -112,11 +112,11 @@ bool Shell::isSpecialChar(char c) {
  * @brief go to line beginning and rewrite the line
  * 
  */
-void Shell::updateLine() {
+void Shell::updateLine(int offset) {
 	std::cout<<"\033[0K";
 	for (size_t i = this->cursorPosition; i < this->command.size(); i++)
 		std::cout<<command[i];
-	this->setCursorPosition(this->cursorPosition + 1);
+	this->setCursorPosition(this->cursorPosition + offset);
 }
 
 /**
@@ -318,7 +318,8 @@ void Shell::popChar() {
 	// delete char
 	this->command.erase(this->cursorPosition - 1, 1);
 	this->mooveLeft();
-	this->updateLine();
+	this->updateLine(0);
+	this->cursorPosition--;
 }
 
 /**

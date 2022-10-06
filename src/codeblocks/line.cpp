@@ -2,11 +2,15 @@
 
 Line::Line() :  BaseBlock(LINE_BLOCK), tokens() {}
 
-std::queue<Token> Line::getTokens() {
+Line::~Line() {
+	clear();
+}
+
+std::queue<Token*> Line::getTokens() {
 	return tokens;
 }
 
-void Line::push(Token token) {
+void Line::push(Token *token) {
 	this->tokens.push(token);
 }
 
@@ -16,16 +20,12 @@ bool Line::empty() const {
 
 void Line::clear() {
 	while (!this->tokens.empty()) {
+		if (this->tokens.front() != nullptr) delete this->tokens.front();
 		this->tokens.pop();
 	}
 }
 
 void Line::display() const {
-	std::queue<Token> tmp = this->tokens;
 	std::cout<<"Line: ";
-	while (!tmp.empty()) {
-		std::cout<<tmp.front() << " ";
-		tmp.pop();
-	}
-	std::cout<<";"<<std::endl;
+	std::cout<<this->tokens<<";"<<std::endl;
 }

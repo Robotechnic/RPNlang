@@ -1,6 +1,6 @@
 #include "lexer/lexer.hpp"
 
-Lexer::Lexer(std::queue<Token> tokens, const Context *context) : tokens(tokens) {
+Lexer::Lexer(std::queue<Token*> tokens, const Context *context) : tokens(tokens) {
 	this->context = context;
 	this->currentLine = new Line();
 }
@@ -28,12 +28,12 @@ void Lexer::pushLine() {
  * @return ExpressionResult if the lexing was successful, otherwise an error
  */
 ExpressionResult Lexer::lex() {
-	Token token;
+	Token *token;
 	ExpressionResult result;
 	while (!this->tokens.empty()) {
 		token = this->tokens.front();
 		this->tokens.pop();
-		switch (token.getType()) {
+		switch (token->getType()) {
 			case TOKEN_TYPE_END_OF_LINE:
 			case TOKEN_TYPE_EXPRESSION_SEPARATOR:
 				this->pushLine();
@@ -53,6 +53,24 @@ ExpressionResult Lexer::lex() {
 			case TOKEN_TYPE_HEX:
 				result = this->parseHexNumber(token);
 				break;
+			case TOKEN_TYPE_INT:
+				this->currentLine->push(new ValueToken(new Int(
+					std::stoi(token->getStringValue()),
+					token->getRange()
+				)));
+				break;
+			case TOKEN_TYPE_FLOAT:
+				this->currentLine->push(new ValueToken(new Float(
+					std::stof(token->getStringValue()),
+					token->getRange()
+				)));
+				break;
+			case TOKEN_TYPE_BOOL:
+				this->currentLine->push(new ValueToken(new Bool(
+					token->getStringValue() == "true",
+					token->getRange()
+				)));
+				break;
 			default:
 				this->currentLine->push(token);
 				break;
@@ -62,10 +80,11 @@ ExpressionResult Lexer::lex() {
 
 	if (this->keywordBlockStack.size() > 0)
 		return ExpressionResult(
-			"Missing closing keyword for block " + this->keywordBlockStack.top()->getKeyword().getValue(),
-			token.getRange(),
+			"Missing closing keyword for block " + this->keywordBlockStack.top()->getKeyword()->getStringValue(),
+			token->getRange(),
 			this->context
 		);
+	this->pushLine();
 	
 	return ExpressionResult();
 };
@@ -76,19 +95,15 @@ ExpressionResult Lexer::lex() {
  * @param token the token to convert
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
-ExpressionResult Lexer::parseBinNumber(Token token) {
-	std::string value = token.getValue(), result = "";
+ExpressionResult Lexer::parseBinNumber(Token *token) {
+	std::string value = token->getStringValue(), result = "";
 	int64_t number = 0;
 	for (char c : value) {
 		number <<= 1;
 		number |= c == '1';
 	}
-	result = std::to_string(number);
-	this->currentLine->push(Token(
-		token.getLine(),
-		token.getColumn(),
-		TOKEN_TYPE_INT,
-		result
+	this->currentLine->push(new ValueToken(
+		new Int(number, token->getRange())
 	));
 	return ExpressionResult();
 }
@@ -99,8 +114,8 @@ ExpressionResult Lexer::parseBinNumber(Token token) {
  * @param token the token to convert
  * @return ExpressionResult the converted token
  */
-ExpressionResult Lexer::parseHexNumber(Token token) {
-	std::string value = token.getValue(), result = "";
+ExpressionResult Lexer::parseHexNumber(Token *token) {
+	std::string value = token->getStringValue();
 	int64_t number = 0;
 	for (char c : value) {
 		number <<= 4;
@@ -108,21 +123,51 @@ ExpressionResult Lexer::parseHexNumber(Token token) {
 		else if (c >= 'a' && c <= 'f') number |= c - 'a' + 10;
 		else if (c >= 'A' && c <= 'F') number |= c - 'A' + 10;
 	}
-	result = std::to_string(number);
-	this->currentLine->push(Token(
-		token.getLine(),
-		token.getColumn(),
-		TOKEN_TYPE_INT,
-		result
+	this->currentLine->push(new ValueToken(
+		new Int(number, token->getRange())
 	));
 	return ExpressionResult();
 }
 
-ExpressionResult Lexer::parseFString(Token token) {
-	std::string value = token.getValue();
+ExpressionResult Lexer::parseFString(Token *token) {
+	std::string value = token->getStringValue();
 	value = escapeCharacters(value);
 
-	// TODO: Parse fstring
+	std::vector<std::string> parts;
+	parts.push_back("");
+	for (auto it = value.begin(); it != value.end(); it++) {
+		if (*it == '{') {
+			if (it == value.end() || *(it + 1) != '}')
+				return ExpressionResult(
+					"Invalid fstring format: missing closing bracket",
+					TextRange(
+						token->getRange().line, 
+						token->getRange().columnStart + (it - value.begin()),
+						1
+					),
+					this->context
+				);
+			parts.push_back("");
+			it++;
+		} else if (*it == '}') {
+			return ExpressionResult(
+				"Invalid fstring format: missing opening bracket",
+				TextRange(
+					token->getRange().line, 
+					token->getRange().columnStart + (it - value.begin()),
+					1
+				),
+				this->context
+			);
+		} else {
+			parts.back() += *it;
+		}
+	}
+
+	this->currentLine->push(new FStringToken(
+		token->getRange(),
+		parts
+	));
 
 	return ExpressionResult();
 }
@@ -133,15 +178,19 @@ ExpressionResult Lexer::parseFString(Token token) {
  * @param token 
  * @return ExpressionResult 
  */
-ExpressionResult Lexer::parseString(Token token) {
-	token.setValue(escapeCharacters(token.getValue()));
-	this->currentLine->push(token);
+ExpressionResult Lexer::parseString(Token *token) {
+	this->currentLine->push(new ValueToken(
+		new String(
+			escapeCharacters(token->getStringValue()),
+			token->getRange()
+		)
+	));
 	return ExpressionResult();
 }
 
-ExpressionResult Lexer::parseLiteral(Token token) {
-	if (std::regex_match(token.getValue(), keywordsRegex)) {
-		token.setType(TOKEN_TYPE_KEYWORD);
+ExpressionResult Lexer::parseLiteral(Token *token) {
+	if (std::regex_match(token->getStringValue(), keywordsRegex)) {
+		token->setType(TOKEN_TYPE_KEYWORD);
 		return this->parseKeyword(token);
 	}
 
@@ -149,23 +198,23 @@ ExpressionResult Lexer::parseLiteral(Token token) {
 	return ExpressionResult();
 }
 
-ExpressionResult Lexer::parseKeyword(Token token) {
-	if (blockClosers.contains(token.getValue())) {
+ExpressionResult Lexer::parseKeyword(Token *token) {
+	if (blockClosers.contains(token->getStringValue())) {
 		if (this->keywordBlockStack.empty()) 
 			return ExpressionResult(
-				"Expected " + blockClosers.at(token.getValue()) + " token before " + token.getValue(),
-				token.getRange(),
+				"Expected " + blockClosers.at(token->getStringValue()) + " token before " + token->getStringValue(),
+				token->getRange(),
 				this->context
 			);
 
 		CodeBlock *block = this->keywordBlockStack.top();
 		this->keywordBlockStack.pop();
 
-		auto* blockCloser = &blockOpeners.at(block->getKeyword().getValue());
-		if (std::find(blockCloser->begin(), blockCloser->end(), token.getValue()) == blockCloser->end())
+		auto* blockCloser = &blockOpeners.at(block->getKeyword()->getStringValue());
+		if (std::find(blockCloser->begin(), blockCloser->end(), token->getStringValue()) == blockCloser->end())
 			return ExpressionResult(
-				"Expected " + blockClosers.at(block->getKeyword().getValue()) + " token before " + token.getValue(),
-				token.getRange(),
+				"Expected " + blockClosers.at(block->getKeyword()->getStringValue()) + " token before " + token->getStringValue(),
+				token->getRange(),
 				this->context
 			);
 		
@@ -175,13 +224,18 @@ ExpressionResult Lexer::parseKeyword(Token token) {
 			this->codeBlocks.push(block);
 	}
 
-	if (blockOpeners.contains(token.getValue())) {
+	if (blockOpeners.contains(token->getStringValue())) {
 		this->pushLine();
 		this->keywordBlockStack.push(new CodeBlock(token));
 		return ExpressionResult();
 	}
 
-	this->currentLine->push(token);
+	this->currentLine->push(new ValueToken(
+		new Variable(
+			token->getStringValue(),
+			token->getRange()
+		)
+	));
 	return ExpressionResult();
 }
 
@@ -193,7 +247,7 @@ ExpressionResult Lexer::parseKeyword(Token token) {
  * @param tokens the vector of tokens to fill
  * @return ExpressionResult if the line is a valid expression
  */
-ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<Token> &tokens, const Context *context) {
+ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<Token*> &tokens, const Context *context) {
 	int column = 0;
 	std::smatch match;
 	while (lineString.size() > 0) {
@@ -208,7 +262,7 @@ ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<To
 					return ExpressionResult();
 				}
 				if (type != TOKEN_TYPE_INDENT)
-					tokens.push(Token(line, column, type, value));
+					tokens.push(new StringToken(line, column, type, value));
 			}
 			i++;
 		}

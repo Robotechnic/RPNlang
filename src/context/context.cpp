@@ -128,8 +128,8 @@ void Context::setValue(std::string name, Value *value) {
 	this->symbols[name] = value;
 }
 
-void Context::setValue(const Token &name, Value *value) {
-	this->symbols[name.getValue()] = value;
+void Context::setValue(const Token *name, Value *value) {
+	this->symbols[name->getStringValue()] = value;
 }
 
 void Context::setValue(const Value &name, Value *value) {
@@ -143,8 +143,8 @@ void Context::setValue(const Value &name, Value *value) {
  * @param value a reference to the value to set
  * @return ExpressionResult if the value was found
  */
-ExpressionResult Context::getValue(const Token &name, Value *&value) const {
-	std::string nameStr = name.getValue();
+ExpressionResult Context::getValue(const Token *name, Value *&value) const {
+	std::string nameStr = name->getStringValue();
 	if (this->symbols.find(nameStr) != this->symbols.end()) {
 		value = this->symbols.at(nameStr);
 		return ExpressionResult();
@@ -155,7 +155,7 @@ ExpressionResult Context::getValue(const Token &name, Value *&value) const {
 	
 	return ExpressionResult(
 		"Undefined variable name : " + nameStr,
-		name.getRange(),
+		name->getRange(),
 		this
 	);
 }
@@ -193,7 +193,7 @@ ExpressionResult Context::getValue(const Value *path, const std::string name, Va
 	);
 }
 
-ExpressionResult Context::getValue(const Token &path, const std::string name, Value *&value) const {
+ExpressionResult Context::getValue(const Token *path, const std::string name, Value *&value) const {
 	if (this->symbols.find(name) != this->symbols.end()) {
 		value = this->symbols.at(name)->copy();
 		return ExpressionResult();
@@ -204,7 +204,7 @@ ExpressionResult Context::getValue(const Token &path, const std::string name, Va
 	
 	return ExpressionResult(
 		"Undefined variable name : " + name,
-		path.getRange(),
+		path->getRange(),
 		this
 	);
 }
@@ -227,7 +227,7 @@ bool Context::hasValue(const std::string name) const {
  * @param name the name of the value
  * @return Value the desired value
  */
-Value *Context::getValue(const Token &name) const {
+Value *Context::getValue(const Token *name) const {
 	Value *value;
 	ExpressionResult result = this->getValue(name, value);
 	if (result.error()) {

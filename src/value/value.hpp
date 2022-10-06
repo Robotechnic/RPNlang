@@ -39,9 +39,9 @@ class Value {
 		ValueType getType() const;
 
 		void concatValueRange(const Value *other);
-		void concatValueRange(const Token &other);
+		void concatValueRange(const Token *other);
 
-		operatorResult applyOperator(const Value *other, const Token &operatorToken, const Context *context);
+		operatorResult applyOperator(const Value *other, const Token *operatorToken, const Context *context);
 	
 		virtual operatorResult opadd(const Value *other, const Context *context) = 0;
 		virtual operatorResult opsub(const Value *other, const Context *context) = 0;

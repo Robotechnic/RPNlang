@@ -41,30 +41,25 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 class Token {
 	public:
 		Token();
-		Token(int line, int column, TokenType type, std::string value);
-		Token(const Token &other);
-		~Token();
-
-		void setValue(std::string value);
-		std::string getValue() const;
+		Token(TokenType type);
+		Token(TextRange range, TokenType type);
+		virtual ~Token(){};
+		
 		TokenType getType() const;
 		void setType(TokenType type);
 		std::string getStringType() const;
 
-		int getLine() const;
-		int getColumn() const;
+		virtual std::string getStringValue() const = 0;
+
 		bool isNumber() const;
 		TextRange getRange() const;
-
 		static std::string stringType(TokenType type);
 
-	private:
-		std::string value;
+	protected:
+		TextRange range;
 		TokenType type;
-		int line;
-		int column;
 };
 
-std::ostream &operator<<(std::ostream &os, const Token &token);
-std::ostream &operator<<(std::ostream &os, const std::vector<Token> &tokens);
-std::ostream &operator<<(std::ostream &os, std::queue<Token> tokens);
+std::ostream &operator<<(std::ostream &os, const Token *token);
+std::ostream &operator<<(std::ostream &os, const std::vector<Token*> &tokens);
+std::ostream &operator<<(std::ostream &os, std::queue<Token*> tokens);

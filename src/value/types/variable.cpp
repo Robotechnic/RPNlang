@@ -1,7 +1,7 @@
 #include "value/types/variable.hpp"
 
-Variable::Variable(ValueType type, std::string value, TextRange range) :
-	Value(type, range),
+Variable::Variable(std::string value, TextRange range) :
+	Value(VARIABLE, range),
 	value(value) {}
 
 
@@ -18,7 +18,7 @@ Value *Variable::to(ValueType type) {
 }
 
 Value *Variable::copy() const {
-	return new Variable(type, value, range);
+	return new Variable(value, range);
 }
 
 operatorResult Variable::opadd(const Value *other, const Context *context) {

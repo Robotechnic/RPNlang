@@ -22,7 +22,6 @@
 #include "value/value.hpp"
 #include "value/types.hpp"
 
-
 class Interpreter {
 	public:
 		Interpreter();
@@ -35,6 +34,7 @@ class Interpreter {
 		Value *getLastValue() const;
 		Value *getReturnValue() const;
 
+
 	private:
 		bool openFile(std::ifstream &file, std::string fileName, std::string &error);
 
@@ -42,13 +42,13 @@ class Interpreter {
 		ExpressionResult interpret(BlockQueue &blocks);
 		ExpressionResult interpretLine(Line &line);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
-
+		ExpressionResult interpretOperator(Token *operatorToken);
 		
 		Value *returnValue;
 		Value *lastValue;
 		
 		TextRange mergeRanges(const std::vector<Value*> &values);
-		void clearQueue(std::queue<Token> &tokens);
+		void clearQueue(std::queue<Token*> &tokens);
 		void clearMemory(long unsigned int offset = 0);
 
 		std::stack<Value*> memory;

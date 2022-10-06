@@ -11,6 +11,11 @@ list(APPEND sources
 	
 	# base types
 	${CMAKE_CURRENT_LIST_DIR}/tokens/token.cpp
+)
+
+include(${CMAKE_CURRENT_LIST_DIR}/tokens/tokens/CMakeLists.txt)
+
+list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/baseblock.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/codeblock.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/line.cpp
@@ -33,6 +38,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/value/types/CMakeLists.txt)
 list(APPEND sources
 	# code processing
 	${CMAKE_CURRENT_LIST_DIR}/lexer/lexer.cpp
+	${CMAKE_CURRENT_LIST_DIR}/interpreter/memory.cpp
 	${CMAKE_CURRENT_LIST_DIR}/interpreter/interpreter.cpp
 
 	# # shell

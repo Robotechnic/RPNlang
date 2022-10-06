@@ -40,7 +40,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 	}
 
 	bool error = false;
-	std::queue<Token> tokens;
+	std::queue<Token*> tokens;
 	std::string instruction;
 	int line = 0;
 	ExpressionResult result;
@@ -51,7 +51,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 			result.display();
 			error = true;
 		}
-		tokens.push(Token(line, instruction.size(), TOKEN_TYPE_END_OF_LINE, "\n"));
+		tokens.push(new StringToken(line, instruction.size(), TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	file.close();
 	
@@ -64,6 +64,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 		return false;
 	}
 
+	this->lastValue = None::empty();
 	result = this->interpret(lexer.getBlocks());
 	if (result.error()) {
 		result.display();
@@ -80,7 +81,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
  * @return ExpressionResult status of the interpretation
  */
 ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
-	std::queue<Token> tokens;
+	std::queue<Token*> tokens;
 	ExpressionResult result = Lexer::tokenize(lineNumber, line, tokens, this->context);
 	if (result.error()) return result;
 
@@ -88,6 +89,7 @@ ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
 	result = lexer.lex();
 	if (result.error()) return result;
 
+	this->lastValue = None::empty();
 	return this->interpret(lexer.getBlocks());
 }
 
@@ -109,8 +111,9 @@ Value *Interpreter::getReturnValue() const {
  * 
  * @param tokens the queue to clear
  */
-void Interpreter::clearQueue(std::queue<Token> &tokens) {
+void Interpreter::clearQueue(std::queue<Token*> &tokens) {
 	while (!tokens.empty()) {
+		delete tokens.front();
 		tokens.pop();
 	}
 }
@@ -171,7 +174,7 @@ ExpressionResult Interpreter::checkMemory() {
 ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	ExpressionResult result;
 	
-	while (!blocks.empty()) {
+	while (!blocks.empty() && !result.error()) {
 		BaseBlock *block = blocks.front();
 		blocks.pop();
 		if (block->getType() == LINE_BLOCK) {
@@ -181,35 +184,42 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 			else
 				result = interpretLine(*l);
 		} else {
-			return ExpressionResult(
+			result = ExpressionResult(
 				"Lexer didn't to its job corectly ;(",
-				static_cast<CodeBlock*>(blocks.front())->getKeyword().getRange(),
+				static_cast<CodeBlock*>(blocks.front())->getKeyword()->getRange(),
 				this->context
 			);
-			throw std::runtime_error("Lexer didn't do its job correctly ;(");
 		}
-		if (result.error()) return result;
 	}
 
+	if (result.error()) return result;
 	return this->checkMemory();
 }
 
 ExpressionResult Interpreter::interpretLine(Line &line) {
 	auto tokens = line.getTokens();
-	Token t;
-	while (!tokens.empty()) {
-		t = tokens.front();
+	Token *token;
+	ExpressionResult result;
+	while (!tokens.empty() && !result.error()) {
+		token = tokens.front();
 		tokens.pop();
-		switch (t.getType()) {
+		switch (token->getType()) {
+			case TOKEN_TYPE_VALUE:
+				this->memory.push(static_cast<ValueToken*>(token)->getValue());
+				break;
+			case TOKEN_TYPE_OPERATOR:
+			case TOKEN_TYPE_BOOLEAN_OPERATOR:
+				result = this->interpretOperator(token);
+				break;
 			default:
-				return ExpressionResult(
-					"Uexpected token",
-					t.getRange(),
+				result = ExpressionResult(
+					"Unknow token (TODO)",
+					token->getRange(),
 					this->context
 				);
 		}
 	}
-	return ExpressionResult();
+	return result;
 }
 
 ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
@@ -217,5 +227,29 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 	line.display();
 	std::cout<<"Code block :"<<std::endl;
 	block.display();
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretOperator(Token *operatorToken) {
+	if (this->memory.size() < 2) {
+		return ExpressionResult(
+			"Not enough values for operator " + operatorToken->getStringValue(),
+			operatorToken->getRange(),
+			this->context
+		);
+	}
+	Value *right = this->memory.top();
+	this->memory.pop();
+	Value *left = this->memory.top();
+	this->memory.pop();
+	operatorResult result = left->applyOperator(right, operatorToken, this->context);
+	if (std::get<0>(result).error()) {
+		delete left;
+		delete right;
+		return std::get<0>(result);
+	}
+	this->memory.push(std::get<1>(result));
+	delete right;
+	delete left;
 	return ExpressionResult();
 }

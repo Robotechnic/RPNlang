@@ -3,7 +3,7 @@
 None::None(TextRange range) : Value(NONE, range) {}
 
 std::string None::getStringValue() const {
-	return "";
+	return "NONE";
 }
 
 bool None::isCastableTo(ValueType type) const {

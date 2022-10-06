@@ -1,12 +1,16 @@
 #pragma once
 
 enum TokenType {
+	// used only for the lexer
 	TOKEN_TYPE_INT,
 	TOKEN_TYPE_HEX,
 	TOKEN_TYPE_BIN,
 	TOKEN_TYPE_FLOAT,
 	TOKEN_TYPE_BOOL,
 	TOKEN_TYPE_STRING,
+	// all tokens above will be converted to a value token
+	TOKEN_TYPE_VALUE,
+
 	TOKEN_TYPE_FSTRING,
 	TOKEN_TYPE_OPERATOR,
 	TOKEN_TYPE_BOOLEAN_OPERATOR,

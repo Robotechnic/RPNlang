@@ -7,5 +7,5 @@ project(RPNlang CXX)
 
 include(src/CMakeLists.txt)
 
-add_executable(RPNlang ${sources})
+add_executable(RPNlang ${sources}) 
 target_include_directories(RPNlang PUBLIC ${includes})

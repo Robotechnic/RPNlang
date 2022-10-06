@@ -1,39 +1,14 @@
 #include "tokens/token.hpp"
 
-Token::Token() :
-	value(""),
-	type(TOKEN_TYPE_UNKNOWN),
-	line(0),
-	column(0)
-{
-}
-
-Token::Token(int line, int column, TokenType type, std::string value) :
-	value(value),
-	type(type),
-	line(line),
-	column(column)
-{}
-
-Token::Token(const Token &other) : 
-	value(other.value),
-	type(other.type),
-	line(other.line),
-	column(other.column)
-{}
-
-Token::~Token(){}
+Token::Token() : type(TOKEN_TYPE_UNKNOWN) {}
+Token::Token(TokenType type) :	type(type) {}
+Token::Token(const TextRange range, TokenType type) : range(range), type(type) {}
 
 bool Token::isNumber() const{
-	return this->type == TOKEN_TYPE_FLOAT || this->type == TOKEN_TYPE_INT;
-}
-
-void Token::setValue(std::string value) {
-	this->value = value;
-}
-
-std::string Token::getValue() const {
-	return this->value;
+	return this->type == TOKEN_TYPE_FLOAT || 
+		   this->type == TOKEN_TYPE_INT ||
+		   this->type == TOKEN_TYPE_HEX ||
+		   this->type == TOKEN_TYPE_BIN;
 }
 
 TokenType Token::getType() const {
@@ -44,15 +19,8 @@ void Token::setType(TokenType type) {
 	this->type = type;
 }
 
-int Token::getLine() const {
-	return this->line;
-}
-int Token::getColumn() const {
-	return this->column;
-}
-
 TextRange Token::getRange() const {
-	return TextRange(this->line, this->column, this->value.size());
+	return this->range;
 }
 
 /**
@@ -110,19 +78,19 @@ std::string Token::getStringType() const {
 	return Token::stringType(this->type);
 }
 
-std::ostream &operator<<(std::ostream &os, const Token &token) {
-	os << "Token(" << token.getValue() << ", " << token.getStringType() << ")";
+std::ostream &operator<<(std::ostream &os, const Token *token) {
+	os << "Token(" << token->getStringValue() << ", " << token->getStringType() << ")";
 	return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const std::vector<Token> &tokens) {
-	for (const Token &token : tokens) {
+std::ostream &operator<<(std::ostream &os, const std::vector<Token*> &tokens) {
+	for (const Token *token : tokens) {
 		os << token << " ";
 	}
 	return os;
 }
 
-std::ostream &operator<<(std::ostream &os, std::queue<Token> tokens) {
+std::ostream &operator<<(std::ostream &os, std::queue<Token*> tokens) {
 	while (!tokens.empty()) {
 		os << tokens.front() << " ";
 		tokens.pop();

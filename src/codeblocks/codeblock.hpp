@@ -8,12 +8,12 @@
 
 class CodeBlock : public BaseBlock {
 	public:
-		CodeBlock(Token keyword);
-		~CodeBlock(){};
+		CodeBlock(Token *keyword);
+		~CodeBlock();
 		void push(BaseBlock *block);
 		BlockQueue getBlocks();
 
-		Token getKeyword();
+		const Token* getKeyword();
 
 		bool empty() const;
 		void clear();
@@ -21,6 +21,6 @@ class CodeBlock : public BaseBlock {
 		void display() const;
 
 	private:
-		Token keyword;
+		Token *keyword;
 		BlockQueue blocks;
 };
