@@ -143,23 +143,6 @@ void Context::setValue(const Value &name, Value *value) {
  * @param value a reference to the value to set
  * @return ExpressionResult if the value was found
  */
-ExpressionResult Context::getValue(const Token *name, Value *&value) const {
-	std::string nameStr = name->getStringValue();
-	if (this->symbols.find(nameStr) != this->symbols.end()) {
-		value = this->symbols.at(nameStr);
-		return ExpressionResult();
-	}
-
-	if (this->parent != nullptr)
-		return this->parent->getValue(name, value);
-	
-	return ExpressionResult(
-		"Undefined variable name : " + nameStr,
-		name->getRange(),
-		this
-	);
-}
-
 ExpressionResult Context::getValue(const Value *name, Value *&value) const {
 	std::string nameStr = name->getStringValue();
 	if (this->symbols.find(nameStr) != this->symbols.end()) {
@@ -193,21 +176,6 @@ ExpressionResult Context::getValue(const Value *path, const std::string name, Va
 	);
 }
 
-ExpressionResult Context::getValue(const Token *path, const std::string name, Value *&value) const {
-	if (this->symbols.find(name) != this->symbols.end()) {
-		value = this->symbols.at(name)->copy();
-		return ExpressionResult();
-	}
-
-	if (this->parent != nullptr)
-		return this->parent->getValue(path, name, value);
-	
-	return ExpressionResult(
-		"Undefined variable name : " + name,
-		path->getRange(),
-		this
-	);
-}
 
 /**
  * @brief search if a value exist in the context or it's parents
@@ -227,15 +195,6 @@ bool Context::hasValue(const std::string name) const {
  * @param name the name of the value
  * @return Value the desired value
  */
-Value *Context::getValue(const Token *name) const {
-	Value *value;
-	ExpressionResult result = this->getValue(name, value);
-	if (result.error()) {
-		throw result.getErrorMessage();
-	}
-	return value;
-}
-
 Value *Context::getValue(const Value *name) const {
 	Value *value;
 	ExpressionResult result = this->getValue(name, value);
