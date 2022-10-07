@@ -12,10 +12,7 @@ Interpreter::Interpreter(Context *ctx) :
 
 Interpreter::~Interpreter() {
 	delete returnValue;
-	while (!memory.empty()) {
-		delete memory.top();
-		memory.pop();
-	}
+	this->memory.clear();
 }
 
 bool Interpreter::openFile(std::ifstream &file, std::string fileName, std::string &error) {
@@ -119,16 +116,6 @@ void Interpreter::clearQueue(std::queue<Token*> &tokens) {
 }
 
 /**
- * @brief clear the interpreter memory
- */
-void Interpreter::clearMemory(long unsigned int offset) {
-	while (!this->memory.empty() && this->memory.size() > offset) {
-		if (this->memory.top() != nullptr) delete this->memory.top();
-		this->memory.pop();
-	}
-}
-
-/**
  * @brief get the minimum and maximum text range of value list
  * 
  * @param values values that the text range will be calculated from
@@ -152,22 +139,20 @@ ExpressionResult Interpreter::checkMemory() {
 	}
 
 	if (this->memory.size() > 1) {
-		Value *last = this->memory.top();
+		Value *last = this->memory.pop();
 		this->memory.pop();
-		clearMemory(1);
+		this->memory.clear(1);
 		ExpressionResult result(
 			"To much remaining values in the memory",
 			this->mergeRanges({last, this->memory.top()}),
 			this->context
 		);
 		delete last;
-		delete this->memory.top();
-		this->memory.pop();
+		delete this->memory.pop();
 		return result;
 	}
 
-	this->lastValue = this->memory.top();
-	this->memory.pop();
+	this->lastValue = this->memory.pop();
 	return ExpressionResult();
 }
 
@@ -231,17 +216,15 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 }
 
 ExpressionResult Interpreter::interpretOperator(Token *operatorToken) {
-	if (this->memory.size() < 2) {
-		return ExpressionResult(
-			"Not enough values for operator " + operatorToken->getStringValue(),
-			operatorToken->getRange(),
-			this->context
-		);
-	}
-	Value *right = this->memory.top();
-	this->memory.pop();
-	Value *left = this->memory.top();
-	this->memory.pop();
+	ExpressionResult sizeOk = this->memory.sizeExpected(
+		2,
+		"Not enough values for operator " + operatorToken->getStringValue(), 
+		operatorToken->getRange(),
+		this->context
+	);
+	if (sizeOk.error()) return sizeOk;
+	Value *right = this->memory.pop();
+	Value *left = this->memory.pop();
 	operatorResult result = left->applyOperator(right, operatorToken, this->context);
 	if (std::get<0>(result).error()) {
 		delete left;

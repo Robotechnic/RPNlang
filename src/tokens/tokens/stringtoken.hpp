@@ -6,6 +6,7 @@
 class StringToken : public Token {
 	public: 
 		StringToken(int line, int column, TokenType type, std::string value);
+		StringToken(TextRange range, TokenType type, std::string value);
 		~StringToken() override {};
 
 		void setValue(std::string value);

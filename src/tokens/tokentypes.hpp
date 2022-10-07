@@ -11,6 +11,7 @@ enum TokenType {
 	// all tokens above will be converted to a value token
 	TOKEN_TYPE_VALUE,
 
+	TOKEN_TYPE_FUNCTION_CALL,
 	TOKEN_TYPE_FSTRING,
 	TOKEN_TYPE_OPERATOR,
 	TOKEN_TYPE_BOOLEAN_OPERATOR,

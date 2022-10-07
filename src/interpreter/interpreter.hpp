@@ -19,6 +19,8 @@
 #include "expressionresult/expressionresult.hpp"
 #include "context/context.hpp"
 
+#include "interpreter/memory.hpp"
+
 #include "value/value.hpp"
 #include "value/types.hpp"
 
@@ -49,8 +51,7 @@ class Interpreter {
 		
 		TextRange mergeRanges(const std::vector<Value*> &values);
 		void clearQueue(std::queue<Token*> &tokens);
-		void clearMemory(long unsigned int offset = 0);
 
-		std::stack<Value*> memory;
+		Memory memory;
 		Context *context;
 };

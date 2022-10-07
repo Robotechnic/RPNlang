@@ -71,6 +71,9 @@ ExpressionResult Lexer::lex() {
 					token->getRange()
 				)));
 				break;
+			case TOKEN_TYPE_COLON:
+				result = this->parseFunctionCall(token);
+				break;
 			default:
 				this->currentLine->push(token);
 				break;
@@ -99,6 +102,7 @@ ExpressionResult Lexer::parseBinNumber(Token *token) {
 	std::string value = token->getStringValue(), result = "";
 	int64_t number = 0;
 	for (char c : value) {
+		if (c == 0 && number == 0) continue;
 		number <<= 1;
 		number |= c == '1';
 	}
@@ -236,6 +240,26 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 			token->getRange()
 		)
 	));
+	return ExpressionResult();
+}
+
+ExpressionResult Lexer::parseFunctionCall(Token *token) {
+	if (this->tokens.empty() || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
+		return ExpressionResult(
+			"Expected function name after colon token",
+			this->tokens.empty() ? token->getRange() : token->getRange().merge(this->tokens.front()->getRange()),
+			this->context
+		);
+	
+	Token *name = this->tokens.front();
+	this->tokens.pop();
+
+	this->currentLine->push(new StringToken(
+		token->getRange().merge(name->getRange()),
+		TOKEN_TYPE_FUNCTION_CALL,
+		name->getStringValue()
+	));
+	delete name;
 	return ExpressionResult();
 }
 

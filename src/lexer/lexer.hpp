@@ -51,4 +51,5 @@ class Lexer {
 		ExpressionResult parseString(Token *token);
 		ExpressionResult parseLiteral(Token *token);
 		ExpressionResult parseKeyword(Token *token);
+		ExpressionResult parseFunctionCall(Token *token);
 };
