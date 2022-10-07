@@ -25,6 +25,8 @@ class Shell {
 
 	private:
 		char getChar();
+		void skipChar(int n = 1);
+
 		bool isSpecialChar(char c);
 
 		void updateLine(int offset = 1);

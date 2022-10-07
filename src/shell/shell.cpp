@@ -30,6 +30,7 @@ std::string Shell::getCommand() {
 	std::cout<<this->prompt;
 	char c;
 	while ((c = this->getChar()) != '\n') {
+		// std::cout<<int(c)<<std::endl;
 		if (this->isSpecialChar(c)) {
 			this->handleSpecialChar(c);
 		} else {
@@ -105,7 +106,7 @@ void Shell::saveHistory() {
  * @return bool true if the character is a special character
  */
 bool Shell::isSpecialChar(char c) {
-	return c == 27 || c == 127 || c == 8 || c == 4;
+	return c == 27 || c == 127 || c == 23 || c == 4;
 }
 
 /**
@@ -127,7 +128,7 @@ void Shell::updateLine(int offset) {
 void Shell::handleSpecialChar(char c) {
 	if (c == 127) {
 		this->popChar();
-	} else if (c == 8) {
+	} else if (c == 23) {
 		this->popWord();
 	} else if (c == 27) { // arrow keys, home/end and supr
 		this->arrowManagement();
@@ -164,7 +165,7 @@ void Shell::arrowManagement() {
 			break;
 		case 72: //home
 			this->cursorPosition = 0;
-			this->setCursorPosition(0);
+			this->setCursorPosition(1);
 			break;
 		case 70: //end
 			this->cursorPosition = this->command.size();
@@ -176,16 +177,12 @@ void Shell::arrowManagement() {
 				this->popCharRight();
 			} else {
 				// skip the next two char which mean the ctrl key
-				for (int i = 0; i < 2; i++) {
-					this->getChar();
-				}
+				skipChar(2);
 				this->popWordRight();
 			}
 			break;
 		case 49: // ctrl + arrow
-			for (int i = 0; i < 2; i++) {
-				this->getChar();
-			}
+			skipChar(2);
 			type = this->getChar();
 			if (type == 68) {
 				this->arrowLeft(true);
@@ -277,6 +274,11 @@ char Shell::getChar() {
 	c = getchar();
 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 	return c;
+}
+
+void Shell::skipChar(int n) {
+	for (int i = 0; i < n; i++)
+		this->getChar();
 }
 
 /**
