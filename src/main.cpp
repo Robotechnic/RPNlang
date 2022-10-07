@@ -2,6 +2,7 @@
 #include <filesystem>
 #include <sstream>
 #include <string>
+#include <csignal>
 
 #include "textutilities/textutilities.hpp"
 #include "expressionresult/expressionresult.hpp"
@@ -12,6 +13,15 @@
 
 // #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/1 variablesAndAritmetic.rpn"
 
+/**
+ * @brief allow shell to be destroyed when ctrl+c is pressed, this allow to save the history
+ * 
+ * @param signum signal number
+ */
+void signalHandler(int signum) {
+	if (signum == SIGINT) return;
+	exit(signum);
+}
 
 void shellInput() {
 	Context *ctx = new Context("main", "<stdin>");
@@ -60,6 +70,8 @@ int main(int argc, char **argv) {
 		argc = 0;
 	#endif
 	if (argc == 1) {
+		signal(SIGTERM, signalHandler);
+		signal(SIGINT, signalHandler);
 		shellInput();
 	} else {
 		#ifdef TEST_FILE
