@@ -1,17 +1,14 @@
 #include "shell/shell.hpp"
 
+Shell rpnShell = Shell();
+
 Shell::Shell(std::string historyFile) : 
 	prompt(">>> "),
 	historyIndex(0),
 	cursorPosition(0),
-	command("") {
-	if (historyFile != "") {
-		this->historyFile = historyFile;
-	} else {
-		this->historyFile = std::getenv("HOME");
-		this->historyFile += "/.rpn_history";
-	}
-	this->loadHistory();
+	command("") 
+{
+	this->loadHistory(historyFile);	
 }
 
 Shell::~Shell() {
@@ -51,17 +48,23 @@ std::string Shell::getCommand() {
  * @brief Load the command history from the history file
  * 
  */
-void Shell::loadHistory() {
+bool Shell::loadHistory(std::string historyFile) {
+	if (historyFile != "") {
+		this->historyFile = historyFile;
+	} else {
+		this->historyFile = std::getenv("HOME");
+		this->historyFile += "/.rpn_history";
+	}
 	std::ifstream file;
 	try {
 		file.open(this->historyFile);
 		if (file.fail()) {
 			std::cout<<"Failled to open history file at '" << this->historyFile << "' (" << std::strerror(errno) << ")"<<std::endl;
-			return;
+			return false;
 		}
 	} catch (const std::exception &e) {
 		std::cout << "History stream error :" << std::string(e.what()) << std::endl;
-		return;
+		return false;
 	}
 
 	std::string line;
@@ -70,6 +73,7 @@ void Shell::loadHistory() {
 	}
 
 	file.close();
+	return true;
 }
 
 /**

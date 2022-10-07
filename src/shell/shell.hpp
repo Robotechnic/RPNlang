@@ -18,7 +18,7 @@ class Shell {
 		~Shell();
 		std::string getCommand();
 
-		void loadHistory();
+		bool loadHistory(std::string historyFile = "");
 		void saveHistory();
 
 		void operator>>(std::string& str);
@@ -62,6 +62,8 @@ class Shell {
 		std::string historyFile;
 		std::vector<std::string> history;
 };
+
+extern Shell rpnShell;
 
 
 Shell& operator<<(Shell& out, std::ostream& (*os)(std::ostream&));

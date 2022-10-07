@@ -2,7 +2,6 @@
 #include <filesystem>
 #include <sstream>
 #include <string>
-#include <csignal>
 
 #include "textutilities/textutilities.hpp"
 #include "expressionresult/expressionresult.hpp"
@@ -11,14 +10,14 @@
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
 
-#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/1 variablesAndAritmetic.rpn"
+// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/1 variablesAndAritmetic.rpn"
+
 
 void shellInput() {
 	Context *ctx = new Context("main", "<stdin>");
 	Interpreter i(ctx);
-	Shell input;
 	std::string instruction;
-	input>>instruction;
+	rpnShell>>instruction;
 
 	while (instruction != "exit") {
 		ExpressionResult result = i.interpretLine(instruction);
@@ -28,21 +27,24 @@ void shellInput() {
 			switch (i.getLastValue()->getType()) {
 				case INT:
 				case FLOAT:
-					input<<MAGENTA;
+					rpnShell<<MAGENTA;
 					break;
 				case STRING:
-					input<<YELLOW;
+					rpnShell<<YELLOW;
 					break;
 				case BOOL:
-					input<<GREEN;
+					rpnShell<<GREEN;
+					break;
+				case NONE:
+					rpnShell<<RED;
 					break;
 				default:
 					break;
 			};
-			//input<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
+			rpnShell<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
 		}
 
-		input>>instruction;
+		rpnShell>>instruction;
 	}
 	delete ctx;
 }
