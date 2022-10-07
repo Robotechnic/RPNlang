@@ -11,6 +11,7 @@ class Line : public BaseBlock {
 		std::queue<Token*> getTokens();
 		void push(Token *token);
 		bool empty() const;
+		Token *pop();
 		void clear();
 		void display() const;
 

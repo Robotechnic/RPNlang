@@ -14,6 +14,12 @@ void Line::push(Token *token) {
 	this->tokens.push(token);
 }
 
+Token *Line::pop() {
+	Token *token = this->tokens.front();
+	this->tokens.pop();
+	return token;
+}
+
 bool Line::empty() const {
 	return this->tokens.empty();
 }

@@ -30,9 +30,11 @@ void Lexer::pushLine() {
 ExpressionResult Lexer::lex() {
 	Token *token;
 	ExpressionResult result;
+	bool integrated = false;
 	while (!this->tokens.empty()) {
 		token = this->tokens.front();
 		this->tokens.pop();
+		integrated = false;
 		switch (token->getType()) {
 			case TOKEN_TYPE_END_OF_LINE:
 			case TOKEN_TYPE_EXPRESSION_SEPARATOR:
@@ -75,10 +77,12 @@ ExpressionResult Lexer::lex() {
 				result = this->parseFunctionCall(token);
 				break;
 			default:
+				integrated = true;
 				this->currentLine->push(token);
 				break;
 		}
 		if (result.error()) return result;
+		if (!integrated) delete token;
 	}
 
 	if (this->keywordBlockStack.size() > 0)
@@ -198,7 +202,12 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 		return this->parseKeyword(token);
 	}
 
-	this->currentLine->push(token);
+	this->currentLine->push(new ValueToken(
+		new Variable(
+			token->getStringValue(),
+			token->getRange()
+		)
+	));
 	return ExpressionResult();
 }
 
@@ -234,13 +243,8 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 		return ExpressionResult();
 	}
 
-	this->currentLine->push(new ValueToken(
-		new Variable(
-			token->getStringValue(),
-			token->getRange()
-		)
-	));
-	return ExpressionResult();
+	
+	throw std::runtime_error("Unknown keyword " + token->getStringValue());
 }
 
 ExpressionResult Lexer::parseFunctionCall(Token *token) {
@@ -282,9 +286,8 @@ ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<To
 			if (std::regex_search(lineString, match, regex)) {
 				TokenType type = std::get<1>(tokenRegexes[i]);
 				std::string value = match.str(1);
-				if (type == TOKEN_TYPE_COMMENT) {
+				if (type == TOKEN_TYPE_COMMENT)
 					return ExpressionResult();
-				}
 				if (type != TOKEN_TYPE_INDENT)
 					tokens.push(new StringToken(line, column, type, value));
 			}

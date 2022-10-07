@@ -11,6 +11,7 @@ class Memory {
 		~Memory();
 
 		void push(Value* value);
+		ExpressionResult topVariableToValue(const Context *context);
 		Value* pop();
 		Value* top();
 		void clear(unsigned long int offset = 0);

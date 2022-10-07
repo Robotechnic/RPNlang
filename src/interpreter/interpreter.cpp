@@ -2,16 +2,19 @@
 
 Interpreter::Interpreter() :
 	returnValue(nullptr),
+	lastValue(nullptr),
 	context(new Context("main", "<stdin>"))
 {}
 
 Interpreter::Interpreter(Context *ctx) : 
 	returnValue(nullptr),
+	lastValue(nullptr),
 	context(ctx)
 {}
 
 Interpreter::~Interpreter() {
 	delete returnValue;
+	delete lastValue;
 	this->memory.clear();
 }
 
@@ -61,7 +64,11 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 		return false;
 	}
 
-	this->lastValue = None::empty();
+	if (this->lastValue != nullptr) {
+		delete this->lastValue;
+		this->lastValue = nullptr;
+	}
+
 	result = this->interpret(lexer.getBlocks());
 	if (result.error()) {
 		result.display();
@@ -86,7 +93,11 @@ ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
 	result = lexer.lex();
 	if (result.error()) return result;
 
-	this->lastValue = None::empty();
+	if (this->lastValue != nullptr) {
+		delete this->lastValue;
+		this->lastValue = nullptr;
+	}
+
 	return this->interpret(lexer.getBlocks());
 }
 
@@ -132,6 +143,11 @@ TextRange Interpreter::mergeRanges(const std::vector<Value*> &values) {
 	return range;
 }
 
+/**
+ * @brief check if memory contains less than 1 value at the end of the interpretation
+ * 
+ * @return ExpressionResult error if memory contains more than 1 value
+ */
 ExpressionResult Interpreter::checkMemory() {
 	if (this->memory.empty()) {
 		this->lastValue = None::empty();
@@ -140,11 +156,10 @@ ExpressionResult Interpreter::checkMemory() {
 
 	if (this->memory.size() > 1) {
 		Value *last = this->memory.pop();
-		this->memory.pop();
 		this->memory.clear(1);
 		ExpressionResult result(
 			"To much remaining values in the memory",
-			this->mergeRanges({last, this->memory.top()}),
+			last->getRange().merge(this->memory.top()->getRange()),
 			this->context
 		);
 		delete last;
@@ -156,6 +171,12 @@ ExpressionResult Interpreter::checkMemory() {
 	return ExpressionResult();
 }
 
+/**
+ * @brief interpret a list of blocks
+ * 
+ * @param blocks the list of blocks to interpret
+ * @return ExpressionResult status of the interpretation
+ */
 ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	ExpressionResult result;
 	
@@ -175,19 +196,24 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 				this->context
 			);
 		}
+		delete block;
 	}
 
 	if (result.error()) return result;
 	return this->checkMemory();
 }
 
+/**
+ * @brief interpret a line of tokens
+ * 
+ * @param line the line to interpret
+ * @return ExpressionResult status of the interpretation
+ */
 ExpressionResult Interpreter::interpretLine(Line &line) {
-	auto tokens = line.getTokens();
 	Token *token;
 	ExpressionResult result;
-	while (!tokens.empty() && !result.error()) {
-		token = tokens.front();
-		tokens.pop();
+	while (!line.empty() && !result.error()) {
+		token = line.pop();
 		switch (token->getType()) {
 			case TOKEN_TYPE_VALUE:
 				this->memory.push(static_cast<ValueToken*>(token)->getValue());
@@ -196,6 +222,9 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 			case TOKEN_TYPE_BOOLEAN_OPERATOR:
 				result = this->interpretOperator(token);
 				break;
+			case TOKEN_TYPE_FUNCTION_CALL:
+				result = this->interpretFunctionCall(token);
+				break;
 			default:
 				result = ExpressionResult(
 					"Unknow token (TODO)",
@@ -203,10 +232,18 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 					this->context
 				);
 		}
+		delete token;
 	}
 	return result;
 }
 
+/**
+ * @brief interpret a block of code
+ * 
+ * @param line the line which contains the block parameters
+ * @param block the block to interpret
+ * @return ExpressionResult status of the interpretation
+ */
 ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 	std::cout<<"Params line :"<<std::endl;
 	line.display();
@@ -226,13 +263,19 @@ ExpressionResult Interpreter::interpretOperator(Token *operatorToken) {
 	Value *right = this->memory.pop();
 	Value *left = this->memory.pop();
 	operatorResult result = left->applyOperator(right, operatorToken, this->context);
-	if (std::get<0>(result).error()) {
-		delete left;
-		delete right;
-		return std::get<0>(result);
-	}
-	this->memory.push(std::get<1>(result));
-	delete right;
 	delete left;
+	delete right;
+	if (std::get<0>(result).error()) 
+		return std::get<0>(result);
+	
+	this->memory.push(std::get<1>(result));
 	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
+	return ExpressionResult(
+		"Function call not implemented yet",
+		functionToken->getRange(),
+		this->context
+	);
 }

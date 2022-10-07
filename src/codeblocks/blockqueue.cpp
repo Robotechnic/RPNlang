@@ -1,5 +1,5 @@
 #include "codeblocks/blockqueue.hpp"
-BlockQueue::BlockQueue() : blocks(), lastPopped(nullptr) {}
+BlockQueue::BlockQueue() : blocks() {}
 BlockQueue::~BlockQueue() {
 	this->clear();
 }
@@ -12,13 +12,9 @@ BaseBlock *BlockQueue::pop() {
 	if (this->blocks.empty()) {
 		throw std::runtime_error("BlockQueue::pop() called on empty stack");
 	}
-	this->lastPopped = this->blocks.front();
+	BaseBlock *block = this->blocks.front();
 	this->blocks.pop();
-	return this->lastPopped;
-}
-
-BaseBlock *BlockQueue::lastPop() {
-	return this->lastPopped;
+	return block;
 }
 
 BaseBlock *BlockQueue::front() {

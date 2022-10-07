@@ -45,6 +45,7 @@ class Interpreter {
 		ExpressionResult interpretLine(Line &line);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
 		ExpressionResult interpretOperator(Token *operatorToken);
+		ExpressionResult interpretFunctionCall(Token *functionToken);
 		
 		Value *returnValue;
 		Value *lastValue;

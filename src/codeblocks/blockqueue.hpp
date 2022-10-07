@@ -11,7 +11,6 @@ class BlockQueue {
 
 		void push(BaseBlock *block);
 		BaseBlock *pop();
-		BaseBlock *lastPop();
 		BaseBlock *front();
 		BaseBlock *back();
 
@@ -22,5 +21,4 @@ class BlockQueue {
 
 	private:
 		std::queue<BaseBlock *> blocks;
-		BaseBlock *lastPopped;
 };
