@@ -5,6 +5,9 @@ CodeBlock::CodeBlock(Token *keyword) : BaseBlock(CODE_BLOCK), keyword(keyword) {
 CodeBlock::~CodeBlock() {
 	this->clear();
 	delete this->keyword;
+	if (this->next != nullptr) {
+		delete this->next;
+	}
 }
 
 void CodeBlock::push(BaseBlock *block) {
@@ -13,6 +16,10 @@ void CodeBlock::push(BaseBlock *block) {
 
 BlockQueue CodeBlock::getBlocks() {
 	return this->blocks;
+}
+
+void CodeBlock::setNext(CodeBlock *next) {
+	this->next = next;
 }
 
 bool CodeBlock::empty() const {

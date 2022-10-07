@@ -196,6 +196,12 @@ ExpressionResult Lexer::parseString(Token *token) {
 	return ExpressionResult();
 }
 
+/**
+ * @brief check if the tokens is a keyword and otherwise convert it to a variable token
+ * 
+ * @param token the token to convert
+ * @return ExpressionResult if the conversion was successful, otherwise an error
+ */
 ExpressionResult Lexer::parseLiteral(Token *token) {
 	if (std::regex_match(token->getStringValue(), keywordsRegex)) {
 		token->setType(TOKEN_TYPE_KEYWORD);
@@ -231,9 +237,12 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 				this->context
 			);
 		
-		if (!this->keywordBlockStack.empty())
-			this->keywordBlockStack.top()->push(block);
-		else
+		if (!this->keywordBlockStack.empty()) {
+			if (blockClosers.contains(block->getKeyword()->getStringValue()))
+				this->keywordBlockStack.top()->setNext(block);
+			else
+				this->keywordBlockStack.top()->push(block);
+		} else
 			this->codeBlocks.push(block);
 	}
 
@@ -247,6 +256,12 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 	throw std::runtime_error("Unknown keyword " + token->getStringValue());
 }
 
+/**
+ * @brief check if the function call is correctlly formed and convert it to a function call token
+ * 
+ * @param token the colon token (before the function name)
+ * @return ExpressionResult if the conversion was successful, otherwise an error
+ */
 ExpressionResult Lexer::parseFunctionCall(Token *token) {
 	if (this->tokens.empty() || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
 		return ExpressionResult(

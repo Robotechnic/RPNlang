@@ -13,6 +13,8 @@ class CodeBlock : public BaseBlock {
 		void push(BaseBlock *block);
 		BlockQueue getBlocks();
 
+		void setNext(CodeBlock *next);
+
 		const Token* getKeyword();
 
 		bool empty() const;
@@ -22,5 +24,6 @@ class CodeBlock : public BaseBlock {
 
 	private:
 		Token *keyword;
+		CodeBlock *next;
 		BlockQueue blocks;
 };
