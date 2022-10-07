@@ -11,7 +11,7 @@ class FStringToken : public Token {
 	public:
 		FStringToken(const TextRange range, std::vector<std::string> parts);
 		~FStringToken() override {};
-		std::vector<std::string> getParts() const;
+		std::vector<std::string> &getParts();
 		std::string getStringValue() const;
 
 	private:

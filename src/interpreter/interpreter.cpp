@@ -225,6 +225,9 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 			case TOKEN_TYPE_FUNCTION_CALL:
 				result = this->interpretFunctionCall(token);
 				break;
+			case TOKEN_TYPE_FSTRING:
+				result = this->interpretFsString(static_cast<FStringToken*>(token));
+				break;
 			default:
 				result = ExpressionResult(
 					"Unknow token (TODO)",
@@ -249,6 +252,31 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 	line.display();
 	std::cout<<"Code block :"<<std::endl;
 	block.display();
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretFsString(FStringToken *token) {
+	ExpressionResult sizeOk = this->memory.sizeExpected(
+		token->getParts().size() - 1,
+		"missing fString parameters expected " + std::to_string(token->getParts().size() - 1) + 
+								   " but got " + std::to_string(this->memory.size()),
+		token->getRange(),
+		this->context
+	);
+	TextRange range = token->getRange();
+	if (sizeOk.error()) return sizeOk;
+	std::string str = token->getParts().at(0);
+	for (size_t i = 1; i < token->getParts().size(); i++) {
+		Value *value = this->memory.pop();
+		str += value->getStringValue();
+		if (i == 1) range.merge(value->getRange());
+		delete value;
+		str += token->getParts().at(i);
+	}
+	this->memory.push(new String(
+		str,
+		range
+	));
 	return ExpressionResult();
 }
 

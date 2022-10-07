@@ -44,6 +44,7 @@ class Interpreter {
 		ExpressionResult interpret(BlockQueue &blocks);
 		ExpressionResult interpretLine(Line &line);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
+		ExpressionResult interpretFsString(FStringToken *token);
 		ExpressionResult interpretOperator(Token *operatorToken);
 		ExpressionResult interpretFunctionCall(Token *functionToken);
 		

@@ -253,7 +253,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 	}
 
 	
-	throw std::runtime_error("Unknown keyword " + token->getStringValue());
+	throw std::runtime_error("Unknown keyword " + token->getStringValue() + " bad token in Lexer::parseKeyword");
 }
 
 /**
