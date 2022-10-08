@@ -19,6 +19,8 @@ class BlockQueue {
 
 		void display() const;
 
+		TextRange lastRange() const;
+
 	private:
 		std::queue<BaseBlock *> blocks;
 };

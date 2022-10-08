@@ -43,3 +43,10 @@ void BlockQueue::display() const {
 		tmp.pop();
 	}
 }
+
+TextRange BlockQueue::lastRange() const {
+	if (this->blocks.empty()) {
+		throw std::runtime_error("BlockQueue::lastRange() called on empty stack");
+	}
+	return this->blocks.back()->lastRange();
+}

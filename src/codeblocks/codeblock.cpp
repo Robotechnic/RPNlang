@@ -14,7 +14,7 @@ void CodeBlock::push(BaseBlock *block) {
 	blocks.push(block);
 }
 
-BlockQueue CodeBlock::getBlocks() {
+BlockQueue& CodeBlock::getBlocks() {
 	return this->blocks;
 }
 
@@ -38,4 +38,8 @@ void CodeBlock::display() const {
 	std::cout << "CodeBlock: " << this->keyword->getStringValue() << std::endl;
 	this->blocks.display();
 	std::cout<< "End CodeBlock: " << this->keyword->getStringValue() << std::endl;
+}
+
+TextRange CodeBlock::lastRange() const {
+	return this->blocks.lastRange();
 }

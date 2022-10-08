@@ -11,7 +11,7 @@ class CodeBlock : public BaseBlock {
 		CodeBlock(Token *keyword);
 		~CodeBlock();
 		void push(BaseBlock *block);
-		BlockQueue getBlocks();
+		BlockQueue& getBlocks();
 
 		void setNext(CodeBlock *next);
 
@@ -19,6 +19,8 @@ class CodeBlock : public BaseBlock {
 
 		bool empty() const;
 		void clear();
+
+		TextRange lastRange() const;
 
 		void display() const;
 

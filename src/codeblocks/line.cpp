@@ -35,3 +35,10 @@ void Line::display() const {
 	std::cout<<"Line: ";
 	std::cout<<this->tokens<<";"<<std::endl;
 }
+
+TextRange Line::lastRange() const {
+	if (this->tokens.empty()) {
+		throw std::runtime_error("Line::lastRange() called on empty stack");
+	}
+	return this->tokens.back()->getRange();
+}

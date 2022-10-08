@@ -15,6 +15,8 @@ class Line : public BaseBlock {
 		void clear();
 		void display() const;
 
+		TextRange lastRange() const;
+
 	private:
 		std::queue<Token*> tokens;
 };
