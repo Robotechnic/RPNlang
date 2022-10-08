@@ -2,22 +2,19 @@
 
 #include <string>
 #include <vector>
-#include <map>
-#include <tuple>
-#include "tokens/token.hpp"
-#include "value/valuetypes.hpp"
 #include "rpnfunctions/typedef.hpp"
-
-class ExpressionResult;
-class TextRange;
+#include "expressionresult/expressionresult.hpp"
+#include "context/context.hpp"
+#include "value/valuetypes.hpp"
+#include "value/value.hpp"
+#include "value/types/none.hpp"
 
 
 class RPNFunction {
 	public:
 		RPNFunction(
 			std::string name,
-			std::vector<std::string> argsName,
-			std::vector<ValueType> parameterTypes,
+			std::vector<std::string> argsName, std::vector<ValueType> argsTypes,
 			ValueType returnType
 		);
 		virtual ~RPNFunction();
@@ -29,7 +26,6 @@ class RPNFunction {
 
 		int getArgumentsCount() const;
 		std::string getName() const;
-		virtual TextRange getRange() const;
 
 	protected:
 		ExpressionResult checkTypes(const RPNFunctionArgs &args, const Context *context) const;
@@ -38,12 +34,8 @@ class RPNFunction {
 
 		std::string name;
 		std::vector<std::string> argsName;
-		std::vector<ValueType> parameterTypes;
+		std::vector<ValueType> argsTypes;
 		ValueType returnType;
 };
 
 std::ostream& operator<<(std::ostream& os, const RPNFunction& function);
-
-#include "expressionresult/expressionresult.hpp"
-#include "context/context.hpp"
-#include "value/value.hpp"

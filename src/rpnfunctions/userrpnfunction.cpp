@@ -3,11 +3,11 @@
 UserRPNFunction::UserRPNFunction(
 	std::string name,
 	std::vector<std::string> argsName,
-	std::vector<ValueType> parameterTypes,
+	std::vector<ValueType> argsTypes,
 	ValueType returnType, 
-	std::queue<Token> body
+	CodeBlock *body
 ):
-	RPNFunction(name, argsName, parameterTypes, returnType),
+	RPNFunction(name, argsName, argsTypes, returnType),
 	body(body)
 {}
 
@@ -21,7 +21,7 @@ UserRPNFunction::~UserRPNFunction() {}
  */
 void UserRPNFunction::addParameters(const RPNFunctionArgs &args, Context *context) const {
 	for (size_t i = 0; i < args.size(); i++) {
-		context->setValue(this->argsName[i], args[i]->to(this->parameterTypes[i]));
+		context->setValue(this->argsName[i], args[i]->to(this->argsTypes[i]));
 	}
 }
 
@@ -30,15 +30,17 @@ RPNFunctionResult UserRPNFunction::call(
 	Context *context
 ) const {
 	ExpressionResult result = this->checkArgs(args, context);
-	if (result.error()) return std::make_tuple(result, None::empty());
+	if (result.error()) 
+		return std::make_tuple(result, None::empty());
 
 	context->setChild(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
 	this->addParameters(args, context->getChild());
 
 	Interpreter interpreter(context->getChild());
-	result = interpreter.interpret(this->body);
+	result = interpreter.interpret(this->body->getBlocks());
 
-	if (result.error()) return std::make_tuple(result, None::empty());
+	if (result.error()) 
+		return std::make_tuple(result, None::empty());
 
 	//check the return type	
 	Value *returnValue = interpreter.getReturnValue();
@@ -49,7 +51,7 @@ RPNFunctionResult UserRPNFunction::call(
 				returnValue->getType() == NONE ? 
 					"Function " + this->name + " does not return any value" :
 					"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
-				this->body.back().getRange(),
+				this->body->lastRange(),
 				context
 			),
 			None::empty()
@@ -68,12 +70,4 @@ RPNFunctionResult UserRPNFunction::call(
 	}
 
 	return std::make_tuple(ExpressionResult(), returnValue->to(this->returnType));
-}
-
-TextRange UserRPNFunction::getRange() const {
-	TextRange result = this->body.front().getRange();
-	if (this->body.size() > 1) {
-		result.merge(this->body.back().getRange());
-	}
-	return result;
 }

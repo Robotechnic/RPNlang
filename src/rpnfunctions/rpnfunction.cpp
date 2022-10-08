@@ -3,12 +3,12 @@
 RPNFunction::RPNFunction(
 	std::string name,
 	std::vector<std::string> argsName,
-	std::vector<ValueType> parameterTypes,
+	std::vector<ValueType> argsTypes,
 	ValueType returnType
 ):
 	name(name),
 	argsName(argsName),
-	parameterTypes(parameterTypes),
+	argsTypes(argsTypes),
 	returnType(returnType)
 {}
 
@@ -80,12 +80,12 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Conte
  */
 ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Context *context) const{
 	for (size_t i = 0; i < args.size(); i++) {
-		if (args[i]->getType() == this->parameterTypes[i]) continue;
+		if (args[i]->getType() == this->argsTypes[i]) continue;
 		
-		if (!args[i]->isCastableTo(this->parameterTypes[i])) {
+		if (!args[i]->isCastableTo(this->argsTypes[i])) {
 			return ExpressionResult(
 				"Function call argument type mismatch, expected " + 
-				Value::stringType(this->parameterTypes[i]) + 
+				Value::stringType(this->argsTypes[i]) + 
 				" but got " + Value::stringType(args[i]->getType()),
 				args[i]->getRange(),
 				context
@@ -101,8 +101,4 @@ int RPNFunction::getArgumentsCount() const {
 
 std::string RPNFunction::getName() const {
 	return this->name;
-}
-
-TextRange RPNFunction::getRange() const {
-	return TextRange(0, 0, 0);
 }

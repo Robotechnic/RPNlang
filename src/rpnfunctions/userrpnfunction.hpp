@@ -1,21 +1,17 @@
 #pragma once
 
-#include <queue>
 #include "rpnfunctions/rpnfunction.hpp"
-
-class Interpreter;
-
+#include "codeblocks/codeblock.hpp"
 #include "interpreter/interpreter.hpp"
-
 
 class UserRPNFunction : public RPNFunction {
 	public:
 		UserRPNFunction(
 			std::string name,
 			std::vector<std::string> argsName,
-			std::vector<ValueType> parameterTypes,
+			std::vector<ValueType> argsTypes,
 			ValueType returnType, 
-			std::queue<Token> body
+			CodeBlock *body
 		);
 		~UserRPNFunction();
 
@@ -24,9 +20,7 @@ class UserRPNFunction : public RPNFunction {
 			Context *context
 		) const;
 
-		TextRange getRange() const;
-
 	private:
 		void addParameters(const RPNFunctionArgs &args, Context *context) const;
-		std::queue<Token> body;
+		CodeBlock *body;
 };

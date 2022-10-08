@@ -8,10 +8,9 @@
 #include <cassert>
 #include "rpnfunctions/rpnfunction.hpp"
 #include "modules/module.hpp"
-#include "value/valuetypes.hpp"
 #include "value/value.hpp"
+#include "value/valuetypes.hpp"
 #include "rpnfunctions/typedef.hpp"
-#include "tokens/regex.hpp"
 
 class BuiltinRPNFunction : public RPNFunction {
 	public:
@@ -28,8 +27,6 @@ class BuiltinRPNFunction : public RPNFunction {
 			RPNFunctionArgs args,
 			Context *context
 		) const;
-
-		TextRange getRange() const;
 
 		static const std::map<std::string, BuiltinRPNFunction> builtinFunctions;
 

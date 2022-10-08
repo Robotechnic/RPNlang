@@ -32,6 +32,7 @@ class Interpreter {
 
 		bool interpretFile(std::string fileName, std::string &errorString);
 		ExpressionResult interpretLine(std::string line, int lineNumber = 0);
+		ExpressionResult interpret(BlockQueue &blocks);
 
 		Value *getLastValue() const;
 		Value *getReturnValue() const;
@@ -41,7 +42,6 @@ class Interpreter {
 		bool openFile(std::ifstream &file, std::string fileName, std::string &error);
 
 		ExpressionResult checkMemory();
-		ExpressionResult interpret(BlockQueue &blocks);
 		ExpressionResult interpretLine(Line &line);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
 		ExpressionResult interpretFString(FStringToken *token);
