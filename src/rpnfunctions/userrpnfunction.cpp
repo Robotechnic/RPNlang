@@ -11,7 +11,9 @@ UserRPNFunction::UserRPNFunction(
 	body(body)
 {}
 
-UserRPNFunction::~UserRPNFunction() {}
+UserRPNFunction::~UserRPNFunction() {
+	delete body;
+}
 
 /**
  * @brief add a provided argument to the variables in context
