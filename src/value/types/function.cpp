@@ -4,10 +4,6 @@ Function::Function(RPNFunction* function, TextRange range) :
 	Value(FUNCTION, range),
 	function(function) {}
 
-Function::Function(std::shared_ptr<RPNFunction> function, TextRange range) :
-	Value(FUNCTION, range),
-	function(function) {}
-
 void Function::clean() {}
 
 bool Function::isCastableTo(ValueType type) const {
@@ -37,7 +33,7 @@ std::string Function::getStringValue() const {
 	return "<function " + function->getName() + ">";
 }
 
-std::shared_ptr<RPNFunction> Function::getValue() const {
+RPNFunction* Function::getValue() const {
 	return this->function;
 }	
 

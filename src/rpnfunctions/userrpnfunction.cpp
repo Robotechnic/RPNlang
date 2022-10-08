@@ -71,3 +71,22 @@ RPNFunctionResult UserRPNFunction::call(
 
 	return std::make_tuple(ExpressionResult(), returnValue->to(this->returnType));
 }
+
+void UserRPNFunction::addFunction(
+			std::string name,
+			std::vector<std::string> argsName,
+			std::vector<ValueType> argsTypes,
+			ValueType returnType, 
+			CodeBlock *body
+		) 
+{
+	userFunctions[name] = UserRPNFunction(name, argsName, argsTypes, returnType, body);
+}
+
+UserRPNFunction *UserRPNFunction::getFunction(std::string name) {
+	if (userFunctions.find(name) == userFunctions.end())
+		return nullptr;
+	return &userFunctions[name];
+}
+
+std::map<std::string, UserRPNFunction> UserRPNFunction::userFunctions;
