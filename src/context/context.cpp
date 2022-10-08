@@ -149,9 +149,6 @@ ExpressionResult Context::getValue(const Value *name, Value *&value) const {
 		value = this->symbols.at(nameStr);
 		return ExpressionResult();
 	}
-
-	if (this->parent != nullptr)
-		return this->parent->getValue(name, value);
 	
 	return ExpressionResult(
 		"Undefined variable name : " + nameStr,
@@ -165,9 +162,6 @@ ExpressionResult Context::getValue(const Value *path, const std::string name, Va
 		value = this->symbols.at(name)->copy();
 		return ExpressionResult();
 	}
-
-	if (this->parent != nullptr)
-		return this->parent->getValue(path, name, value);
 	
 	return ExpressionResult(
 		"Undefined variable name : " + name,
@@ -184,9 +178,7 @@ ExpressionResult Context::getValue(const Value *path, const std::string name, Va
  * @return bool if the value exits
  */
 bool Context::hasValue(const std::string name) const {
-	if (this->symbols.find(name) != this->symbols.end()) return true;
-	if (this->parent != nullptr) return this->parent->hasValue(name);
-	return false;
+	return this->symbols.find(name) != this->symbols.end();
 }
 
 /**
@@ -202,18 +194,6 @@ Value *Context::getValue(const Value *name) const {
 		throw result.getErrorMessage();
 	}
 	return value;
-}
-
-
-Value *Context::getValue(const std::string name) const {
-	if (this->symbols.find(name) != this->symbols.end()) {
-		return this->symbols.at(name);
-	}
-
-	if (this->parent != nullptr)
-		return this->parent->getValue(name);
-	
-	throw std::runtime_error("Undefined variable name '" + name + "'");
 }
 
 std::ostream& operator<<(std::ostream& os, const Context *context) {

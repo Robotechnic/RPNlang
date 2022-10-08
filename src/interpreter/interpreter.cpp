@@ -167,8 +167,7 @@ ExpressionResult Interpreter::checkMemory() {
 		return result;
 	}
 
-	this->lastValue = this->memory.pop();
-	return ExpressionResult();
+	return this->memory.popVariableValue(this->lastValue, this->context);
 }
 
 /**
@@ -226,7 +225,10 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 				result = this->interpretFunctionCall(token);
 				break;
 			case TOKEN_TYPE_FSTRING:
-				result = this->interpretFsString(static_cast<FStringToken*>(token));
+				result = this->interpretFString(static_cast<FStringToken*>(token));
+				break;
+			case TOKEN_TYPE_ASSIGNMENT:
+				result = this->interpretAssignment(token);
 				break;
 			default:
 				result = ExpressionResult(
@@ -255,7 +257,7 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretFsString(FStringToken *token) {
+ExpressionResult Interpreter::interpretFString(FStringToken *token) {
 	ExpressionResult sizeOk = this->memory.sizeExpected(
 		token->getParts().size() - 1,
 		"missing fString parameters expected " + std::to_string(token->getParts().size() - 1) + 
@@ -266,8 +268,10 @@ ExpressionResult Interpreter::interpretFsString(FStringToken *token) {
 	TextRange range = token->getRange();
 	if (sizeOk.error()) return sizeOk;
 	std::string str = token->getParts().at(0);
+	Value *value;
 	for (size_t i = 1; i < token->getParts().size(); i++) {
-		Value *value = this->memory.pop();
+		ExpressionResult result = this->memory.popVariableValue(value, this->context);
+		if (result.error()) return result;
 		str += value->getStringValue();
 		if (i == 1) range.merge(value->getRange());
 		delete value;
@@ -288,8 +292,14 @@ ExpressionResult Interpreter::interpretOperator(Token *operatorToken) {
 		this->context
 	);
 	if (sizeOk.error()) return sizeOk;
-	Value *right = this->memory.pop();
-	Value *left = this->memory.pop();
+	Value *right, *left;
+	ExpressionResult popOk = this->memory.popVariableValue(right, this->context);
+	if (popOk.error()) return popOk;
+	popOk = this->memory.popVariableValue(left, this->context);
+	if (popOk.error()) {
+		delete right;
+		return popOk;
+	}
 	operatorResult result = left->applyOperator(right, operatorToken, this->context);
 	delete left;
 	delete right;
@@ -297,6 +307,30 @@ ExpressionResult Interpreter::interpretOperator(Token *operatorToken) {
 		return std::get<0>(result);
 	
 	this->memory.push(std::get<1>(result));
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretAssignment(Token *operatorToken) {
+	ExpressionResult sizeOk = this->memory.sizeExpected(
+		2,
+		"Not enough values for operator " + operatorToken->getStringValue(), 
+		operatorToken->getRange(),
+		this->context
+	);
+	if (sizeOk.error()) return sizeOk;
+	Value *left;
+	ExpressionResult result = this->memory.popVariableValue(left, this->context);
+	if (result.error()) return result;
+	if (this->memory.top()->getType() != VARIABLE) {
+		ExpressionResult result(
+			"Can't assign value to a non variable",
+			this->memory.top()->getRange(),
+			this->context
+		);
+		delete left;
+		return result;
+	}
+	this->context->setValue(this->memory.top()->getStringValue(), left);
 	return ExpressionResult();
 }
 

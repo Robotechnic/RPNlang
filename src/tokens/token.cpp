@@ -47,8 +47,8 @@ std::string Token::stringType(TokenType type) {
 			return "math operator";
 		case TOKEN_TYPE_LITERAL:
 			return "literal";
-		case TOKEN_TYPE_AFFECT:
-			return "effectation";
+		case TOKEN_TYPE_ASSIGNMENT:
+			return "assignment";
 		case TOKEN_TYPE_COLON:
 			return "colon token";
 		case TOKEN_TYPE_INDENT:

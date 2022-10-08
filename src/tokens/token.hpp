@@ -30,7 +30,7 @@ const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
 	std::make_tuple(indentBlockRegex, TOKEN_TYPE_INDENT),
 	std::make_tuple(colonRegex,TOKEN_TYPE_COLON),
 	std::make_tuple(booleanOperatorRegex, TOKEN_TYPE_BOOLEAN_OPERATOR),
-	std::make_tuple(affectTokenRegex, TOKEN_TYPE_AFFECT),
+	std::make_tuple(affectTokenRegex, TOKEN_TYPE_ASSIGNMENT),
 	std::make_tuple(operatorRegex, TOKEN_TYPE_OPERATOR),
 	std::make_tuple(expressionSeparatorRegex, TOKEN_TYPE_EXPRESSION_SEPARATOR),
 	std::make_tuple(lineSeparatorRegex, TOKEN_TYPE_END_OF_LINE),

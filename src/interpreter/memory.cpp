@@ -15,6 +15,21 @@ Value* Memory::pop() {
 	return value;
 }
 
+ExpressionResult Memory::popVariableValue(Value *&value, const Context *context) {
+	if (this->stack.top()->getType() != VARIABLE) {
+		value = this->pop();
+		return ExpressionResult();
+	}
+	
+	Value *variableValue;
+	ExpressionResult result = context->getValue(this->stack.top(), variableValue);
+	if (result.error()) return result;
+	delete this->stack.top();
+	this->stack.pop();
+	value = variableValue->copy();
+	return result;
+}
+
 Value* Memory::top() {
 	return this->stack.top();
 }
@@ -34,6 +49,15 @@ unsigned long int Memory::size() {
 	return this->stack.size();
 }
 
+/**
+ * @brief check if the stack size is the expected one
+ * 
+ * @param size the minimum size of the stack
+ * @param message the error message to display in case of error
+ * @param range the default range in case where the stack is empty
+ * @param ctx the current context
+ * @return ExpressionResult if the stack size is correct or not
+ */
 ExpressionResult Memory::sizeExpected(unsigned long int size, std::string message, TextRange range, const Context *ctx) {
 	if (this->stack.size() == 0 && size != 0) 
 		return ExpressionResult(message + "(Memory is empty)", range, ctx);
@@ -46,5 +70,25 @@ ExpressionResult Memory::sizeExpected(unsigned long int size, std::string messag
 			ctx
 		);
 	}
+	return ExpressionResult();
+}
+
+/**
+ * @brief replace top value with it's value if it's a variable
+ * 
+ * @param context the current context
+ * @return ExpressionResult the result of the operation
+ */
+ExpressionResult Memory::topVariableToValue(const Context *context) {
+	if (this->stack.size() == 0) 
+		throw std::runtime_error("Memory::topVariableToValue: stack is empty");
+	if (this->stack.top()->getType() != VARIABLE) return ExpressionResult();
+
+	Value *value;
+	ExpressionResult result = context->getValue(this->stack.top(), value);
+	delete this->stack.top();
+	this->stack.pop();
+	if (result.error()) return result;
+	this->stack.push(value->copy());
 	return ExpressionResult();
 }

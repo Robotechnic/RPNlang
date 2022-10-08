@@ -44,7 +44,6 @@ class Context {
 		ExpressionResult getValue(const Value *name, Value *&value) const;
 		ExpressionResult getValue(const Value *path, const std::string name, Value *&value) const;
 		Value *getValue(const Value *name) const;
-		Value *getValue(const std::string name) const;
 
 		bool hasValue(const std::string name) const;
 		
