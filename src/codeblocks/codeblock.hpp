@@ -15,7 +15,7 @@ class CodeBlock : public BaseBlock {
 
 		void setNext(CodeBlock *next);
 
-		const Token* getKeyword();
+		Token* getKeyword();
 
 		bool empty() const;
 		void clear();

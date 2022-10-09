@@ -30,11 +30,10 @@ void Lexer::pushLine() {
 ExpressionResult Lexer::lex() {
 	Token *token;
 	ExpressionResult result;
-	bool integrated = false;
 	while (!this->tokens.empty()) {
 		token = this->tokens.front();
 		this->tokens.pop();
-		integrated = false;
+		this->integrated = false;
 		switch (token->getType()) {
 			case TOKEN_TYPE_END_OF_LINE:
 			case TOKEN_TYPE_EXPRESSION_SEPARATOR:
@@ -77,12 +76,12 @@ ExpressionResult Lexer::lex() {
 				result = this->parseFunctionCall(token);
 				break;
 			default:
-				integrated = true;
+				this->integrated = true;
 				this->currentLine->push(token);
 				break;
 		}
 		if (result.error()) return result;
-		if (!integrated) delete token;
+		if (!this->integrated) delete token;
 	}
 
 	if (this->keywordBlockStack.size() > 0)
@@ -229,31 +228,33 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 		CodeBlock *block = this->keywordBlockStack.top();
 		this->keywordBlockStack.pop();
 
-		auto* blockCloser = &blockOpeners.at(block->getKeyword()->getStringValue());
-		if (std::find(blockCloser->begin(), blockCloser->end(), token->getStringValue()) == blockCloser->end())
+		Token *keyword = block->getKeyword();
+		const std::string &name = keyword->getStringValue();
+		const std::vector<std::string> &blockCloser = blockOpeners.at(name);
+		if (std::find(blockCloser.begin(), blockCloser.end(), token->getStringValue()) == blockCloser.end())
 			return ExpressionResult(
-				"Expected " + blockClosers.at(block->getKeyword()->getStringValue()) + " token before " + token->getStringValue(),
+				"Expected " + blockClosers.at(name) + " token before " + token->getStringValue(),
 				token->getRange(),
 				this->context
 			);
 		
 		if (!this->keywordBlockStack.empty()) {
-			if (blockClosers.contains(block->getKeyword()->getStringValue()))
-				this->keywordBlockStack.top()->setNext(block);
-			else
-				this->keywordBlockStack.top()->push(block);
-		} else
+			this->keywordBlockStack.top()->push(block);
+		} else if (blockClosers.contains(name)){
+			static_cast<CodeBlock*>(this->codeBlocks.front())->setNext(block);
+		} else {
 			this->codeBlocks.push(block);
+		}
 	}
 
 	if (blockOpeners.contains(token->getStringValue())) {
 		this->pushLine();
 		this->keywordBlockStack.push(new CodeBlock(token));
+		this->integrated = true;
 		return ExpressionResult();
 	}
 
-	
-	throw std::runtime_error("Unknown keyword " + token->getStringValue() + " bad token in Lexer::parseKeyword");
+	return ExpressionResult();	
 }
 
 /**

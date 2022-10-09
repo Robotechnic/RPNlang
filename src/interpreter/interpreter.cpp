@@ -191,15 +191,14 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 		} else {
 			result = ExpressionResult(
 				"Lexer didn't to its job corectly ;(",
-				static_cast<CodeBlock*>(blocks.front())->getKeyword()->getRange(),
+				static_cast<CodeBlock*>(block)->getKeyword()->getRange(),
 				this->context
 			);
 		}
 		delete block;
 	}
 
-	if (result.error()) return result;
-	return this->checkMemory();
+	return result;
 }
 
 /**
@@ -239,7 +238,7 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 		}
 		delete token;
 	}
-	return result;
+	return this->checkMemory();
 }
 
 /**

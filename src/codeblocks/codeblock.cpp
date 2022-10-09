@@ -1,6 +1,6 @@
 #include "codeblocks/codeblock.hpp"
 
-CodeBlock::CodeBlock(Token *keyword) : BaseBlock(CODE_BLOCK), keyword(keyword) {}
+CodeBlock::CodeBlock(Token *keyword) : BaseBlock(CODE_BLOCK), keyword(keyword), next(nullptr) {}
 
 CodeBlock::~CodeBlock() {
 	this->clear();
@@ -30,14 +30,15 @@ void CodeBlock::clear() {
 	this->blocks.clear();
 }
 
-const Token* CodeBlock::getKeyword() {
+Token* CodeBlock::getKeyword() {
 	return this->keyword;
 }
 
 void CodeBlock::display() const {
-	std::cout << "CodeBlock: " << this->keyword->getStringValue() << std::endl;
+	const std::string &name = this->keyword->getStringValue();
+	std::cout << "CodeBlock: " << name << std::endl;
 	this->blocks.display();
-	std::cout<< "End CodeBlock: " << this->keyword->getStringValue() << std::endl;
+	std::cout<< "End CodeBlock: " << name << std::endl;
 }
 
 TextRange CodeBlock::lastRange() const {

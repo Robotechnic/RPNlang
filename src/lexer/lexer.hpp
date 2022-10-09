@@ -42,6 +42,7 @@ class Lexer {
 		std::queue<Token*> tokens;
 		std::stack<CodeBlock*> keywordBlockStack;
 		BlockQueue codeBlocks;
+		bool integrated;
 
 		void pushLine();
 

@@ -11,7 +11,7 @@
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
 
-// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/1 variablesAndAritmetic.rpn"
+#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/2 conditions.rpn"
 
 /**
  * @brief allow shell to be destroyed when ctrl+c is pressed, this allow to save the history
@@ -20,6 +20,7 @@
  */
 void signalHandler(int signum) {
 	if (signum == SIGINT) return;
+	std::cout<<std::endl;
 	exit(signum);
 }
 
