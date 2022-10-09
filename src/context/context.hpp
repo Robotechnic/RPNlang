@@ -42,6 +42,7 @@ class Context {
 		void setValue(const Value &name, Value *value);
 		
 		ExpressionResult getValue(const Value *name, Value *&value) const;
+		ExpressionResult getValue(const Token *name, Value *&value) const;
 		ExpressionResult getValue(const Value *path, const std::string name, Value *&value) const;
 		Value *getValue(const Value *name) const;
 

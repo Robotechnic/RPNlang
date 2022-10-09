@@ -1,5 +1,11 @@
 #include "rpnfunctions/userrpnfunction.hpp"
 
+UserRPNFunction::UserRPNFunction() : RPNFunction("",{},{},NONE), body(nullptr) {}
+UserRPNFunction::UserRPNFunction(const UserRPNFunction &other) :
+	RPNFunction(other.name, other.argsName, other.argsTypes, other.returnType),
+	body(other.body)
+{}
+
 UserRPNFunction::UserRPNFunction(
 	std::string name,
 	std::vector<std::string> argsName,
@@ -82,7 +88,9 @@ void UserRPNFunction::addFunction(
 			CodeBlock *body
 		) 
 {
-	userFunctions[name] = UserRPNFunction(name, argsName, argsTypes, returnType, body);
+	userFunctions.insert(
+		std::map<std::string, UserRPNFunction>::value_type(name, UserRPNFunction(name, argsName, argsTypes, returnType, body))
+	);
 }
 
 UserRPNFunction *UserRPNFunction::getFunction(std::string name) {

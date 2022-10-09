@@ -24,6 +24,9 @@
 #include "value/value.hpp"
 #include "value/types.hpp"
 
+#include "rpnfunctions/rpnfunction.hpp"
+#include "rpnfunctions/builtinmap.hpp"
+
 class Interpreter {
 	public:
 		Interpreter();

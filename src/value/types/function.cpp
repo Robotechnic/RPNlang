@@ -1,6 +1,6 @@
 #include "value/types/function.hpp"
 
-Function::Function(RPNFunction* function, TextRange range) :
+Function::Function(const RPNFunction* function, TextRange range) :
 	Value(FUNCTION, range),
 	function(function) {}
 
@@ -33,7 +33,7 @@ std::string Function::getStringValue() const {
 	return "<function " + function->getName() + ">";
 }
 
-RPNFunction* Function::getValue() const {
+const RPNFunction* Function::getValue() const {
 	return this->function;
 }	
 

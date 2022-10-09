@@ -10,6 +10,7 @@
 #include "value/valuetypes.hpp"
 #include "value/value.hpp"
 
+class BuiltinRPNFunction;
 namespace builtins {
-	extern std::map<std::string, BuiltinRPNFunction> builtinFunctions;
+	extern const std::map<std::string, BuiltinRPNFunction> builtinFunctions;
 };

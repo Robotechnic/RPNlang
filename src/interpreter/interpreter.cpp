@@ -335,9 +335,42 @@ ExpressionResult Interpreter::interpretAssignment(Token *operatorToken) {
 }
 
 ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
-	return ExpressionResult(
-		"Function call not implemented yet",
+	const RPNFunction *function;
+	ExpressionResult result;
+	if (builtins::builtinFunctions.contains(functionToken->getStringValue())) {
+		function = &builtins::builtinFunctions.at(functionToken->getStringValue());
+	} else {
+		Value *value;
+		result = this->context->getValue(functionToken, value);
+		if (result.error()) return result;
+		if (value->getType() != FUNCTION)
+			return ExpressionResult(
+				functionToken->getStringValue() + " is not a function",
+				functionToken->getRange(),
+				this->context
+			);
+		function = static_cast<Function*>(value)->getValue();
+	}
+
+	result = this->memory.sizeExpected(
+		function->getArgumentsCount(),
+		"Invalid number of arguments for function, got " + functionToken->getStringValue() +
+		" but expected " + std::to_string(function->getArgumentsCount()) + " arguments",
 		functionToken->getRange(),
 		this->context
 	);
+	if (result.error()) return result;
+
+	std::vector<Value*> arguments;
+	for (size_t i = 0; i < function->getArgumentsCount(); i++) {
+		Value *value;
+		result = this->memory.popVariableValue(value, this->context);
+		if (result.error()) return result;
+		arguments.insert(arguments.begin(), value);
+	}
+	RPNFunctionResult callResult = function->call(arguments, this->context);
+	for (Value *value : arguments) delete value;
+	if (std::get<0>(callResult).error()) return std::get<0>(callResult);
+	this->memory.push(std::get<1>(callResult));
+	return ExpressionResult();
 }

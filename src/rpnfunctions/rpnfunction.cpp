@@ -95,7 +95,7 @@ ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Cont
 	return ExpressionResult();
 }
 
-int RPNFunction::getArgumentsCount() const {
+size_t RPNFunction::getArgumentsCount() const {
 	return this->argsName.size();
 }
 

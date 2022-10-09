@@ -157,6 +157,20 @@ ExpressionResult Context::getValue(const Value *name, Value *&value) const {
 	);
 }
 
+ExpressionResult Context::getValue(const Token *name, Value *&value) const {
+	std::string nameStr = name->getStringValue();
+	if (this->symbols.find(nameStr) != this->symbols.end()) {
+		value = this->symbols.at(nameStr);
+		return ExpressionResult();
+	}
+	
+	return ExpressionResult(
+		"Undefined variable name : " + nameStr,
+		name->getRange(),
+		this
+	);
+}
+
 ExpressionResult Context::getValue(const Value *path, const std::string name, Value *&value) const {
 	if (this->symbols.find(name) != this->symbols.end()) {
 		value = this->symbols.at(name)->copy();

@@ -7,6 +7,8 @@
 
 class UserRPNFunction : public RPNFunction {
 	public:
+		UserRPNFunction();
+		UserRPNFunction(const UserRPNFunction &other);
 		UserRPNFunction(
 			std::string name,
 			std::vector<std::string> argsName,

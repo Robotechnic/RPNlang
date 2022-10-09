@@ -24,7 +24,7 @@ class RPNFunction {
 			Context *context
 		) const;
 
-		int getArgumentsCount() const;
+		size_t getArgumentsCount() const;
 		std::string getName() const;
 
 	protected:

@@ -8,7 +8,7 @@
 
 class Function : public Value {
 	public:
-		Function(RPNFunction* function, TextRange range);
+		Function(const RPNFunction* function, TextRange range);
 
 		void clean();
 
@@ -20,7 +20,7 @@ class Function : public Value {
 
 		std::string getStringValue() const;
 
-		RPNFunction* getValue() const;
+		const RPNFunction* getValue() const;
 
 		operatorResult opadd(const Value *other, const Context *context) override;
 		operatorResult opsub(const Value *other, const Context *context) override;
@@ -36,5 +36,5 @@ class Function : public Value {
 		operatorResult opeq(const Value *other, const Context *context) override;
 
 	private:
-		RPNFunction *function;
+		const RPNFunction *function;
 };
