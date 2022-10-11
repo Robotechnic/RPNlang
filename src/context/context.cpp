@@ -125,15 +125,23 @@ Context * Context::getChild() const {
  * @param value the value to set
  */
 void Context::setValue(std::string name, Value *value) {
+	if (this->symbols.contains(name) && this->symbols[name] != nullptr)
+		delete this->symbols[name];
 	this->symbols[name] = value;
 }
 
 void Context::setValue(const Token *name, Value *value) {
-	this->symbols[name->getStringValue()] = value;
+	std::string nameStr = name->getStringValue();
+	if (this->symbols.contains(nameStr) && this->symbols[nameStr] != nullptr)
+		delete this->symbols[nameStr];
+	this->symbols[nameStr] = value;
 }
 
 void Context::setValue(const Value &name, Value *value) {
-	this->symbols[name.getStringValue()] = value;
+	std::string nameStr = name.getStringValue();
+	if (this->symbols.contains(nameStr) && this->symbols[nameStr] != nullptr)
+		delete this->symbols[nameStr];
+	this->symbols[nameStr] = value;
 }
 
 /**
