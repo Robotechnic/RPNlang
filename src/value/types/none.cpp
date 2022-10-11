@@ -13,11 +13,13 @@ bool None::isCastableTo(ValueType type) const {
 Value *None::to(ValueType type) {
 	if (type == NONE)
 		return new None(this->range);
+	if (type == BOOL)
+		return new Bool(false, this->range);
 	
 	throw std::runtime_error("Invalid value type");
 }
 
-Value *None::copy() const {
+ Value *None::copy() const {
 	return new None(range);
 }
 

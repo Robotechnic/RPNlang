@@ -16,7 +16,7 @@ class Function : public Value {
 		bool isNumber() const { return false; };
 
 		Value *to(ValueType type);
-		Value *copy() const override;
+		inline Value *copy() const override;
 
 		std::string getStringValue() const;
 

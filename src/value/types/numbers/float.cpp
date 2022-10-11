@@ -31,7 +31,7 @@ Value *Float::to(ValueType type) {
 	};
 }
 
-Value *Float::copy() const {
+ Value *Float::copy() const {
 	return new Float(value, range);
 }
 

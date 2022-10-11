@@ -25,7 +25,7 @@ class Int : public Value {
 		bool isNumber() const { return true; };
 
 		Value *to(ValueType type);
-		Value *copy() const override;
+		inline Value *copy() const override;
 
 		static Int *empty() {
 			return new Int(0, TextRange());

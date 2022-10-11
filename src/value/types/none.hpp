@@ -18,7 +18,7 @@ class None : public Value {
 		bool isNumber() const { return false; };
 
 		Value *to(ValueType type);
-		Value *copy() const override;
+		inline Value *copy() const override;
 
 		static None *empty() {
 			return new None(TextRange());

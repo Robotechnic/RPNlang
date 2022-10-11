@@ -8,7 +8,7 @@ class ValueToken : public Token {
 		ValueToken(Value *value);
 		~ValueToken();
 
-		Value *getValue();
+		Value *&getValue();
 
 		std::string getStringValue() const override;
 

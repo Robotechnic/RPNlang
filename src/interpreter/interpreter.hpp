@@ -51,12 +51,17 @@ class Interpreter {
 		ExpressionResult interpretOperator(Token *operatorToken);
 		ExpressionResult interpretAssignment(Token *operatorToken);
 		ExpressionResult interpretFunctionCall(Token *functionToken);
+		ExpressionResult interpretIf(Line &line, CodeBlock &block);
+		ExpressionResult interpretWhile(Line &line, CodeBlock &block);
+		ExpressionResult interpretFor(Line &line, CodeBlock &block);
+		ExpressionResult interpretFunction(Line &line, CodeBlock &block);
 		
 		Value *returnValue;
 		Value *lastValue;
 		
 		TextRange mergeRanges(const std::vector<Value*> &values);
 		void clearQueue(std::queue<Token*> &tokens);
+		void clearLastValue();
 
 		Memory memory;
 		Context *context;

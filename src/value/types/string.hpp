@@ -22,7 +22,7 @@ class String : public Value {
 		}
 
 		Value *to(ValueType type);
-		Value *copy() const override;
+		inline Value *copy() const override;
 
 		operatorResult opadd(const Value *other, const Context *context) override;
 		operatorResult opsub(const Value *other, const Context *context) override;

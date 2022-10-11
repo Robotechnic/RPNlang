@@ -25,7 +25,7 @@ class Float : public Value {
 		bool isNumber() const { return true; };
 
 		Value *to(ValueType type);
-		Value *copy() const override;
+		inline Value *copy() const override;
 
 		static Float *empty() {
 			return new Float(0, TextRange());

@@ -26,7 +26,7 @@ class Value {
 		virtual bool isNumber() const = 0;
 
 		virtual Value *to(ValueType type);
-		virtual Value *copy() const = 0;
+		inline virtual Value *copy() const = 0;
 		
 		virtual std::string getStringValue() const = 0;
 

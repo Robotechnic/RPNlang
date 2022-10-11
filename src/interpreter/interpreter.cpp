@@ -64,10 +64,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 		return false;
 	}
 
-	if (this->lastValue != nullptr) {
-		delete this->lastValue;
-		this->lastValue = nullptr;
-	}
+	this->clearLastValue();
 
 	result = this->interpret(lexer.getBlocks());
 	if (result.error()) {
@@ -93,11 +90,7 @@ ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
 	result = lexer.lex();
 	if (result.error()) return result;
 
-	if (this->lastValue != nullptr) {
-		delete this->lastValue;
-		this->lastValue = nullptr;
-	}
-
+	this->clearLastValue();
 	return this->interpret(lexer.getBlocks());
 }
 
@@ -123,6 +116,17 @@ void Interpreter::clearQueue(std::queue<Token*> &tokens) {
 	while (!tokens.empty()) {
 		delete tokens.front();
 		tokens.pop();
+	}
+}
+
+/**
+ * @brief to avoid memory leak, clear the last value before resetting it at the end of a line interpretation
+ * 
+ */
+void Interpreter::clearLastValue() {
+	if (this->lastValue != nullptr) {
+		delete this->lastValue;
+		this->lastValue = nullptr;
 	}
 }
 
@@ -167,6 +171,7 @@ ExpressionResult Interpreter::checkMemory() {
 		return result;
 	}
 
+	this->clearLastValue();
 	return this->memory.popVariableValue(this->lastValue, this->context);
 }
 
@@ -184,9 +189,11 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 		blocks.pop();
 		if (block->getType() == LINE_BLOCK) {
 			Line *l = static_cast<Line*>(block);
-			if (!blocks.empty() && blocks.front()->getType() == CODE_BLOCK)
+			if (!blocks.empty() && blocks.front()->getType() == CODE_BLOCK) {
 				result = this->interpretBlock(*l, *static_cast<CodeBlock*>(blocks.front()));
-			else
+				delete blocks.front();
+				blocks.pop();
+			} else
 				result = interpretLine(*l);
 		} else {
 			result = ExpressionResult(
@@ -249,10 +256,22 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
  * @return ExpressionResult status of the interpretation
  */
 ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
-	std::cout<<"Params line :"<<std::endl;
-	line.display();
-	std::cout<<"Code block :"<<std::endl;
-	block.display();
+	const std::string type = block.getKeyword()->getStringValue();
+	if (type == "if") {
+		return this->interpretIf(line, block);
+	} else if (type == "while") {
+		return this->interpretWhile(line, block);
+	} else if (type == "for") {
+		return this->interpretFor(line, block);
+	} else if (type == "fun") {
+		return this->interpretFunction(line, block);
+	} else {
+		return ExpressionResult(
+			"Unknow block type",
+			block.getKeyword()->getRange(),
+			this->context
+		);
+	}
 	return ExpressionResult();
 }
 
@@ -369,7 +388,55 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 	}
 	RPNFunctionResult callResult = function->call(arguments, this->context);
 	for (Value *value : arguments) delete value;
-	if (std::get<0>(callResult).error()) return std::get<0>(callResult);
+	if (std::get<0>(callResult).error()) {
+		return std::get<0>(callResult);
+	}
 	this->memory.push(std::get<1>(callResult));
 	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
+	ExpressionResult result = this->interpretLine(line);
+	if (result.error()) return result;
+	Value *val = this->lastValue;
+	Bool *condition = static_cast<Bool*>(val->to(BOOL));
+	delete val;
+	Line l;
+	if (condition->getValue()) {
+		delete condition;
+		return this->interpret(block.getBlocks());
+	}
+	delete condition;
+	if (block.getNext() != nullptr)
+		return this->interpret(block.getNext()->getBlocks());
+	
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
+	ExpressionResult result = this->interpretLine(line);
+	if (result.error()) return result;
+	Value *val = this->lastValue;
+	Bool *condition = static_cast<Bool*>(val->to(BOOL));
+	delete val;
+	Line l;
+	while (condition->getValue()) {
+		delete condition;
+		result = this->interpret(block.getBlocks());
+		if (result.error()) return result;
+		result = this->interpretLine(line);
+		if (result.error()) return result;
+		val = this->memory.pop();
+		condition = static_cast<Bool*>(val->to(BOOL));
+		delete val;
+	}
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
+	return ExpressionResult("TODO: implement for loop", line.lastRange(), this->context);
+}
+
+ExpressionResult Interpreter::interpretFunction(Line &line, CodeBlock &block) {
+	return ExpressionResult("TODO: implement function", line.lastRange(), this->context);
 }

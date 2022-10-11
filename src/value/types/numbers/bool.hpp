@@ -25,7 +25,7 @@ class Bool : public Value {
 		bool isNumber() const { return true; };
 
 		Value *to(ValueType type);
-		Value *copy() const override;
+		inline Value *copy() const override;
 
 		static Bool *empty() {
 			return new Bool(false, TextRange());

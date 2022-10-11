@@ -31,7 +31,7 @@ Value *Int::to(ValueType type) {
 	};
 }
 
-Value *Int::copy() const {
+ Value *Int::copy() const {
 	return new Int(value, range);
 }
 

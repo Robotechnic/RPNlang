@@ -55,22 +55,28 @@ ExpressionResult Lexer::lex() {
 				result = this->parseHexNumber(token);
 				break;
 			case TOKEN_TYPE_INT:
-				this->currentLine->push(new ValueToken(new Int(
-					std::stoi(token->getStringValue()),
-					token->getRange()
-				)));
+				this->currentLine->push(new ValueToken(
+					new Int(
+						std::stoi(token->getStringValue()),
+						token->getRange()
+					)
+				));
 				break;
 			case TOKEN_TYPE_FLOAT:
-				this->currentLine->push(new ValueToken(new Float(
-					std::stof(token->getStringValue()),
-					token->getRange()
-				)));
+				this->currentLine->push(new ValueToken(
+					new Float(
+						std::stof(token->getStringValue()),
+						token->getRange()
+					)
+				));
 				break;
 			case TOKEN_TYPE_BOOL:
-				this->currentLine->push(new ValueToken(new Bool(
-					token->getStringValue() == "true",
-					token->getRange()
-				)));
+				this->currentLine->push(new ValueToken(
+					new Bool(
+						token->getStringValue() == "true",
+						token->getRange()
+					)
+				));
 				break;
 			case TOKEN_TYPE_COLON:
 				result = this->parseFunctionCall(token);
@@ -237,11 +243,13 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 				token->getRange(),
 				this->context
 			);
-		
 		if (!this->keywordBlockStack.empty()) {
-			this->keywordBlockStack.top()->push(block);
+			if (blockClosers.contains(name))
+				this->keywordBlockStack.top()->setNext(block);
+			else
+				this->keywordBlockStack.top()->push(block);
 		} else if (blockClosers.contains(name)){
-			static_cast<CodeBlock*>(this->codeBlocks.front())->setNext(block);
+			static_cast<CodeBlock*>(this->codeBlocks.back())->setNext(block);
 		} else {
 			this->codeBlocks.push(block);
 		}

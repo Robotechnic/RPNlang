@@ -22,6 +22,10 @@ void CodeBlock::setNext(CodeBlock *next) {
 	this->next = next;
 }
 
+CodeBlock *CodeBlock::getNext() const {
+	return this->next;
+}
+
 bool CodeBlock::empty() const {
 	return this->blocks.empty();
 }

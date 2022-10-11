@@ -6,7 +6,7 @@ ValueToken::~ValueToken() {
 	if (!this->accessed) delete this->value;
 }
 
-Value *ValueToken::getValue() {
+Value *&ValueToken::getValue() {
 	this->accessed = true;
 	return this->value;
 }

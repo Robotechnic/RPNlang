@@ -14,6 +14,7 @@ class CodeBlock : public BaseBlock {
 		BlockQueue& getBlocks();
 
 		void setNext(CodeBlock *next);
+		CodeBlock *getNext() const;
 
 		Token* getKeyword();
 

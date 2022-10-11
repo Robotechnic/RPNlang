@@ -17,7 +17,7 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	context->setChild(new Context(this->name, "<builtin>", context, CONTEXT_TYPE_FUNCTION));
 
 	ExpressionResult result = this->checkArgs(args, context);
-	if (result.error()) return std::make_tuple(result, None::empty());
+	if (result.error()) return std::make_tuple(result, nullptr);
 	RPNFunctionResult functionResult = this->function(args, context->getChild());
 	
 	assert(
