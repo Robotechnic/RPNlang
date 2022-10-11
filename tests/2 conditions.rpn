@@ -38,5 +38,4 @@ else
 	1 :exit
 fi
 
-
 "conditions ok\n" :print

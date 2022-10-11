@@ -14,7 +14,8 @@ Interpreter::Interpreter(Context *ctx) :
 
 Interpreter::~Interpreter() {
 	delete returnValue;
-	delete lastValue;
+	if (this->lastValue != nullptr)
+		delete lastValue;
 	this->memory.clear();
 }
 
@@ -400,7 +401,6 @@ ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
 	if (result.error()) return result;
 	Value *val = this->lastValue;
 	Bool *condition = static_cast<Bool*>(val->to(BOOL));
-	delete val;
 	Line l;
 	if (condition->getValue()) {
 		delete condition;
