@@ -1,7 +1,22 @@
 i 0 =
 i 2 % 0 == i 150 < :and while
 	i i 2 + =
-	i f"{} " :print
+	i 2 % 0 == :print
+	i f" {} " :print
 elihw
 
 "\n" :print
+
+i 0 =
+
+i 100 <= while
+	i i 1 + =
+	i 50 == if
+		break
+	fi
+	continue
+	1 :exit
+elihw
+
+i f"i = {}\n" :print
+i 50 == :assert

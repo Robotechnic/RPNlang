@@ -78,3 +78,6 @@ a :len 6 == :assert
 "127" :toFloat 127.0 == :assert
 "127.5" :toFloat f"{}\n" :print
 "127.5" :toFloat 127.5 == :assert
+
+# test fstring
+1 2 1 2 + f"{} + {} = {}" "1 + 2 = 3" == :assert
