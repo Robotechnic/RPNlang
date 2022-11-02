@@ -1,24 +1,22 @@
 #include "codeblocks/blockqueue.hpp"
-BlockQueue::BlockQueue() : blocks() {}
+BlockQueue::BlockQueue() : blocks(), currentBlock(0) {}
 BlockQueue::~BlockQueue() {
 	this->clear();
 }
 
 void BlockQueue::push(BaseBlock *block) {
-	this->blocks.push(block);
+	this->blocks.push_back(block);
 }
 
 BaseBlock *BlockQueue::pop() {
-	if (this->blocks.empty()) {
+	if (this->empty()) {
 		throw std::runtime_error("BlockQueue::pop() called on empty stack");
 	}
-	BaseBlock *block = this->blocks.front();
-	this->blocks.pop();
-	return block;
+	return this->blocks[this->currentBlock++];
 }
 
 BaseBlock *BlockQueue::front() {
-	return this->blocks.front();
+	return this->blocks.at(this->currentBlock);
 }
 
 BaseBlock *BlockQueue::back() {
@@ -26,22 +24,25 @@ BaseBlock *BlockQueue::back() {
 }
 
 bool BlockQueue::empty() const {
-	return this->blocks.empty();
+	return this->currentBlock >= this->blocks.size();
 }
 
 void BlockQueue::clear() {
-	while (!this->blocks.empty()) {
-		delete this->blocks.front();
-		this->blocks.pop();
-	}
+	for (auto block : this->blocks)
+		if (block != nullptr) delete block;
+	this->blocks.clear();
+}
+
+void BlockQueue::reset() {
+	this->currentBlock = 0;
 }
 
 void BlockQueue::display() const {
-	std::queue<BaseBlock *> tmp = this->blocks;
-	while (!tmp.empty()) {
-		tmp.front()->display();
-		tmp.pop();
+	std::cout<<"BlockQueue: ";
+	for (auto block : this->blocks) {
+		block->display();
 	}
+	std::cout<<std::endl;
 }
 
 TextRange BlockQueue::lastRange() const {

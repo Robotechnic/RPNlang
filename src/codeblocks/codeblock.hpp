@@ -12,6 +12,7 @@ class CodeBlock : public BaseBlock {
 		~CodeBlock();
 		void push(BaseBlock *block);
 		BlockQueue& getBlocks();
+		BlockQueue  getBlocksCopy() const;
 
 		void setNext(CodeBlock *next);
 		CodeBlock *getNext() const;
@@ -20,6 +21,7 @@ class CodeBlock : public BaseBlock {
 
 		bool empty() const;
 		void clear();
+		void reset();
 
 		TextRange lastRange() const;
 

@@ -1,39 +1,40 @@
 #include "codeblocks/line.hpp"
 
-Line::Line() :  BaseBlock(LINE_BLOCK), tokens() {}
+Line::Line() :  BaseBlock(LINE_BLOCK), tokens(), currentToken(0) {}
 
 Line::~Line() {
 	clear();
 }
 
-std::queue<Token*> Line::getTokens() {
-	return tokens;
-}
-
 void Line::push(Token *token) {
-	this->tokens.push(token);
+	this->tokens.push_back(token);
 }
 
 Token *Line::pop() {
-	Token *token = this->tokens.front();
-	this->tokens.pop();
-	return token;
+	return this->tokens[this->currentToken++];
 }
 
 bool Line::empty() const {
-	return this->tokens.empty();
+	return this->currentToken >= this->tokens.size();
 }
 
 void Line::clear() {
-	while (!this->tokens.empty()) {
-		if (this->tokens.front() != nullptr) delete this->tokens.front();
-		this->tokens.pop();
-	}
+	for (auto token : this->tokens)
+		if (token != nullptr) delete token;
+	this->tokens.clear();
 }
 
 void Line::display() const {
 	std::cout<<"Line: ";
 	std::cout<<this->tokens<<";"<<std::endl;
+}
+
+/**
+ * @brief reset the line to the beginning
+ * 
+ */
+void Line::reset() {
+	this->currentToken = 0;
 }
 
 TextRange Line::lastRange() const {

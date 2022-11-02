@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stack>
+#include <vector>
 #include <stdexcept>
 #include "codeblocks/baseblock.hpp"
 
@@ -16,11 +16,12 @@ class BlockQueue {
 
 		bool empty() const;
 		void clear();
+		void reset();
 
 		void display() const;
 
 		TextRange lastRange() const;
-
 	private:
-		std::queue<BaseBlock *> blocks;
+		std::vector<BaseBlock *> blocks;
+		long unsigned int currentBlock;
 };

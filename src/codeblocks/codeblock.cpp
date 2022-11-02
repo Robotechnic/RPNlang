@@ -18,6 +18,11 @@ BlockQueue& CodeBlock::getBlocks() {
 	return this->blocks;
 }
 
+BlockQueue CodeBlock::getBlocksCopy() const {
+	BlockQueue copy = this->blocks;
+	return copy;
+}
+
 void CodeBlock::setNext(CodeBlock *next) {
 	this->next = next;
 }
@@ -32,6 +37,14 @@ bool CodeBlock::empty() const {
 
 void CodeBlock::clear() {
 	this->blocks.clear();
+}
+
+/**
+ * @brief Resets the block queue to the beginning
+ * 
+ */
+void CodeBlock::reset() {
+	this->blocks.reset();
 }
 
 Token* CodeBlock::getKeyword() {
