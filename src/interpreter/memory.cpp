@@ -10,6 +10,8 @@ void Memory::push(Value* value) {
 }
 
 Value* Memory::pop() {
+	if (this->stack.empty())
+		throw std::runtime_error("Memory stack is empty");
 	Value* value = this->stack.top();
 	this->stack.pop();
 	return value;

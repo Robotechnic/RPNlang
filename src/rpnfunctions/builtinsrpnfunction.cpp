@@ -16,14 +16,15 @@ RPNFunctionResult BuiltinRPNFunction::call(
 ) const {
 	context->setChild(new Context(this->name, "<builtin>", context, CONTEXT_TYPE_FUNCTION));
 
-	ExpressionResult result = this->checkArgs(args, context);
-	if (result.error()) return std::make_tuple(result, nullptr);
-	RPNFunctionResult functionResult = this->function(args, context->getChild());
+	RPNFunctionResult result = std::make_tuple(this->checkArgs(args, context), None::empty());
+	if (std::get<0>(result).error()) return result;
+	delete std::get<1>(result);
+	result = this->function(args, context->getChild());
 	
 	assert(
-		std::get<1>(functionResult) != nullptr &&
-		"BuiltinRPNFunction::call: functionResult.second is nullptr"
+		std::get<1>(result) != nullptr &&
+		"BuiltinRPNFunction::call: result.second is nullptr"
 	);
 
-	return functionResult;
+	return result;
 }

@@ -66,7 +66,6 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 	}
 
 	this->clearLastValue();
-
 	result = this->interpret(lexer.getBlocks());
 	if (result.error()) {
 		result.display();
@@ -80,6 +79,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
  * @brief take a string line, parse it and interpret the result
  * 
  * @param line the line to interpret
+ * @param lineNumber the line number of the line
  * @return ExpressionResult status of the interpretation
  */
 ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
@@ -155,6 +155,7 @@ TextRange Interpreter::mergeRanges(const std::vector<Value*> &values) {
  */
 ExpressionResult Interpreter::checkMemory() {
 	if (this->memory.empty()) {
+		this->clearLastValue();
 		this->lastValue = None::empty();
 		return ExpressionResult();
 	}
@@ -180,20 +181,18 @@ ExpressionResult Interpreter::checkMemory() {
  * @brief interpret a list of blocks
  * 
  * @param blocks the list of blocks to interpret
+ * @param free if true, free the blocks after interpretation
  * @return ExpressionResult status of the interpretation
  */
 ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	ExpressionResult result;
 	
 	while (!blocks.empty() && !result.error()) {
-		BaseBlock *block = blocks.front();
-		blocks.pop();
+		BaseBlock *block = blocks.pop();
 		if (block->getType() == LINE_BLOCK) {
 			Line *l = static_cast<Line*>(block);
 			if (!blocks.empty() && blocks.front()->getType() == CODE_BLOCK) {
-				result = this->interpretBlock(*l, *static_cast<CodeBlock*>(blocks.front()));
-				delete blocks.front();
-				blocks.pop();
+				result = this->interpretBlock(*l, *static_cast<CodeBlock*>(blocks.pop()));
 			} else
 				result = interpretLine(*l);
 		} else {
@@ -203,7 +202,6 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 				this->context
 			);
 		}
-		delete block;
 	}
 
 	return result;
@@ -244,7 +242,6 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 					this->context
 				);
 		}
-		delete token;
 	}
 	return this->checkMemory();
 }
@@ -276,7 +273,7 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretFString(FStringToken *token) {
+ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
 	ExpressionResult sizeOk = this->memory.sizeExpected(
 		token->getParts().size() - 1,
 		"missing fString parameters expected " + std::to_string(token->getParts().size() - 1) + 
@@ -303,7 +300,7 @@ ExpressionResult Interpreter::interpretFString(FStringToken *token) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretOperator(Token *operatorToken) {
+ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
 	ExpressionResult sizeOk = this->memory.sizeExpected(
 		2,
 		"Not enough values for operator " + operatorToken->getStringValue(), 
@@ -329,7 +326,7 @@ ExpressionResult Interpreter::interpretOperator(Token *operatorToken) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretAssignment(Token *operatorToken) {
+ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 	ExpressionResult sizeOk = this->memory.sizeExpected(
 		2,
 		"Not enough values for operator " + operatorToken->getStringValue(), 
@@ -353,7 +350,7 @@ ExpressionResult Interpreter::interpretAssignment(Token *operatorToken) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
+ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) {
 	const RPNFunction *function;
 	ExpressionResult result;
 	if (builtins::builtinFunctions.contains(functionToken->getStringValue())) {
@@ -387,9 +384,11 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 		if (result.error()) return result;
 		arguments.insert(arguments.begin(), value);
 	}
+	
 	RPNFunctionResult callResult = function->call(arguments, this->context);
 	for (Value *value : arguments) delete value;
 	if (std::get<0>(callResult).error()) {
+		delete std::get<1>(callResult);
 		return std::get<0>(callResult);
 	}
 	this->memory.push(std::get<1>(callResult));
@@ -413,30 +412,30 @@ ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
-	ExpressionResult result = this->interpretLine(line);
+ExpressionResult Interpreter::interpretWhile(const Line &line, const CodeBlock &block) {
+	Line l = line;
+	BlockQueue blocks;
+	ExpressionResult result = this->interpretLine(l);
 	if (result.error()) return result;
-	Value *val = this->lastValue;
-	Bool *condition = static_cast<Bool*>(val->to(BOOL));
-	delete val;
-	Line l;
+	Bool *condition = static_cast<Bool*>(this->lastValue->to(BOOL));
 	while (condition->getValue()) {
 		delete condition;
-		result = this->interpret(block.getBlocks());
+		blocks = block.getBlocksCopy();
+		result = this->interpret(blocks);
 		if (result.error()) return result;
-		result = this->interpretLine(line);
+		l = line;
+		result = this->interpretLine(l);
 		if (result.error()) return result;
-		val = this->memory.pop();
-		condition = static_cast<Bool*>(val->to(BOOL));
-		delete val;
+		condition = static_cast<Bool*>(this->lastValue->to(BOOL));
 	}
+	delete condition;
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
+ExpressionResult Interpreter::interpretFor(const Line &line, const CodeBlock &block) {
 	return ExpressionResult("TODO: implement for loop", line.lastRange(), this->context);
 }
 
-ExpressionResult Interpreter::interpretFunction(Line &line, CodeBlock &block) {
+ExpressionResult Interpreter::interpretFunction(const Line &line, const CodeBlock &block) {
 	return ExpressionResult("TODO: implement function", line.lastRange(), this->context);
 }

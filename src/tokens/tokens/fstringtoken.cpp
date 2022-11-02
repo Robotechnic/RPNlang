@@ -1,7 +1,7 @@
 #include "tokens/tokens/fstringtoken.hpp"
 
 FStringToken::FStringToken(const TextRange range, std::vector<std::string> parts) : Token(range, TOKEN_TYPE_FSTRING), parts(parts) {}
-std::vector<std::string>& FStringToken::getParts() {
+const std::vector<std::string>& FStringToken::getParts() const {
 	return this->parts;
 }
 std::string FStringToken::getStringValue() const {

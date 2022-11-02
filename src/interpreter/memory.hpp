@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stack>
+#include <stdexcept>
 #include "value/value.hpp"
 #include "expressionresult/expressionresult.hpp"
 #include "context/context.hpp"

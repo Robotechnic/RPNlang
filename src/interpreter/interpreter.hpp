@@ -47,14 +47,14 @@ class Interpreter {
 		ExpressionResult checkMemory();
 		ExpressionResult interpretLine(Line &line);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
-		ExpressionResult interpretFString(FStringToken *token);
-		ExpressionResult interpretOperator(Token *operatorToken);
-		ExpressionResult interpretAssignment(Token *operatorToken);
-		ExpressionResult interpretFunctionCall(Token *functionToken);
+		ExpressionResult interpretFString(const FStringToken *token);
+		ExpressionResult interpretOperator(const Token *operatorToken);
+		ExpressionResult interpretAssignment(const Token *operatorToken);
+		ExpressionResult interpretFunctionCall(const Token *functionToken);
 		ExpressionResult interpretIf(Line &line, CodeBlock &block);
-		ExpressionResult interpretWhile(Line &line, CodeBlock &block);
-		ExpressionResult interpretFor(Line &line, CodeBlock &block);
-		ExpressionResult interpretFunction(Line &line, CodeBlock &block);
+		ExpressionResult interpretWhile(const Line &line, const CodeBlock &block);
+		ExpressionResult interpretFor(const Line &line, const CodeBlock &block);
+		ExpressionResult interpretFunction(const Line &line, const CodeBlock &block);
 		
 		Value *returnValue;
 		Value *lastValue;
