@@ -1,3 +1,4 @@
+"Simple test \n" :print
 i 0 =
 i 2 % 0 == i 150 < :and while
 	i i 2 + =
@@ -6,6 +7,7 @@ elihw
 
 "\n" :print
 
+"Break and continue test \n" :print
 i 0 =
 i 100 <= while
 	i i 1 + =
@@ -19,4 +21,18 @@ elihw
 
 i f"i = {}\n" :print
 i 50 == :assert
+
+"Nested loop test \n" :print
+i 0 =
+j 0 =
+i 10 <= while
+	j 0 =
+	j 10 <= while
+		j j 1 + =
+		i j + f" {} " :print
+	elihw
+	"\n" :print
+	i i 1 + =
+elihw
+
 "Done \n" :print
