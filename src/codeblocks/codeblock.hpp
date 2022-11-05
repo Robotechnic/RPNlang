@@ -12,7 +12,6 @@ class CodeBlock : public BaseBlock {
 		~CodeBlock();
 		void push(BaseBlock *block);
 		BlockQueue& getBlocks();
-		BlockQueue  getBlocksCopy() const;
 
 		void setNext(CodeBlock *next);
 		CodeBlock *getNext() const;

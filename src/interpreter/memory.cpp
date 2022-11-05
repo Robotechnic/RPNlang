@@ -9,10 +9,10 @@ void Memory::push(Value* value) {
 	this->stack.push(value);
 }
 
-Value* Memory::pop() {
+Value*& Memory::pop() {
 	if (this->stack.empty())
 		throw std::runtime_error("Memory stack is empty");
-	Value* value = this->stack.top();
+	Value*& value = this->stack.top();
 	this->stack.pop();
 	return value;
 }
@@ -23,22 +23,20 @@ ExpressionResult Memory::popVariableValue(Value *&value, const Context *context)
 		return ExpressionResult();
 	}
 	
-	Value *variableValue;
-	ExpressionResult result = context->getValue(this->stack.top(), variableValue);
+	ExpressionResult result = context->getValue(this->stack.top(), value);
 	if (result.error()) return result;
-	delete this->stack.top();
+	Value::deleteValue(&this->stack.top());
 	this->stack.pop();
-	value = variableValue->copy();
 	return result;
 }
 
-Value* Memory::top() {
+Value*& Memory::top() {
 	return this->stack.top();
 }
 
 void Memory::clear(unsigned long int offset) {
 	while (this->stack.size() > offset) {
-		delete this->stack.top();
+		Value::deleteValue(&this->stack.top());
 		this->stack.pop();
 	}
 }
@@ -88,9 +86,9 @@ ExpressionResult Memory::topVariableToValue(const Context *context) {
 
 	Value *value;
 	ExpressionResult result = context->getValue(this->stack.top(), value);
-	delete this->stack.top();
+	Value::deleteValue(&this->stack.top());
 	this->stack.pop();
 	if (result.error()) return result;
-	this->stack.push(value->copy());
+	this->stack.push(value);
 	return ExpressionResult();
 }

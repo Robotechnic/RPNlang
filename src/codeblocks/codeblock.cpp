@@ -18,11 +18,6 @@ BlockQueue& CodeBlock::getBlocks() {
 	return this->blocks;
 }
 
-BlockQueue CodeBlock::getBlocksCopy() const {
-	BlockQueue copy = this->blocks;
-	return copy;
-}
-
 void CodeBlock::setNext(CodeBlock *next) {
 	this->next = next;
 }

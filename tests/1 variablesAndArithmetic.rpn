@@ -1,34 +1,53 @@
-# check hex and decimal values
+"check hex and decimal values\n" :print
 0b010111101 189 == f"{}\n" :print
 0xff727a 16740986 == f"{}\n" :print
 0xff 255 <= f"{}\n" :print
 
-# check basic math
+"check basic math\n" :print
 3 2 + f"{}\n" :print
 8 9 - f"{}\n" :print
 4.8 5 + f"{}\n" :print
 5 7.5 / f"{}\n" :print
 8 3.2 % f"{}\n" :print
 
-# check basic math with variables
+"check basic math with variables\n" :print
 a 8 =
 b 7.5 =
 a b + f"{}\n" :print
 a b / f"{}\n" :print
 
-# check variable affectation (for memory leak)
+"check variable affectation (for memory leak)\n" :print
+# test affectation with each types
 a 2 =
 b "bdule" =
+c 7.9 =
+d true =
+e false =
+# a a = # this line can cause invalid read
 a b =
 b a =
 a b == f"{}\n" :print
+#e d c a b = = = =
+a b == :assert
+a b == :assert
+a c == :assert
+a d == :assert
+a e == :assert
+b c == :assert
+b d == :assert
+b e == :assert
+c d == :assert
+c e == :assert
+d e == :assert
 
-# check string concatenation
+"check string concatenation\n" :print
 a "cou" =
 a a a + =
 a f"{}\n" :print
+a "NaN" 10 * =
+a f"{} Batman !\n" :print
 
-# check boolean expressions
+"check boolean expressions\n" :print
 a 2 =
 b 3 =
 a b == :not :assert
@@ -38,46 +57,46 @@ a b > :not :assert
 a b <= :assert
 a b >= :not :assert
 
-# test random boolean expressions
+"test random boolean expressions\n" :print
 a b * 7 - 4 == a b + 5 == :and :assert
 a b * 7 - 4 == a b + 5 != :and :not :assert
 a b * 7 - 4 == a b + 5 == :or :assert
 a b * 7 - 4 == a b + 5 != :or :assert
 
-# test ord and chr
+"test ord and chr\n" :print
 a "a" =
 a :ord f"{}\n" :print
 a :ord 97 == :assert
 97 :chr f"{}\n" :print
 97 :chr "a" == :assert
 
-# test string length
+"test string length\n" :print
 a "coucou" =
 a :len f"{}\n" :print
 a :len 6 == :assert
 
-# test to string
+"test to string\n" :print
 12.5 :toString f"{}\n" :print
 12.5 :toString "12.5" == :assert
 27879 :toString f"{}\n" :print
 27879 :toString "27879" == :assert
 
-# test isNumber
+"test isNumber\n" :print
 "12.5" :isNumber :assert
 "a7" :isNumber :not :assert
 "12.5a" :isNumber :not :assert
 
-# test toInt
+"test toInt\n" :print
 "127" :toInt f"{}\n" :print
 "127" :toInt 127 == :assert
 "127.5" :toInt f"{}\n" :print
 "127.5" :toInt 127 == :assert
 
-# test toFloat
+"test toFloat\n" :print
 "127" :toFloat f"{}\n" :print
 "127" :toFloat 127.0 == :assert
 "127.5" :toFloat f"{}\n" :print
 "127.5" :toFloat 127.5 == :assert
 
-# test fstring
+"test fstring\n" :print
 1 2 1 2 + f"{} + {} = {}" "1 + 2 = 3" == :assert

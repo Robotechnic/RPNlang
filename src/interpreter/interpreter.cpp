@@ -13,9 +13,10 @@ Interpreter::Interpreter(Context *ctx) :
 {}
 
 Interpreter::~Interpreter() {
-	delete returnValue;
 	if (this->lastValue != nullptr)
-		delete lastValue;
+		Value::deleteValue(&this->lastValue);
+	if (this->returnValue != nullptr)
+		Value::deleteValue(&this->returnValue);
 	this->memory.clear();
 }
 
@@ -109,25 +110,12 @@ Value *Interpreter::getReturnValue() const {
 }
 
 /**
- * @brief clear a token queue
- * 
- * @param tokens the queue to clear
- */
-void Interpreter::clearQueue(std::queue<Token*> &tokens) {
-	while (!tokens.empty()) {
-		delete tokens.front();
-		tokens.pop();
-	}
-}
-
-/**
  * @brief to avoid memory leak, clear the last value before resetting it at the end of a line interpretation
  * 
  */
 void Interpreter::clearLastValue() {
 	if (this->lastValue != nullptr) {
-		delete this->lastValue;
-		this->lastValue = nullptr;
+		Value::deleteValue(&this->lastValue);
 	}
 }
 
@@ -153,7 +141,7 @@ TextRange Interpreter::mergeRanges(const std::vector<Value*> &values) {
  * 
  * @return ExpressionResult error if memory contains more than 1 value
  */
-ExpressionResult Interpreter::checkMemory() {
+ExpressionResult Interpreter::checkMemory() {	
 	if (this->memory.empty()) {
 		this->clearLastValue();
 		this->lastValue = None::empty();
@@ -168,8 +156,9 @@ ExpressionResult Interpreter::checkMemory() {
 			last->getRange().merge(this->memory.top()->getRange()),
 			this->context
 		);
-		delete last;
-		delete this->memory.pop();
+		Value::deleteValue(&last);
+		Value::deleteValue(&this->memory.pop());
+
 		return result;
 	}
 
@@ -193,8 +182,9 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 			Line *l = static_cast<Line*>(block);
 			if (!blocks.empty() && blocks.front()->getType() == CODE_BLOCK) {
 				result = this->interpretBlock(*l, *static_cast<CodeBlock*>(blocks.pop()));
-			} else
+			} else {
 				result = interpretLine(*l);
+			}
 		} else {
 			result = ExpressionResult(
 				"Lexer didn't to its job corectly ;(",
@@ -214,6 +204,7 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
  * @return ExpressionResult status of the interpretation
  */
 ExpressionResult Interpreter::interpretLine(Line &line) {
+	line.reset();
 	Token *token;
 	ExpressionResult result;
 	while (!line.empty() && !result.error()) {
@@ -290,12 +281,13 @@ ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
 		if (result.error()) return result;
 		str += value->getStringValue();
 		if (i == 1) range.merge(value->getRange());
-		delete value;
+		Value::deleteValue(&value);
 		str += token->getParts().at(i);
 	}
 	this->memory.push(new String(
 		str,
-		range
+		range,
+		true
 	));
 	return ExpressionResult();
 }
@@ -313,12 +305,12 @@ ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
 	if (popOk.error()) return popOk;
 	popOk = this->memory.popVariableValue(left, this->context);
 	if (popOk.error()) {
-		delete right;
+		Value::deleteValue(&right);
 		return popOk;
 	}
 	operatorResult result = left->applyOperator(right, operatorToken, this->context);
-	delete left;
-	delete right;
+	Value::deleteValue(&right);
+	Value::deleteValue(&left);
 	if (std::get<0>(result).error()) 
 		return std::get<0>(result);
 	
@@ -327,27 +319,27 @@ ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
 }
 
 ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
-	ExpressionResult sizeOk = this->memory.sizeExpected(
+	ExpressionResult result = this->memory.sizeExpected(
 		2,
 		"Not enough values for operator " + operatorToken->getStringValue(), 
 		operatorToken->getRange(),
 		this->context
 	);
-	if (sizeOk.error()) return sizeOk;
+	if (result.error()) return result;
 	Value *left;
-	ExpressionResult result = this->memory.popVariableValue(left, this->context);
+	result = this->memory.popVariableValue(left, this->context);
 	if (result.error()) return result;
 	if (this->memory.top()->getType() != VARIABLE) {
-		ExpressionResult result(
+		Value::deleteValue(&left);
+		return ExpressionResult(
 			"Can't assign value to a non variable",
 			this->memory.top()->getRange(),
 			this->context
 		);
-		delete left;
-		return result;
 	}
-	this->context->setValue(this->memory.top()->getStringValue(), left);
-	return ExpressionResult();
+	this->context->setValue(this->memory.top()->getStringValue(), left->copy(false));
+	Value::deleteValue(&left);
+	return result;
 }
 
 ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) {
@@ -386,9 +378,9 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 	}
 	
 	RPNFunctionResult callResult = function->call(arguments, this->context);
-	for (Value *value : arguments) delete value;
+	for (Value *value : arguments) Value::deleteValue(&value);
 	if (std::get<0>(callResult).error()) {
-		delete std::get<1>(callResult);
+		Value::deleteValue(&std::get<1>(callResult));
 		return std::get<0>(callResult);
 	}
 	this->memory.push(std::get<1>(callResult));
@@ -398,37 +390,30 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
 	ExpressionResult result = this->interpretLine(line);
 	if (result.error()) return result;
-	Value *val = this->lastValue;
-	Bool *condition = static_cast<Bool*>(val->to(BOOL));
-	Line l;
-	if (condition->getValue()) {
-		delete condition;
+	Value *condition = this->lastValue->to(BOOL);
+	if (static_cast<Bool*>(condition)->getValue()) {
+		// Value::deleteValue(&condition);
 		return this->interpret(block.getBlocks());
 	}
-	delete condition;
+	// Value::deleteValue(&condition);
 	if (block.getNext() != nullptr)
 		return this->interpret(block.getNext()->getBlocks());
 	
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretWhile(const Line &line, const CodeBlock &block) {
-	Line l = line;
-	BlockQueue blocks;
-	ExpressionResult result = this->interpretLine(l);
+ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
+	ExpressionResult result = this->interpretLine(line);
 	if (result.error()) return result;
-	Bool *condition = static_cast<Bool*>(this->lastValue->to(BOOL));
-	while (condition->getValue()) {
-		delete condition;
-		blocks = block.getBlocksCopy();
-		result = this->interpret(blocks);
+	Value *condition = this->lastValue->to(BOOL);
+	while (static_cast<Bool*>(condition)->getValue()) {
+		block.reset();
+		result = this->interpret(block.getBlocks());
 		if (result.error()) return result;
-		l = line;
-		result = this->interpretLine(l);
+		result = this->interpretLine(line);
 		if (result.error()) return result;
 		condition = static_cast<Bool*>(this->lastValue->to(BOOL));
 	}
-	delete condition;
 	return ExpressionResult();
 }
 

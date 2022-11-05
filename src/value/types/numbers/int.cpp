@@ -1,11 +1,11 @@
 #include "value/types/numbers/int.hpp"
 
-Int::Int(std::string value, TextRange range) : 
-	Value(INT, range),
+Int::Int(std::string value, TextRange range, bool interpreterValue) : 
+	Value(INT, range, interpreterValue),
 	value(std::stoll(value)) {}
 
-Int::Int(int64_t value, TextRange range) : 
-	Value(INT, range),
+Int::Int(int64_t value, TextRange range, bool interpreterValue) : 
+	Value(INT, range, interpreterValue),
 	value(value) {}
 
 bool Int::isCastableTo(ValueType type) const {
@@ -19,27 +19,27 @@ bool Int::isCastableTo(ValueType type) const {
 Value *Int::to(ValueType type) {
 	switch (type) {
 		case STRING:
-			return new String(std::to_string(value), range);
+			return new String(std::to_string(value), range, true);
 		case INT:
-			return new Int(value, range);
+			return new Int(value, range, true);
 		case FLOAT:
-			return new Float(static_cast<float>(value), range);
+			return new Float(static_cast<float>(value), range, true);
 		case BOOL:
-			return new Bool(value != 0, range);
+			return new Bool(value != 0, range, true);
 		default:
 			throw std::runtime_error("Invalid value type");
 	};
 }
 
- Value *Int::copy() const {
-	return new Int(value, range);
+ Value *Int::copy(bool interpreterValue) const {
+	return new Int(value, range, interpreterValue);
 }
 
 std::string Int::getStringValue() const {
 	return std::to_string(value);
 }
 
-operatorResult Int::opadd(const Value *other, const Context *context) {
+operatorResult Int::opadd(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -54,24 +54,24 @@ operatorResult Int::opadd(const Value *other, const Context *context) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value + static_cast<Int const*>(other)->getValue(), range)
+				new Int(value + static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value + static_cast<Bool const*>(other)->getValue(), range)
+				new Int(value + static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Float(value + static_cast<Float const*>(other)->getValue(), range)
+				new Float(value + static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::opsub(const Value *other, const Context *context) {
+operatorResult Int::opsub(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -86,24 +86,24 @@ operatorResult Int::opsub(const Value *other, const Context *context) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value - static_cast<Int const*>(other)->getValue(), range)
+				new Int(value - static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value - static_cast<Bool const*>(other)->getValue(), range)
+				new Int(value - static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Float(value - static_cast<Float const*>(other)->getValue(), range)
+				new Float(value - static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::opmul(const Value *other, const Context *context) {
+operatorResult Int::opmul(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -118,24 +118,24 @@ operatorResult Int::opmul(const Value *other, const Context *context) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value * static_cast<Int const*>(other)->getValue(), range)
+				new Int(value * static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value * static_cast<Bool const*>(other)->getValue(), range)
+				new Int(value * static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Float(value * static_cast<Float const*>(other)->getValue(), range)
+				new Float(value * static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::opdiv(const Value *other, const Context *context) {
+operatorResult Int::opdiv(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -160,7 +160,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) {
 				);
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value / otherValue, range)
+				new Int(value / otherValue, range, true)
 			);
 		}
 		case BOOL: {
@@ -176,7 +176,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) {
 				);
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value / otherValue, range)
+				new Int(value / otherValue, range, true)
 			);
 		}
 		case FLOAT: {
@@ -192,7 +192,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) {
 				);
 			return std::make_tuple(
 				ExpressionResult(),
-				new Float(value / otherValue, range)
+				new Float(value / otherValue, range, true)
 			);
 		}
 		default:
@@ -200,7 +200,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) {
 	};
 }
 
-operatorResult Int::opmod(const Value *other, const Context *context) {
+operatorResult Int::opmod(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -225,7 +225,7 @@ operatorResult Int::opmod(const Value *other, const Context *context) {
 				);
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value % otherValue, range)
+				new Int(value % otherValue, range, true)
 			);
 		}
 		case BOOL: {
@@ -241,7 +241,7 @@ operatorResult Int::opmod(const Value *other, const Context *context) {
 				);
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(value % otherValue, range)
+				new Int(value % otherValue, range, true)
 			);
 		}
 		case FLOAT: {
@@ -257,7 +257,7 @@ operatorResult Int::opmod(const Value *other, const Context *context) {
 				);
 			return std::make_tuple(
 				ExpressionResult(),
-				new Float(std::fmod(value, otherValue), range)
+				new Float(std::fmod(value, otherValue), range, true)
 			);
 		}
 		default:
@@ -265,7 +265,7 @@ operatorResult Int::opmod(const Value *other, const Context *context) {
 	};
 }
 
-operatorResult Int::oppow(const Value *other, const Context *context) {
+operatorResult Int::oppow(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -280,24 +280,24 @@ operatorResult Int::oppow(const Value *other, const Context *context) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(std::pow(value, static_cast<Int const*>(other)->getValue()), range)
+				new Int(std::pow(value, static_cast<Int const*>(other)->getValue()), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Int(std::pow(value, static_cast<Bool const*>(other)->getValue()), range)
+				new Int(std::pow(value, static_cast<Bool const*>(other)->getValue()), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Float(std::pow(value, static_cast<Float const*>(other)->getValue()), range)
+				new Float(std::pow(value, static_cast<Float const*>(other)->getValue()), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::opgt(const Value *other, const Context *context) {
+operatorResult Int::opgt(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -312,24 +312,24 @@ operatorResult Int::opgt(const Value *other, const Context *context) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value > static_cast<Int const*>(other)->getValue(), range)
+				new Bool(value > static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value > static_cast<Bool const*>(other)->getValue(), range)
+				new Bool(value > static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value > static_cast<Float const*>(other)->getValue(), range)
+				new Bool(value > static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::opge(const Value *other, const Context *context) {
+operatorResult Int::opge(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -344,24 +344,24 @@ operatorResult Int::opge(const Value *other, const Context *context) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value >= static_cast<Int const*>(other)->getValue(), range)
+				new Bool(value >= static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value >= static_cast<Bool const*>(other)->getValue(), range)
+				new Bool(value >= static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value >= static_cast<Float const*>(other)->getValue(), range)
+				new Bool(value >= static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::oplt(const Value *other, const Context *context) {
+operatorResult Int::oplt(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -376,24 +376,24 @@ operatorResult Int::oplt(const Value *other, const Context *context) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value < static_cast<Int const*>(other)->getValue(), range)
+				new Bool(value < static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value < static_cast<Bool const*>(other)->getValue(), range)
+				new Bool(value < static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value < static_cast<Float const*>(other)->getValue(), range)
+				new Bool(value < static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::ople(const Value *other, const Context *context) {
+operatorResult Int::ople(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -408,73 +408,73 @@ operatorResult Int::ople(const Value *other, const Context *context) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value <= static_cast<Int const*>(other)->getValue(), range)
+				new Bool(value <= static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value <= static_cast<Bool const*>(other)->getValue(), range)
+				new Bool(value <= static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value <= static_cast<Float const*>(other)->getValue(), range)
+				new Bool(value <= static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::opne(const Value *other, const Context *context) {
+operatorResult Int::opne(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(),
-			new Bool(true, range)
+			new Bool(true, range, true)
 		);
 	
 	switch (other->getType()) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value != static_cast<Int const*>(other)->getValue(), range)
+				new Bool(value != static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value != static_cast<Bool const*>(other)->getValue(), range)
+				new Bool(value != static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value != static_cast<Float const*>(other)->getValue(), range)
+				new Bool(value != static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);
 	};
 }
 
-operatorResult Int::opeq(const Value *other, const Context *context) {
+operatorResult Int::opeq(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(),
-			new Bool(false, range)
+			new Bool(false, range, true)
 		);
 	
 	switch (other->getType()) {
 		case INT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value == static_cast<Int const*>(other)->getValue(), range)
+				new Bool(value == static_cast<Int const*>(other)->getValue(), range, true)
 			);
 		case BOOL:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value == static_cast<Bool const*>(other)->getValue(), range)
+				new Bool(value == static_cast<Bool const*>(other)->getValue(), range, true)
 			);
 		case FLOAT:
 			return std::make_tuple(
 				ExpressionResult(),
-				new Bool(value == static_cast<Float const*>(other)->getValue(), range)
+				new Bool(value == static_cast<Float const*>(other)->getValue(), range, true)
 			);
 		default:
 			return std::make_tuple(ExpressionResult(),	nullptr);

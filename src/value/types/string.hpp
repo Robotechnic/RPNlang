@@ -8,9 +8,7 @@
 
 class String : public Value {
 	public:
-		String(std::string value, TextRange range);
-
-		void clean(){};
+		String(std::string value, TextRange range, bool interpreterValue);
 
 		std::string getStringValue() const;
 
@@ -18,24 +16,24 @@ class String : public Value {
 		bool isNumber() const { return false; };
 
 		static String *empty() {
-			return new String("", TextRange());
+			return new String("", TextRange(), true);
 		}
 
 		Value *to(ValueType type);
-		inline Value *copy() const override;
+		inline Value *copy(bool interpreterValue = true) const override;
 
-		operatorResult opadd(const Value *other, const Context *context) override;
-		operatorResult opsub(const Value *other, const Context *context) override;
-		operatorResult opmul(const Value *other, const Context *context) override;
-		operatorResult opdiv(const Value *other, const Context *context) override;
-		operatorResult opmod(const Value *other, const Context *context) override;
-		operatorResult oppow(const Value *other, const Context *context) override;
-		operatorResult opgt(const Value *other, const Context *context) override;
-		operatorResult opge(const Value *other, const Context *context) override;
-		operatorResult oplt(const Value *other, const Context *context) override;
-		operatorResult ople(const Value *other, const Context *context) override;
-		operatorResult opne(const Value *other, const Context *context) override;
-		operatorResult opeq(const Value *other, const Context *context) override;
+		operatorResult opadd(const Value *other, const Context *context) const override;
+		operatorResult opsub(const Value *other, const Context *context) const override;
+		operatorResult opmul(const Value *other, const Context *context) const override;
+		operatorResult opdiv(const Value *other, const Context *context) const override;
+		operatorResult opmod(const Value *other, const Context *context) const override;
+		operatorResult oppow(const Value *other, const Context *context) const override;
+		operatorResult opgt(const Value *other, const Context *context) const override;
+		operatorResult opge(const Value *other, const Context *context) const override;
+		operatorResult oplt(const Value *other, const Context *context) const override;
+		operatorResult ople(const Value *other, const Context *context) const override;
+		operatorResult opne(const Value *other, const Context *context) const override;
+		operatorResult opeq(const Value *other, const Context *context) const override;
 
 	private:
 		std::string value;

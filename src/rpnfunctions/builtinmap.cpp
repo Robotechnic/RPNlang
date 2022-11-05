@@ -20,7 +20,7 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 			std::cout<<args[0]->getStringValue();
 			std::string input;
 			std::cin>>input;
-			return std::make_tuple(ExpressionResult(), new String(input, TextRange()));
+			return std::make_tuple(ExpressionResult(), new String(input, TextRange(), true));
 		}
 	)},
 	{"len", BuiltinRPNFunction(
@@ -29,7 +29,7 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 		{ValueType::STRING},
 		ValueType::INT,
 		[](RPNFunctionArgs args, Context *context) {
-			return std::make_tuple(ExpressionResult(), new Int(args[0]->getStringValue().size(), TextRange()));
+			return std::make_tuple(ExpressionResult(), new Int(args[0]->getStringValue().size(), TextRange(), true));
 		}
 	)},
 	{"substr", BuiltinRPNFunction(
@@ -41,7 +41,7 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 			std::string value = args[0]->getStringValue();
 			int start = static_cast<Int *>(args[1])->getValue();
 			int length = static_cast<Int *>(args[2])->getValue();
-			return std::make_tuple(ExpressionResult(), new String(value.substr(start, length), TextRange()));
+			return std::make_tuple(ExpressionResult(), new String(value.substr(start, length), TextRange(), true));
 		}
 	)},
 	{"isNumber", BuiltinRPNFunction(
@@ -50,7 +50,7 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 		{ValueType::STRING},
 		ValueType::BOOL,
 		[](RPNFunctionArgs args, Context *context) {
-			return std::make_tuple(ExpressionResult(), new Bool(args[0]->isNumber(), TextRange()));
+			return std::make_tuple(ExpressionResult(), new Bool(args[0]->isNumber(), TextRange(), true));
 		}
 	)},
 	{"toInt", BuiltinRPNFunction(
@@ -61,7 +61,7 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 		[](RPNFunctionArgs args, Context *context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
 			if (std::regex_match(args[0]->getStringValue(), intRegex)) {
-				std::get<1>(result) = new Int(std::stoi(args[0]->getStringValue()), TextRange());
+				std::get<1>(result) = new Int(std::stoi(args[0]->getStringValue()), TextRange(), true);
 			} else {
 				std::get<0>(result) = ExpressionResult(
 					"Cannot convert '" + args[0]->getStringValue() + "' to int",
@@ -81,7 +81,7 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 		[](RPNFunctionArgs args, Context *context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
 			if (std::regex_match(args[0]->getStringValue(), floatRegex)) {
-				std::get<1>(result) = new Float(std::stof(args[0]->getStringValue()), TextRange());
+				std::get<1>(result) = new Float(std::stof(args[0]->getStringValue()), TextRange(), true);
 			} else {
 				std::get<0>(result) = ExpressionResult(
 					"Cannot convert '" + args[0]->getStringValue() + "' to float",
@@ -99,7 +99,7 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 		{ValueType::FLOAT},
 		ValueType::STRING,
 		[](RPNFunctionArgs args, Context *context) {
-			return std::make_tuple(ExpressionResult(), new String(args[0]->getStringValue(), TextRange()));
+			return std::make_tuple(ExpressionResult(), new String(args[0]->getStringValue(), TextRange(), true));
 		}
 	)},
 	{"and", BuiltinRPNFunction(
@@ -112,7 +112,8 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 				ExpressionResult(), 
 				new Bool(
 					static_cast<Bool*>(args[0])->getValue() && static_cast<Bool*>(args[1])->getValue(),
-					TextRange()
+					TextRange(),
+					true
 				)
 			);
 		}
@@ -127,7 +128,8 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 				ExpressionResult(),
 				new Bool(
 					static_cast<Bool*>(args[0])->getValue() || static_cast<Bool*>(args[1])->getValue(), 
-					TextRange()
+					TextRange(),
+					true
 				)
 			);
 		}
@@ -142,7 +144,8 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 				ExpressionResult(), 
 				new Bool(
 					!static_cast<Bool*>(args[0])->getValue(),
-					TextRange()
+					TextRange(),
+					true
 				)
 			);
 		}
@@ -161,7 +164,7 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 				);
 				std::get<1>(result) = Int::empty();
 			} else
-				std::get<1>(result) = new Int(static_cast<int64_t>(args[0]->getStringValue()[0]), TextRange());
+				std::get<1>(result) = new Int(static_cast<int64_t>(args[0]->getStringValue()[0]), TextRange(), true);
 
 			return result;
 		}
@@ -176,7 +179,8 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 				ExpressionResult(), 
 				new String(
 					std::string(1, static_cast<char>(static_cast<Int*>(args[0])->getValue())), 
-					TextRange()
+					TextRange(),
+					true
 				)
 			);
 		}

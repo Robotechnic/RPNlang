@@ -61,7 +61,6 @@ Context::~Context() {
 	}
 	
 	for (auto it = this->symbols.begin(); it != this->symbols.end(); it++) {
-		it->second->clean();
 		delete it->second;
 	}
 }

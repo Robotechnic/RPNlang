@@ -45,3 +45,4 @@ build
 *.app
 
 .vscode
+vgcore.*

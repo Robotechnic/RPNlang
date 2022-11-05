@@ -13,9 +13,9 @@ class Memory {
 
 		void push(Value* value);
 		ExpressionResult topVariableToValue(const Context *context);
-		Value* pop();
+		Value*& pop();
 		ExpressionResult popVariableValue(Value *&value, const Context *context);
-		Value* top();
+		Value*& top();
 		void clear(unsigned long int offset = 0);
 		bool empty();
 		unsigned long int size();

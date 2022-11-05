@@ -1,6 +1,7 @@
 #include "value/value.hpp"
 
-Value::Value(ValueType type, const TextRange range) :
+Value::Value(ValueType type, const TextRange range, bool interpreterValue) :
+	interpreterValue(interpreterValue),
 	range(range),
 	type(type) {}
 
@@ -136,4 +137,15 @@ std::string std::to_string(const Value *value) {
 	std::stringstream ss;
 	ss << value;
 	return ss.str();
+}
+
+/**
+ * @brief delete tthe value in parameters if it is an INterpreter generated value
+ * 
+ * @param val the value to delete
+ */
+void Value::deleteValue(Value **val) {
+	if (!(*val)->interpreterValue) return;
+	delete (*val);
+	(*val) = nullptr;
 }

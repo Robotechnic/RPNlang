@@ -2,7 +2,7 @@
 
 TextRange::TextRange() : line(0), columnStart(0), columnEnd(0) {}
 TextRange::TextRange(int line, int column, int length) : line(line), columnStart(column), columnEnd(column + length) {}
-
+TextRange::TextRange(const TextRange &other) : line(other.line), columnStart(other.columnStart), columnEnd(other.columnEnd) {}
 /**
  * @brief split the text in lines and get the line which the range points to
  * 
@@ -40,6 +40,10 @@ TextRange TextRange::merge(const TextRange &other) {
  */
 bool TextRange::isEmpty() {
 	return this->line == 0 && this->columnStart == 0 && this->columnEnd == 0;
+}
+
+TextRange TextRange::merge(const TextRange left, const TextRange right) {
+	return TextRange(left).merge(right);
 }
 
 /**

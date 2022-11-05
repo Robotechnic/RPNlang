@@ -69,6 +69,8 @@ std::string Token::stringType(TokenType type) {
 			return "arrow";
 		case TOKEN_TYPE_PATH:
 			return "path";
+		case TOKEN_TYPE_VALUE:
+			return "value";
 		default:
 			return "unknown";
 	}

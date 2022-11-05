@@ -128,7 +128,7 @@ void CPPInterface::operator^(const CPPInterface& other) {
 }
 
 void CPPInterface::operator++() {
-	Int add = Int(1, TextRange());
+	Int add = Int(1, TextRange(), true);
 	operatorResult result = this->value->opadd(&add, nullptr);
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
@@ -138,7 +138,7 @@ void CPPInterface::operator++() {
 }
 
 void CPPInterface::operator--() {
-	Int sub = Int(1, TextRange());
+	Int sub = Int(1, TextRange(), true);
 	operatorResult result = this->value->opsub(&sub, nullptr);
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());

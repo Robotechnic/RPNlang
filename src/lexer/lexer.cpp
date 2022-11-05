@@ -58,7 +58,8 @@ ExpressionResult Lexer::lex() {
 				this->currentLine->push(new ValueToken(
 					new Int(
 						std::stoi(token->getStringValue()),
-						token->getRange()
+						token->getRange(),
+						false
 					)
 				));
 				break;
@@ -66,7 +67,8 @@ ExpressionResult Lexer::lex() {
 				this->currentLine->push(new ValueToken(
 					new Float(
 						std::stof(token->getStringValue()),
-						token->getRange()
+						token->getRange(),
+						false
 					)
 				));
 				break;
@@ -74,7 +76,8 @@ ExpressionResult Lexer::lex() {
 				this->currentLine->push(new ValueToken(
 					new Bool(
 						token->getStringValue() == "true",
-						token->getRange()
+						token->getRange(),
+						false
 					)
 				));
 				break;
@@ -116,7 +119,7 @@ ExpressionResult Lexer::parseBinNumber(Token *token) {
 		number |= c == '1';
 	}
 	this->currentLine->push(new ValueToken(
-		new Int(number, token->getRange())
+		new Int(number, token->getRange(), false)
 	));
 	return ExpressionResult();
 }
@@ -137,7 +140,7 @@ ExpressionResult Lexer::parseHexNumber(Token *token) {
 		else if (c >= 'A' && c <= 'F') number |= c - 'A' + 10;
 	}
 	this->currentLine->push(new ValueToken(
-		new Int(number, token->getRange())
+		new Int(number, token->getRange(), false)
 	));
 	return ExpressionResult();
 }
@@ -195,7 +198,8 @@ ExpressionResult Lexer::parseString(Token *token) {
 	this->currentLine->push(new ValueToken(
 		new String(
 			escapeCharacters(token->getStringValue()),
-			token->getRange()
+			token->getRange(),
+			false
 		)
 	));
 	return ExpressionResult();
