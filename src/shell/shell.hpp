@@ -14,7 +14,7 @@
 
 class Shell {
 	public:
-		Shell(std::string historyFile = "");
+		Shell();
 		~Shell();
 		std::string getCommand();
 

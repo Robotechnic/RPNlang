@@ -2,17 +2,16 @@
 
 Shell rpnShell = Shell();
 
-Shell::Shell(std::string historyFile) : 
+Shell::Shell() : 
 	prompt(">>> "),
 	historyIndex(0),
 	cursorPosition(0),
-	command("") 
-{
-	this->loadHistory(historyFile);	
-}
+	command("") {}
 
 Shell::~Shell() {
-	this->saveHistory();
+	if (this->history.size() > 0) {
+		this->saveHistory();
+	}
 }
 
 /**

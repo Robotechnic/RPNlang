@@ -11,7 +11,7 @@
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
 
-#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/2 conditions.rpn"
+// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/3 whileLoops.rpn"
 
 /**
  * @brief allow shell to be destroyed when ctrl+c is pressed, this allow to save the history
@@ -73,6 +73,7 @@ int main(int argc, char **argv) {
 	if (argc == 1) {
 		signal(SIGTERM, signalHandler);
 		signal(SIGINT, signalHandler);
+		rpnShell.loadHistory();
 		shellInput();
 	} else {
 		#ifdef TEST_FILE
