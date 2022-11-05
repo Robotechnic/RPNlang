@@ -22,7 +22,7 @@ const std::regex keywordsRegex("^("
 	"yrt|"
 ")$");
 
-const std::map<std::string, std::vector<std::string>> blockOpeners= {
+const std::map<std::string, std::vector<std::string>> blockOpeners = {
 	{"fun"    , {"nuf"}},
 	{"if"     , {"fi", "else"}},
 	{"while"  , {"elihw"}},
@@ -42,4 +42,10 @@ const std::map<std::string, std::string> blockClosers = {
 	{"else"   , "if"},
 	{"catch"  , "try"},
 	{"finally", "try"}
+};
+
+const std::map<std::string, std::vector<std::string>> parentDependancy = {
+	{"return"  , {"fun"}},
+	{"continue", {"while", "for"}},
+	{"break"   , {"while", "for"}}
 };

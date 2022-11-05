@@ -25,6 +25,8 @@ class ExpressionResult {
 		bool breakingLoop() const;
 		bool continuingLoop() const;
 
+		bool stopInterpret() const;
+
 		void operator=(const ExpressionResult &other);
 
 	private:

@@ -176,7 +176,7 @@ ExpressionResult Interpreter::checkMemory() {
 ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	ExpressionResult result;
 	
-	while (!blocks.empty() && !result.error()) {
+	while (!blocks.empty() && !result.stopInterpret()) {
 		BaseBlock *block = blocks.pop();
 		if (block->getType() == LINE_BLOCK) {
 			Line *l = static_cast<Line*>(block);
@@ -193,7 +193,6 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 			);
 		}
 	}
-
 	return result;
 }
 
@@ -207,7 +206,7 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 	line.reset();
 	Token *token;
 	ExpressionResult result;
-	while (!line.empty() && !result.error()) {
+	while (!line.empty() && !result.stopInterpret()) {
 		token = line.pop();
 		switch (token->getType()) {
 			case TOKEN_TYPE_VALUE:
@@ -226,16 +225,22 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 			case TOKEN_TYPE_ASSIGNMENT:
 				result = this->interpretAssignment(token);
 				break;
+			case TOKEN_TYPE_KEYWORD:
+				result = this->interpretKeyword(token);
+				break;
 			default:
 				result = ExpressionResult(
 					"Unknow token (TODO)",
 					token->getRange(),
 					this->context
 				);
+				break;
 		}
 	}
 	if (result.error()) return result;
-	return this->checkMemory();
+	ExpressionResult memory = this->checkMemory();
+	if (memory.error()) return memory;
+	return result;
 }
 
 /**
@@ -317,6 +322,21 @@ ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
 	
 	this->memory.push(std::get<1>(result));
 	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
+	const std::string keyword = keywordToken->getStringValue();
+	if (keyword == "break") {
+		return ExpressionResult(true, false);
+	} else if (keyword == "continue") {
+		return ExpressionResult(false, true);
+	} else {
+		return ExpressionResult(
+			"Unknow keyword " + keyword,
+			keywordToken->getRange(),
+			this->context
+		);
+	}
 }
 
 ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
@@ -412,6 +432,7 @@ ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
 		block.reset();
 		result = this->interpret(block.getBlocks());
 		if (result.error()) return result;
+		if (result.breakingLoop()) return ExpressionResult();
 		result = this->interpretLine(line);
 		if (result.error()) return result;
 		condition = static_cast<Bool*>(this->lastValue->to(BOOL));

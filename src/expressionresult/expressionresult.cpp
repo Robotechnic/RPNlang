@@ -47,6 +47,10 @@ bool ExpressionResult::continuingLoop() const {
 	return this->continueLoop;
 }
 
+bool ExpressionResult::stopInterpret() const {
+	return this->breakingLoop() || this->continuingLoop() || this->error();
+}
+
 /**
  * @brief get if the result is not an error
  * 

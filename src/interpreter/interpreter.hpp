@@ -49,6 +49,7 @@ class Interpreter {
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
 		ExpressionResult interpretFString(const FStringToken *token);
 		ExpressionResult interpretOperator(const Token *operatorToken);
+		ExpressionResult interpretKeyword(const Token *keywordToken);
 		ExpressionResult interpretAssignment(const Token *operatorToken);
 		ExpressionResult interpretFunctionCall(const Token *functionToken);
 		ExpressionResult interpretIf(Line &line, CodeBlock &block);

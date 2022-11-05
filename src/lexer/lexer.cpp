@@ -22,6 +22,21 @@ void Lexer::pushLine() {
 	this->currentLine = new Line();
 }
 
+bool Lexer::hasParentKeywordBlock(const std::vector<std::string> &keywords) const {
+	std::stack<CodeBlock*> stack = this->keywordBlockStack;
+	while (!stack.empty()) {
+		CodeBlock *block = stack.top();
+		stack.pop();
+		if (std::find(keywords.begin(), keywords.end(), block->getKeyword()->getStringValue()) != keywords.end())
+			return true;
+	}
+	return false;
+}
+
+BlockQueue& Lexer::getBlocks() {
+	return this->codeBlocks;
+}
+
 /**
  * @brief lexes the given tokens
  * 
@@ -264,6 +279,24 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 		this->keywordBlockStack.push(new CodeBlock(token));
 		this->integrated = true;
 		return ExpressionResult();
+	}
+
+	if (parentDependancy.contains(token->getStringValue())) {
+		if (!hasParentKeywordBlock(parentDependancy.at(token->getStringValue()))) {
+			std::string result = token->getStringValue() + "must be inside of ";
+			for (const std::string &keyword : parentDependancy.at(token->getStringValue())) {
+				result += keyword + " or ";
+			}
+			result.erase(result.end() - 4, result.end());
+			result += " block";
+			return ExpressionResult(
+				result,
+				token->getRange(),
+				this->context
+			);
+		}
+		this->currentLine->push(token);
+		this->integrated = true;
 	}
 
 	return ExpressionResult();	

@@ -2,6 +2,7 @@
 
 #include <string>
 #include <queue>
+#include <stack>
 
 #include "tokens/token.hpp"
 #include "tokens/tokentypes.hpp"
@@ -30,22 +31,13 @@ class Lexer {
 
 		ExpressionResult lex();
 
-		BlockQueue& getBlocks() {
-			return codeBlocks;
-		};
+		BlockQueue& getBlocks();
 
 		static ExpressionResult tokenize(int line, std::string lineString, std::queue<Token*> &tokens, const Context *context);
 
 	private:
-		const Context *context;
-		Line *currentLine;
-		std::queue<Token*> tokens;
-		std::stack<CodeBlock*> keywordBlockStack;
-		BlockQueue codeBlocks;
-		bool integrated;
-
 		void pushLine();
-
+		bool hasParentKeywordBlock(const std::vector<std::string> &keywords) const;
 		ExpressionResult parseBinNumber(Token *token);
 		ExpressionResult parseHexNumber(Token *token);
 		ExpressionResult parseFString(Token *token);
@@ -53,4 +45,16 @@ class Lexer {
 		ExpressionResult parseLiteral(Token *token);
 		ExpressionResult parseKeyword(Token *token);
 		ExpressionResult parseFunctionCall(Token *token);
+
+	private:
+		const Context *context;
+		Line *currentLine;
+		std::queue<Token*> tokens;
+		std::stack<CodeBlock*> keywordBlockStack;
+		BlockQueue codeBlocks;
+		/**
+		 * @brief this member allow to track if the las token was used directly by the lexer so, it allow to know it is 
+		 * @brief necessary to clean the memory of the token
+		 */
+		bool integrated;
 };
