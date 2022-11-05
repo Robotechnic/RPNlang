@@ -234,6 +234,7 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 				);
 		}
 	}
+	if (result.error()) return result;
 	return this->checkMemory();
 }
 
@@ -392,10 +393,10 @@ ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
 	if (result.error()) return result;
 	Value *condition = this->lastValue->to(BOOL);
 	if (static_cast<Bool*>(condition)->getValue()) {
-		// Value::deleteValue(&condition);
+		Value::deleteValue(&condition);
 		return this->interpret(block.getBlocks());
 	}
-	// Value::deleteValue(&condition);
+	Value::deleteValue(&condition);
 	if (block.getNext() != nullptr)
 		return this->interpret(block.getNext()->getBlocks());
 	
@@ -407,6 +408,7 @@ ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
 	if (result.error()) return result;
 	Value *condition = this->lastValue->to(BOOL);
 	while (static_cast<Bool*>(condition)->getValue()) {
+		Value::deleteValue(&condition);
 		block.reset();
 		result = this->interpret(block.getBlocks());
 		if (result.error()) return result;
@@ -414,6 +416,7 @@ ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
 		if (result.error()) return result;
 		condition = static_cast<Bool*>(this->lastValue->to(BOOL));
 	}
+	Value::deleteValue(&condition);
 	return ExpressionResult();
 }
 

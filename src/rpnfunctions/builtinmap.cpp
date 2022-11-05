@@ -204,13 +204,14 @@ const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 		[](RPNFunctionArgs args, Context *context) {
 			ExpressionResult result;
 
-			if (!static_cast<Bool *>(args[0])->getValue())
+			if (!static_cast<Bool *>(args[0])->getValue()) {
 				result = ExpressionResult(
 					"Assertion failed",
 					args[0]->getRange(),
 					context->getParent()
 				);
-			
+			}
+
 			return std::make_tuple(result, None::empty());
 		}
 	)},

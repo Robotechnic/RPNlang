@@ -20,7 +20,6 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	if (std::get<0>(result).error()) return result;
 	delete std::get<1>(result);
 	result = this->function(args, context->getChild());
-	
 	assert(
 		std::get<1>(result) != nullptr &&
 		"BuiltinRPNFunction::call: result.second is nullptr"
