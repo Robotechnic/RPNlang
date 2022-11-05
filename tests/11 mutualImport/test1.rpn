@@ -1,7 +1,0 @@
-"./10 mutualImport/test2.rpn" :import
-
-name "test1" =
-
-moduleCalculation -> string fun
-	test2.bidule " " + name  return
-nuf
