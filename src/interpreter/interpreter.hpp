@@ -23,6 +23,7 @@
 
 #include "value/value.hpp"
 #include "value/types.hpp"
+#include "value/types/numbers/cppinterface.hpp"
 
 #include "rpnfunctions/rpnfunction.hpp"
 #include "rpnfunctions/builtinmap.hpp"
@@ -45,7 +46,7 @@ class Interpreter {
 		bool openFile(std::ifstream &file, std::string fileName, std::string &error);
 
 		ExpressionResult checkMemory();
-		ExpressionResult interpretLine(Line &line);
+		ExpressionResult interpretLine(Line &line, bool clearMemory = true);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
 		ExpressionResult interpretFString(const FStringToken *token);
 		ExpressionResult interpretOperator(const Token *operatorToken);
@@ -54,7 +55,7 @@ class Interpreter {
 		ExpressionResult interpretFunctionCall(const Token *functionToken);
 		ExpressionResult interpretIf(Line &line, CodeBlock &block);
 		ExpressionResult interpretWhile(Line &line, CodeBlock &block);
-		ExpressionResult interpretFor(const Line &line, const CodeBlock &block);
+		ExpressionResult interpretFor(Line &line, CodeBlock &block);
 		ExpressionResult interpretFunction(const Line &line, const CodeBlock &block);
 		
 		Value *returnValue;

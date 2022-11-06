@@ -175,7 +175,7 @@ ExpressionResult Interpreter::checkMemory() {
  */
 ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	ExpressionResult result;
-	
+	blocks.reset();
 	while (!blocks.empty() && !result.stopInterpret()) {
 		BaseBlock *block = blocks.pop();
 		if (block->getType() == LINE_BLOCK) {
@@ -202,7 +202,7 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
  * @param line the line to interpret
  * @return ExpressionResult status of the interpretation
  */
-ExpressionResult Interpreter::interpretLine(Line &line) {
+ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 	line.reset();
 	Token *token;
 	ExpressionResult result;
@@ -238,8 +238,10 @@ ExpressionResult Interpreter::interpretLine(Line &line) {
 		}
 	}
 	if (result.error()) return result;
-	ExpressionResult memory = this->checkMemory();
-	if (memory.error()) return memory;
+	if (clearMemory) {
+		ExpressionResult memory = this->checkMemory();
+		if (memory.error()) return memory;
+	}
 	return result;
 }
 
@@ -280,16 +282,17 @@ ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
 	);
 	TextRange range = token->getRange();
 	if (sizeOk.error()) return sizeOk;
-	std::string str = token->getParts().at(0);
+	std::string str;
 	Value *value;
-	for (size_t i = 1; i < token->getParts().size(); i++) {
+	for (size_t i = token->getParts().size() - 1; i > 0; i--) {
+		str = token->getParts().at(i) + str;
 		ExpressionResult result = this->memory.popVariableValue(value, this->context);
 		if (result.error()) return result;
-		str += value->getStringValue();
+		str = value->getStringValue() + str;
 		if (i == 1) range.merge(value->getRange());
 		Value::deleteValue(&value);
-		str += token->getParts().at(i);
 	}
+	str = token->getParts().at(0) + str;
 	this->memory.push(new String(
 		str,
 		range,
@@ -441,8 +444,94 @@ ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretFor(const Line &line, const CodeBlock &block) {
-	return ExpressionResult("TODO: implement for loop", line.lastRange(), this->context);
+ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
+	ExpressionResult result = this->interpretLine(line, false);
+	if (result.error()) return result;
+	result = this->memory.sizeExpected(
+		4,
+		"Invalid number of arguments for for loop, expected 4 but got " + std::to_string(this->memory.size()),
+		block.getRange(),
+		this->context
+	);
+	if (result.error()) return result;
+	Value *stepVal, *endVal, *startVal;
+	result = this->memory.popVariableValue(stepVal, this->context);
+	if (result.error()) return result;
+	result = this->memory.popVariableValue(endVal, this->context);
+	if (result.error()) return result;
+	result = this->memory.popVariableValue(startVal, this->context);
+	if (result.error()) return result;
+	
+	Value *variable = this->memory.pop();
+	if (variable->getType() != VARIABLE) {
+		TextRange range = variable->getRange();
+		Value::deleteValue(&stepVal);
+		Value::deleteValue(&endVal);
+		Value::deleteValue(&startVal);
+		Value::deleteValue(&variable);
+		return ExpressionResult(
+			"Can't assign value to a non variable",
+			range,
+			this->context
+		);
+	}
+	if (startVal->getType() != INT || endVal->getType() != INT || stepVal->getType() != INT) {
+		TextRange range = startVal->getRange().merge(stepVal->getRange());
+		std::string types = Value::stringType(startVal->getType()) + ", " + Value::stringType(endVal->getType()) + " and " + Value::stringType(stepVal->getType());
+
+		Value::deleteValue(&stepVal);
+		Value::deleteValue(&endVal);
+		Value::deleteValue(&startVal);
+		Value::deleteValue(&variable);
+		return ExpressionResult(
+			"Invalid type for for loop, expected start, end, increment but got " + types,
+			range,
+			this->context
+		);
+	}
+	CPPInterface step {stepVal};
+	CPPInterface end {endVal};
+	CPPInterface start {startVal};
+	Int zero {0, TextRange(), false};
+	if (step == &zero) {
+		TextRange range = stepVal->getRange();
+		Value::deleteValue(&stepVal);
+		Value::deleteValue(&endVal);
+		Value::deleteValue(&startVal);
+		Value::deleteValue(&variable);
+		return ExpressionResult(
+			"Step can't be 0",
+			range,
+			this->context
+		);
+	}
+
+	if (step > &zero) {
+		for (CPPInterface i = start; i <= end; i += step) {
+			this->context->setValue(
+				variable->getStringValue(), 
+				new Int(static_cast<Int*>(i.getValue())->getValue(), variable->getRange(), false)
+			);
+			result = this->interpret(block.getBlocks());
+			if (result.error()) return result;
+			if (result.breakingLoop()) return ExpressionResult();
+		}
+	} else {
+		for (CPPInterface i = start; i >= end; i += step) {
+			this->context->setValue(
+				variable->getStringValue(),
+				new Int(static_cast<Int*>(i.getValue())->getValue(), variable->getRange(), false)
+			);
+			result = this->interpret(block.getBlocks());
+			if (result.error()) return result;
+			if (result.breakingLoop()) return ExpressionResult();
+		}
+	}
+	Value::deleteValue(&stepVal);
+	Value::deleteValue(&endVal);
+	Value::deleteValue(&startVal);
+	Value::deleteValue(&variable);
+	return ExpressionResult();
 }
 
 ExpressionResult Interpreter::interpretFunction(const Line &line, const CodeBlock &block) {
