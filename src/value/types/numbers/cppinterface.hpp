@@ -6,7 +6,6 @@
 
 class CPPInterface {
 	public:
-		CPPInterface();
 		CPPInterface(Value *value);
 		CPPInterface(const CPPInterface &other);
 		Value *getValue() const;

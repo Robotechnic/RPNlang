@@ -1,8 +1,5 @@
 #include "value/types/numbers/cppinterface.hpp"
 
-CPPInterface::CPPInterface() {
-	value = nullptr;
-}
 CPPInterface::CPPInterface(Value *value) : value(value) {}
 CPPInterface::CPPInterface(const CPPInterface &other) : value(other.value) {}
 
@@ -23,7 +20,7 @@ void CPPInterface::operator+(const Value* other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -32,7 +29,7 @@ void CPPInterface::operator-(const Value* other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -41,7 +38,7 @@ void CPPInterface::operator*(const Value* other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -50,7 +47,7 @@ void CPPInterface::operator/(const Value* other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -59,7 +56,7 @@ void CPPInterface::operator%(const Value* other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -68,7 +65,7 @@ void CPPInterface::operator^(const Value* other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -78,7 +75,7 @@ void CPPInterface::operator+(const CPPInterface& other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -87,7 +84,7 @@ void CPPInterface::operator-(const CPPInterface& other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -96,7 +93,7 @@ void CPPInterface::operator*(const CPPInterface& other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -105,7 +102,7 @@ void CPPInterface::operator/(const CPPInterface& other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -114,7 +111,7 @@ void CPPInterface::operator%(const CPPInterface& other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -123,7 +120,7 @@ void CPPInterface::operator^(const CPPInterface& other) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -133,7 +130,7 @@ void CPPInterface::operator++() {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
@@ -143,7 +140,7 @@ void CPPInterface::operator--() {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	delete this->value;
+	Value::deleteValue(&this->value);
 	this->value = std::get<1>(result);
 }
 
