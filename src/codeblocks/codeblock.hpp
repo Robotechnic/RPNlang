@@ -17,6 +17,7 @@ class CodeBlock : public BaseBlock {
 		CodeBlock *getNext() const;
 
 		Token* getKeyword();
+		TextRange getRange() const;
 
 		bool empty() const;
 		void clear();

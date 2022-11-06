@@ -351,6 +351,8 @@ ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<To
 					return ExpressionResult();
 				if (type != TOKEN_TYPE_INDENT)
 					tokens.push(new StringToken(line, column, type, value));
+				else
+					column += 1;
 			}
 			i++;
 		}

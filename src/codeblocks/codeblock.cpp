@@ -18,6 +18,10 @@ BlockQueue& CodeBlock::getBlocks() {
 	return this->blocks;
 }
 
+TextRange CodeBlock::getRange() const {
+	return this->keyword->getRange();
+}
+
 void CodeBlock::setNext(CodeBlock *next) {
 	this->next = next;
 }

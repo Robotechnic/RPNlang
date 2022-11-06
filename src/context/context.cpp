@@ -137,6 +137,8 @@ void Context::setValue(const Token *name, Value *value) {
 }
 
 void Context::setValue(const Value &name, Value *value) {
+	if (name.getType() != VARIABLE)
+		throw std::runtime_error("Context::setValue() - name is not a variable");
 	std::string nameStr = name.getStringValue();
 	if (this->symbols.contains(nameStr) && this->symbols[nameStr] != nullptr)
 		delete this->symbols[nameStr];

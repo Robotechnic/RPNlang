@@ -27,6 +27,10 @@ bool BlockQueue::empty() const {
 	return this->currentBlock >= this->blocks.size();
 }
 
+int BlockQueue::size() const {
+	return this->blocks.size() - this->currentBlock;
+}
+
 void BlockQueue::clear() {
 	for (auto block : this->blocks)
 		if (block != nullptr) delete block;

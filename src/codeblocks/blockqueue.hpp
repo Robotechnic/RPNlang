@@ -15,6 +15,7 @@ class BlockQueue {
 		BaseBlock *back();
 
 		bool empty() const;
+		int size() const;
 		void clear();
 		void reset();
 
