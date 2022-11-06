@@ -60,7 +60,7 @@ unsigned long int Memory::size() {
  */
 ExpressionResult Memory::sizeExpected(unsigned long int size, std::string message, TextRange range, const Context *ctx) {
 	if (this->stack.size() == 0 && size != 0) 
-		return ExpressionResult(message + "(Memory is empty)", range, ctx);
+		return ExpressionResult(message + " (Memory is empty)", range, ctx);
 	if (this->stack.size() < size) {
 		TextRange firstRange = this->stack.top()->getRange();
 		this->clear(1);
