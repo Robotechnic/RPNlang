@@ -4,18 +4,10 @@ i 0 10 1 for
 rof
 "\n" :print
 
+
 "Decrement : " :print
 i 10 0 -1 for
 	i f"{} " :print
-rof
-"\n" :print
-
-"Nested : \n" :print
-i 0 10 1 for
-	j 0 10 1 for
-		i j + f"{} " :print
-	rof
-	"\n" :print
 rof
 "\n" :print
 
@@ -37,4 +29,22 @@ i 0 10 1 for
 	i :print
 rof
 "\n" :print
-"Done\n" :print
+
+"Nested : \n" :print
+i 0 10 1 for
+	j 0 10 1 for
+		i j + f"{} " :print
+	rof
+	"\n" :print
+rof
+"\n" :print
+
+"Inter dependency : \n" :print
+i 0 10 1 for
+	j 0 i 1 + 1 for
+		"*" :print
+	rof
+	"\n" :print
+rof
+
+# "Done\n" :print

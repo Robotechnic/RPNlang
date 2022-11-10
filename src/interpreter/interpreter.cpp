@@ -454,20 +454,29 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		this->context
 	);
 	if (result.error()) return result;
-	Value *stepVal, *endVal, *startVal;
-	result = this->memory.popVariableValue(stepVal, this->context);
-	if (result.error()) return result;
-	result = this->memory.popVariableValue(endVal, this->context);
-	if (result.error()) return result;
-	result = this->memory.popVariableValue(startVal, this->context);
-	if (result.error()) return result;
-	
+	std::vector<Int> forParams;
+	Value *param;
+	Value *intParam;
+	for (int i = 0; i < 3; i++) {
+		result = this->memory.popVariableValue(param, this->context);
+		if (result.error()) return result;
+		if (!param->isCastableTo(INT)) {
+			return ExpressionResult(
+				"Invalid type for for loop parameter, expected int but got " + Value::stringType(param->getType()),
+				block.getRange(),
+				this->context
+			);
+		}
+		intParam = param->to(INT);
+		intParam->interpreterValue = false;
+		forParams.emplace(forParams.begin(), *static_cast<Int*>(intParam));
+		delete intParam;
+		Value::deleteValue(&param);
+	}
+
 	Value *variable = this->memory.pop();
 	if (variable->getType() != VARIABLE) {
 		TextRange range = variable->getRange();
-		Value::deleteValue(&stepVal);
-		Value::deleteValue(&endVal);
-		Value::deleteValue(&startVal);
 		Value::deleteValue(&variable);
 		return ExpressionResult(
 			"Can't assign value to a non variable",
@@ -475,61 +484,28 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 			this->context
 		);
 	}
-	if (startVal->getType() != INT || endVal->getType() != INT || stepVal->getType() != INT) {
-		TextRange range = startVal->getRange().merge(stepVal->getRange());
-		std::string types = Value::stringType(startVal->getType()) + ", " + Value::stringType(endVal->getType()) + " and " + Value::stringType(stepVal->getType());
-
-		Value::deleteValue(&stepVal);
-		Value::deleteValue(&endVal);
-		Value::deleteValue(&startVal);
-		Value::deleteValue(&variable);
-		return ExpressionResult(
-			"Invalid type for for loop, expected start, end, increment but got " + types,
-			range,
-			this->context
-		);
-	}
-	CPPInterface step {stepVal};
-	CPPInterface end {endVal};
-	CPPInterface start {startVal};
 	Int zero {0, TextRange(), false};
+	CPPInterface step {&forParams.at(2)};
 	if (step == &zero) {
-		TextRange range = stepVal->getRange();
-		Value::deleteValue(&stepVal);
-		Value::deleteValue(&endVal);
-		Value::deleteValue(&startVal);
 		Value::deleteValue(&variable);
 		return ExpressionResult(
 			"Step can't be 0",
-			range,
+			forParams.at(2).getRange(),
 			this->context
 		);
 	}
 
-	if (step > &zero) {
-		for (CPPInterface i = start; i <= end; i += step) {
-			this->context->setValue(
-				variable->getStringValue(), 
-				new Int(static_cast<Int*>(i.getValue())->getValue(), variable->getRange(), false)
-			);
-			result = this->interpret(block.getBlocks());
-			if (result.error()) return result;
-			if (result.breakingLoop()) return ExpressionResult();
-		}
-	} else {
-		for (CPPInterface i = start; i >= end; i += step) {
-			this->context->setValue(
-				variable->getStringValue(),
-				new Int(static_cast<Int*>(i.getValue())->getValue(), variable->getRange(), false)
-			);
-			result = this->interpret(block.getBlocks());
-			if (result.error()) return result;
-			if (result.breakingLoop()) return ExpressionResult();
-		}
+	CPPInterface i {&forParams.at(0)};
+	while (!result.breakingLoop() && (step > &zero && i < &forParams.at(1)) || (step < &zero && i > &forParams.at(1))) {
+		this->context->setValue(
+			variable->getStringValue(),
+			i.getValue()->copy(false)
+		);
+		result = this->interpret(block.getBlocks());
+		if (result.error()) return result;
+		i += step;
 	}
-	Value::deleteValue(&stepVal);
-	Value::deleteValue(&endVal);
-	Value::deleteValue(&startVal);
+	delete i.getValue();
 	Value::deleteValue(&variable);
 	return ExpressionResult();
 }

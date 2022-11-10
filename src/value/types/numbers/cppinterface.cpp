@@ -211,7 +211,9 @@ bool operator==(const CPPInterface& left, const Value* right) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	return static_cast<Bool *>(std::get<1>(result))->getValue();
+	bool comp = static_cast<Bool *>(std::get<1>(result))->getValue();
+	delete std::get<1>(result);
+	return comp;
 }
 
 bool operator!=(const CPPInterface& left, const Value* right) {
@@ -219,7 +221,9 @@ bool operator!=(const CPPInterface& left, const Value* right) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	return static_cast<Bool *>(std::get<1>(result))->getValue();
+	bool comp = static_cast<Bool *>(std::get<1>(result))->getValue();
+	delete std::get<1>(result);
+	return comp;
 }
 
 bool operator< (const CPPInterface& left, const Value* right) {
@@ -227,7 +231,9 @@ bool operator< (const CPPInterface& left, const Value* right) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	return static_cast<Bool *>(std::get<1>(result))->getValue();
+	bool comp = static_cast<Bool *>(std::get<1>(result))->getValue();
+	delete std::get<1>(result);
+	return comp;
 }
 
 bool operator> (const CPPInterface& left, const Value* right) {
@@ -235,7 +241,9 @@ bool operator> (const CPPInterface& left, const Value* right) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	return static_cast<Bool *>(std::get<1>(result))->getValue();
+	bool comp = static_cast<Bool *>(std::get<1>(result))->getValue();
+	delete std::get<1>(result);
+	return comp;
 }
 
 bool operator<=(const CPPInterface& left, const Value* right) {
@@ -243,7 +251,9 @@ bool operator<=(const CPPInterface& left, const Value* right) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	return static_cast<Bool *>(std::get<1>(result))->getValue();
+	bool comp = static_cast<Bool *>(std::get<1>(result))->getValue();
+	delete std::get<1>(result);
+	return comp;
 }
 
 bool operator>=(const CPPInterface& left, const Value* right) {
@@ -251,7 +261,9 @@ bool operator>=(const CPPInterface& left, const Value* right) {
 	if (std::get<0>(result).error()) {
 		throw std::runtime_error(std::get<0>(result).getErrorMessage());
 	}
-	return static_cast<Bool *>(std::get<1>(result))->getValue();
+	bool comp = static_cast<Bool *>(std::get<1>(result))->getValue();
+	delete std::get<1>(result);
+	return comp;
 }
 
 bool operator==(const CPPInterface& left, const CPPInterface& right) {
