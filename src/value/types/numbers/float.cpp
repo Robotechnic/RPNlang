@@ -36,7 +36,11 @@ Value *Float::to(ValueType type) {
 }
 
 std::string Float::getStringValue() const {
-	return  std::to_string(value);
+	std::string value = std::to_string(this->value);
+	// remove trailing zeros and decimal point if there are no digits after it
+	value.erase(value.find_last_not_of('0') + 1, std::string::npos);
+	if (value.back() == '.') value.pop_back();
+	return  value;
 }
 
 operatorResult Float::opadd(const Value *other, const Context *context) const {
