@@ -10,7 +10,9 @@ class Line : public BaseBlock {
 		~Line();
 		void push(Token *token);
 		bool empty() const;
+		int size() const;
 		Token *pop();
+		Token *top();
 		void clear();
 		void display() const;
 		void reset();

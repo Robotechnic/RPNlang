@@ -11,6 +11,7 @@ class BlockQueue {
 
 		void push(BaseBlock *block);
 		BaseBlock *pop();
+		BaseBlock *popBack();
 		BaseBlock *front();
 		BaseBlock *back();
 

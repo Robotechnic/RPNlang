@@ -2,5 +2,6 @@
 
 enum blockType {
 	CODE_BLOCK,
-	LINE_BLOCK
+	LINE_BLOCK,
+	FUNCTION_BLOCK
 };

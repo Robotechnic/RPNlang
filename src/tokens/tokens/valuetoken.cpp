@@ -1,7 +1,7 @@
 #include "tokens/tokens/valuetoken.hpp"
 
-ValueToken::ValueToken(Value *value) : 
-	Token(value->getRange(), TOKEN_TYPE_VALUE),
+ValueToken::ValueToken(Value *value, TokenType type) : 
+	Token(value->getRange(), type),
 	value(value) {
 		value->interpreterValue = false;
 	}

@@ -15,6 +15,15 @@ BaseBlock *BlockQueue::pop() {
 	return this->blocks[this->currentBlock++];
 }
 
+BaseBlock *BlockQueue::popBack() {
+	if (this->empty()) {
+		throw std::runtime_error("BlockQueue::popBack() called on empty stack");
+	}
+	BaseBlock *back = this->blocks.back();
+	this->blocks.pop_back();
+	return back;
+}
+
 BaseBlock *BlockQueue::front() {
 	return this->blocks.at(this->currentBlock);
 }

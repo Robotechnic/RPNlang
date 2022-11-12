@@ -14,8 +14,16 @@ Token *Line::pop() {
 	return this->tokens[this->currentToken++];
 }
 
+Token *Line::top() {
+	return this->tokens[this->currentToken];
+}
+
 bool Line::empty() const {
 	return this->currentToken >= this->tokens.size();
+}
+
+int Line::size() const {
+	return this->tokens.size() - this->currentToken;
 }
 
 void Line::clear() {

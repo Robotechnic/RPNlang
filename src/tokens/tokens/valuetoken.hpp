@@ -5,7 +5,7 @@
 
 class ValueToken : public Token {
 	public:
-		ValueToken(Value *value);
+		ValueToken(Value *value, TokenType type = TOKEN_TYPE_VALUE);
 		~ValueToken();
 
 		Value *&getValue();
