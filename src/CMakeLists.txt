@@ -20,10 +20,11 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/codeblock.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/line.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/blockqueue.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codeblocks/functionblock.cpp
 	${CMAKE_CURRENT_LIST_DIR}/context/context.cpp
 	${CMAKE_CURRENT_LIST_DIR}/expressionresult/expressionresult.cpp
 	
-	# # RPN lang types
+	# RPN lang types
 	${CMAKE_CURRENT_LIST_DIR}/value/value.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/rpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinsrpnfunction.cpp
@@ -43,7 +44,7 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/interpreter/memory.cpp
 	${CMAKE_CURRENT_LIST_DIR}/interpreter/interpreter.cpp
 
-	# # shell
+	# shell
 	${CMAKE_CURRENT_LIST_DIR}/shell/colors.cpp
 	${CMAKE_CURRENT_LIST_DIR}/shell/shell.cpp
 
