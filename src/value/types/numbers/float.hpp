@@ -22,7 +22,7 @@ class Float : public Value {
 		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const { return true; };
 
-		Value *to(ValueType type);
+		Value *to(ValueType type, bool interpreterValue = true);
 		inline Value *copy(bool interpreterValue = true) const override;
 
 		static Float *empty() {

@@ -28,8 +28,8 @@ std::string FunctionBlock::getName() const {
 	return this->function->getName();
 }
 
-RPNFunction *FunctionBlock::getFunction() const {
-	return this->function;
+const RPNFunction *FunctionBlock::getFunction() const {
+	return this->function.get();
 }
 
 TextRange FunctionBlock::lastRange() const {

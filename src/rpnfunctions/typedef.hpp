@@ -7,7 +7,8 @@
 class Value;
 class ExpressionResult;
 class Context;
+class TextRange;
 
-typedef std::vector<Value*> RPNFunctionArgs;
+typedef const std::vector<Value*> RPNFunctionArgs;
 typedef std::tuple<ExpressionResult, Value*> RPNFunctionResult;
-typedef std::function<RPNFunctionResult(RPNFunctionArgs&, Context*)> BuiltinRPNFunctionType;
+typedef std::function<RPNFunctionResult(RPNFunctionArgs&, TextRange&, Context*)> BuiltinRPNFunctionType;

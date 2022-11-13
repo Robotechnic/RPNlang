@@ -4,6 +4,8 @@
 #include "codeblocks/codeblock.hpp"
 #include "rpnfunctions/userrpnfunction.hpp"
 
+class UserRPNFunction;
+
 class FunctionBlock : public BaseBlock {
 	public:
 		FunctionBlock(
@@ -19,10 +21,10 @@ class FunctionBlock : public BaseBlock {
 		void display() const;
 
 		std::string getName() const;
-		RPNFunction *getFunction() const;
+		const RPNFunction *getFunction() const;
 
 		TextRange lastRange() const;
 	
 	private:
-		RPNFunction *function;
+		std::shared_ptr<UserRPNFunction> function;
 };

@@ -16,16 +16,16 @@ bool Bool::isCastableTo(ValueType type) const {
 		type == BOOL;
 }
 
-Value *Bool::to(ValueType type) {
+Value *Bool::to(ValueType type, bool interpreterValue) {
 	switch (type) {
 		case STRING:
-			return new String(value ? "true" : "false", range, true);
+			return new String(value ? "true" : "false", range, interpreterValue);
 		case INT:
-			return new Int(static_cast<int64_t>(value), range, true);
+			return new Int(static_cast<int64_t>(value), range, interpreterValue);
 		case FLOAT:
-			return new Float(static_cast<float>(value), range, true);
+			return new Float(static_cast<float>(value), range, interpreterValue);
 		case BOOL:
-			return new Bool(this->value, this->range, true);
+			return new Bool(this->value, this->range, interpreterValue);
 		default:
 			throw std::runtime_error("Invalid value type");
 	};

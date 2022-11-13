@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include "rpnfunctions/rpnfunction.hpp"
 #include "codeblocks/codeblock.hpp"
 #include "interpreter/interpreter.hpp"
@@ -10,20 +11,21 @@ class UserRPNFunction : public RPNFunction {
 		UserRPNFunction();
 		UserRPNFunction(const UserRPNFunction &other);
 		UserRPNFunction(
-			std::string name,
-			std::vector<std::string> argsName,
-			std::vector<ValueType> argsTypes,
-			ValueType returnType, 
+			const std::string &name,
+			const std::vector<std::string> &argsName,
+			const std::vector<ValueType> &argsTypes,
+			const ValueType &returnType,
 			CodeBlock *body
 		);
-		~UserRPNFunction();
+		~UserRPNFunction() override;
 
 		RPNFunctionResult call(
-			RPNFunctionArgs args,
+			const RPNFunctionArgs &args,
+			const TextRange &range,
 			Context *context
-		) const;
+		) const override;
 
-		static void addFunction(
+		static std::shared_ptr<UserRPNFunction> addFunction(
 			std::string name,
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argsTypes,
@@ -31,11 +33,13 @@ class UserRPNFunction : public RPNFunction {
 			CodeBlock *body
 		);
 
-		static UserRPNFunction *getFunction(std::string name);
+		TextRange getRange() const;
+
+		static std::shared_ptr<UserRPNFunction> getFunction(std::string name);
 
 	private:
 		void addParameters(const RPNFunctionArgs &args, Context *context) const;
 		CodeBlock *body;
 
-		static std::map<std::string, UserRPNFunction> userFunctions;
+		static std::map<std::string, std::shared_ptr<UserRPNFunction>> userFunctions;
 };

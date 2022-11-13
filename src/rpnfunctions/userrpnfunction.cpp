@@ -7,18 +7,19 @@ UserRPNFunction::UserRPNFunction(const UserRPNFunction &other) :
 {}
 
 UserRPNFunction::UserRPNFunction(
-	std::string name,
-	std::vector<std::string> argsName,
-	std::vector<ValueType> argsTypes,
-	ValueType returnType, 
+	const std::string &name,
+	const std::vector<std::string> &argsName,
+	const std::vector<ValueType> &argsTypes,
+	const ValueType &returnType,
 	CodeBlock *body
 ):
 	RPNFunction(name, argsName, argsTypes, returnType),
-	body(body)
-{}
+	body(body) {}
 
 UserRPNFunction::~UserRPNFunction() {
-	delete body;
+	if (this->body != nullptr) {
+		delete this->body;
+	}
 }
 
 /**
@@ -29,12 +30,13 @@ UserRPNFunction::~UserRPNFunction() {
  */
 void UserRPNFunction::addParameters(const RPNFunctionArgs &args, Context *context) const {
 	for (size_t i = 0; i < args.size(); i++) {
-		context->setValue(this->argsName[i], args[i]->to(this->argsTypes[i]));
+		context->setValue(this->argsName[i], args[i]->to(this->argsTypes[i], false));
 	}
 }
 
 RPNFunctionResult UserRPNFunction::call(
-	RPNFunctionArgs args,
+	const RPNFunctionArgs &args,
+	const TextRange &range,
 	Context *context
 ) const {
 	ExpressionResult result = this->checkArgs(args, context);
@@ -80,7 +82,8 @@ RPNFunctionResult UserRPNFunction::call(
 	return std::make_tuple(ExpressionResult(), returnValue->to(this->returnType));
 }
 
-void UserRPNFunction::addFunction(
+
+std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(
 			std::string name,
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argsTypes,
@@ -88,15 +91,18 @@ void UserRPNFunction::addFunction(
 			CodeBlock *body
 		) 
 {
-	userFunctions.insert(
-		std::map<std::string, UserRPNFunction>::value_type(name, UserRPNFunction(name, argsName, argsTypes, returnType, body))
-	);
+	userFunctions[name] = std::make_shared<UserRPNFunction>(name, argsName, argsTypes, returnType, body);
+	return userFunctions.at(name);
 }
 
-UserRPNFunction *UserRPNFunction::getFunction(std::string name) {
+std::shared_ptr<UserRPNFunction> UserRPNFunction::getFunction(std::string name) {
 	if (userFunctions.find(name) == userFunctions.end())
 		return nullptr;
-	return &userFunctions[name];
+	return userFunctions[name];
 }
 
-std::map<std::string, UserRPNFunction> UserRPNFunction::userFunctions;
+TextRange UserRPNFunction::getRange() const {
+	return this->body->getRange();
+}
+
+std::map<std::string, std::shared_ptr<UserRPNFunction>> UserRPNFunction::userFunctions;

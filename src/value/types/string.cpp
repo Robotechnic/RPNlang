@@ -15,12 +15,12 @@ std::string String::getStringValue() const {
 	return value;
 }
 
-Value *String::to(ValueType type) {
+Value *String::to(ValueType type, bool interpreterValue) {
 	switch (type) {
 		case STRING:
-			return new String(this->value, this->range, true);
+			return new String(this->value, this->range, interpreterValue);
 		case BOOL:
-			return new Bool(this->value == "true", this->range, true);
+			return new Bool(this->value == "true", this->range, interpreterValue);
 		default:
 			throw std::runtime_error("Invalid value type");
 	};

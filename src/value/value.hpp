@@ -23,7 +23,7 @@ class Value {
 		virtual bool isCastableTo(ValueType type) const = 0;
 		virtual bool isNumber() const = 0;
 
-		virtual Value *to(ValueType type);
+		virtual Value *to(ValueType type, bool interpreterValue = true);
 		inline virtual Value *copy(bool interpreterValue = true) const = 0;
 		
 		virtual std::string getStringValue() const = 0;

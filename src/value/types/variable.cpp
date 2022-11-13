@@ -13,7 +13,7 @@ std::string Variable::getStringValue() const {
 	return value;
 }
 
-Value *Variable::to(ValueType type) {
+Value *Variable::to(ValueType type, bool interpreterValue) {
 	throw std::runtime_error("Invalid value type");
 }
 

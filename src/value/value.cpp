@@ -15,7 +15,7 @@ TextRange Value::getRange() const {
 	return this->range;
 }
 
-Value *Value::to(ValueType type) {
+Value *Value::to(ValueType type, bool interpreterValue) {
 	throw std::runtime_error("Cannot convert " + this->stringType(this->getType()) + " to " + this->stringType(type));
 }
 
@@ -145,7 +145,7 @@ std::string std::to_string(const Value *value) {
  * @param val the value to delete
  */
 void Value::deleteValue(Value **val) {
-	if (!(*val)->interpreterValue) return;
+	if ((*val) == nullptr || !(*val)->interpreterValue) return;
 	delete (*val);
 	(*val) = nullptr;
 }

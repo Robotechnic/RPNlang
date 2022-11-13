@@ -1,10 +1,10 @@
 #include "rpnfunctions/rpnfunction.hpp"
 
 RPNFunction::RPNFunction(
-	std::string name,
-	std::vector<std::string> argsName,
-	std::vector<ValueType> argsTypes,
-	ValueType returnType
+	const std::string &name,
+	const std::vector<std::string> &argsName,
+	const std::vector<ValueType> &argsTypes,
+	const ValueType &returnType
 ):
 	name(name),
 	argsName(argsName),
@@ -22,14 +22,15 @@ RPNFunction::~RPNFunction() {}
  * @return RPNFunctionResult If the function was executed successfully and value if it is the case
  */
 RPNFunctionResult RPNFunction::call(
-	RPNFunctionArgs args,
+	const RPNFunctionArgs &args,
+	const TextRange &range,
 	Context *context
 ) const {
-	TextRange range(0, 0, 0);
+	TextRange errorRange = range;
 	if (args.size() != 0) {
-		range = args[0]->getRange();
+		errorRange.merge(args[0]->getRange());
 		if (args.size() > 1) {
-			range.columnEnd = args[args.size() - 1]->getRange().columnEnd;
+			errorRange.merge(args.back()->getRange());
 		}
 	}
 	context->setChild(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
@@ -101,4 +102,8 @@ size_t RPNFunction::getArgumentsCount() const {
 
 std::string RPNFunction::getName() const {
 	return this->name;
+}
+
+TextRange RPNFunction::getRange() const {
+	return TextRange(0, 0, 0);
 }

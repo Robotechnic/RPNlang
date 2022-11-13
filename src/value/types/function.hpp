@@ -13,7 +13,7 @@ class Function : public Value {
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };
 
-		Value *to(ValueType type);
+		Value *to(ValueType type, bool interpreterValue = true);
 		inline Value *copy(bool interpreterValue = true) const override;
 
 		std::string getStringValue() const;

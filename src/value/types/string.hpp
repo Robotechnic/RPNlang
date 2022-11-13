@@ -19,7 +19,7 @@ class String : public Value {
 			return new String("", TextRange(), true);
 		}
 
-		Value *to(ValueType type);
+		Value *to(ValueType type, bool interpreterValue = true);
 		inline Value *copy(bool interpreterValue = true) const override;
 
 		operatorResult opadd(const Value *other, const Context *context) const override;

@@ -10,11 +10,11 @@ bool None::isCastableTo(ValueType type) const {
 	return type == NONE;
 }
 
-Value *None::to(ValueType type) {
+Value *None::to(ValueType type, bool interpreterValue) {
 	if (type == NONE)
-		return new None(this->range, true);
+		return new None(this->range, interpreterValue);
 	if (type == BOOL)
-		return new Bool(false, this->range, true);
+		return new Bool(false, this->range, interpreterValue);
 	
 	throw std::runtime_error("Invalid value type");
 }

@@ -13,19 +13,22 @@
 class RPNFunction {
 	public:
 		RPNFunction(
-			std::string name,
-			std::vector<std::string> argsName, std::vector<ValueType> argsTypes,
-			ValueType returnType
+			const std::string &name,
+			const std::vector<std::string> &argsName,
+			const std::vector<ValueType> &argsTypes,
+			const ValueType &returnType
 		);
 		virtual ~RPNFunction();
 
 		virtual RPNFunctionResult call(
-			RPNFunctionArgs args,
+			const RPNFunctionArgs &args,
+			const TextRange &range,
 			Context *context
 		) const;
 
 		size_t getArgumentsCount() const;
 		std::string getName() const;
+		TextRange getRange() const;
 
 	protected:
 		ExpressionResult checkTypes(const RPNFunctionArgs &args, const Context *context) const;

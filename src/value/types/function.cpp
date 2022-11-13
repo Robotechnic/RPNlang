@@ -8,12 +8,12 @@ bool Function::isCastableTo(ValueType type) const {
 	return type == FUNCTION || type == STRING;
 }
 
-Value *Function::to(ValueType type) {
+Value *Function::to(ValueType type, bool interpreterValue) {
 	switch (type) {
 		case FUNCTION:
-			return new Function(this->function, this->range, true);
+			return new Function(this->function, this->range, interpreterValue);
 		case STRING:
-			return new String(function->getName(), range, true);
+			return new String(function->getName(), range, interpreterValue);
 		default:
 			throw std::runtime_error("Invalid value type");
 	};

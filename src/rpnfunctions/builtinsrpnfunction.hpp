@@ -24,7 +24,8 @@ class BuiltinRPNFunction : public RPNFunction {
 		~BuiltinRPNFunction();
 
 		RPNFunctionResult call(
-			RPNFunctionArgs args,
+			const RPNFunctionArgs &args,
+			const TextRange &range,
 			Context *context
 		) const;
 
