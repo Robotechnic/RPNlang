@@ -45,6 +45,7 @@ class Context {
 		ExpressionResult getValue(const Token *name, Value *&value) const;
 		ExpressionResult getValue(const Value *path, const std::string name, Value *&value) const;
 		Value *getValue(const Value *name) const;
+		Value *getValue(const std::string &name) const;
 
 		bool hasValue(const std::string name) const;
 		
@@ -54,7 +55,8 @@ class Context {
 		symbolTable symbols;
 		ContextType type;
 		const Context *parent;
-		Context *child; // save a pointer to the child to save it and have the possibility to delete it
+		const Context *root;
+		Context *child; // save a pointer to the child to have the possibility to delete it
 };
 
 std::ostream& operator<<(std::ostream& os, const Context *context);

@@ -8,7 +8,11 @@ Context::Context(const Context &other) :
 	type(other.type),
 	parent(other.parent),
 	child(nullptr)
-	{}
+	{
+		if (other.root != nullptr) {
+			this->root = other.root;
+		}
+	}
 
 Context::Context(const Context *other) :
 	name(other->name),
@@ -17,7 +21,11 @@ Context::Context(const Context *other) :
 	type(other->type),
 	parent(other->parent),
 	child(nullptr)
-	{}
+	{
+		if (other->root != nullptr) {
+			this->root = other->root;
+		}
+	}
 
 Context::Context(std::string name, std::string filePath, ContextType type) :
 	name(name),
@@ -26,7 +34,9 @@ Context::Context(std::string name, std::string filePath, ContextType type) :
 	type(type),
 	parent(nullptr),
 	child(nullptr)
-	{}
+	{
+		this->root = nullptr;
+	}
 
 Context::Context(std::string name, std::string filePath, const Context *parent, ContextType type) :
 	name(name),
@@ -35,7 +45,13 @@ Context::Context(std::string name, std::string filePath, const Context *parent, 
 	type(type),
 	parent(parent),
 	child(nullptr)
-	{}
+	{
+		if (parent->root != nullptr) {
+			this->root = parent->root;
+		} else {
+			this->root = parent;
+		}
+	}
 
 Context::Context(std::string name, std::string filePath, symbolTable symbols, ContextType type) :
 	name(name),
@@ -44,7 +60,9 @@ Context::Context(std::string name, std::string filePath, symbolTable symbols, Co
 	type(type),
 	parent(nullptr),
 	child(nullptr)
-	{}
+	{
+		this->root = nullptr;
+	}
 
 Context::Context(std::string name, std::string filePath, symbolTable symbols, const Context *parent, ContextType type) :
 	name(name),
@@ -53,7 +71,13 @@ Context::Context(std::string name, std::string filePath, symbolTable symbols, co
 	type(type),
 	parent(parent),
 	child(nullptr)
-	{}
+	{
+		if (parent->root != nullptr) {
+			this->root = parent->root;
+		} else {
+			this->root = parent;
+		}
+	}
 
 Context::~Context() {
 	if (this->child != nullptr) {
@@ -158,7 +182,11 @@ ExpressionResult Context::getValue(const Value *name, Value *&value) const {
 		value = this->symbols.at(nameStr);
 		return ExpressionResult();
 	}
-	
+
+	if (this->root) {
+		return this->root->getValue(name, value);
+	}
+
 	return ExpressionResult(
 		"Undefined variable name : " + nameStr,
 		name->getRange(),
@@ -171,6 +199,10 @@ ExpressionResult Context::getValue(const Token *name, Value *&value) const {
 	if (this->symbols.find(nameStr) != this->symbols.end()) {
 		value = this->symbols.at(nameStr);
 		return ExpressionResult();
+	}
+
+	if (this->root) {
+		return this->root->getValue(name, value);
 	}
 	
 	return ExpressionResult(
@@ -185,6 +217,10 @@ ExpressionResult Context::getValue(const Value *path, const std::string name, Va
 		value = this->symbols.at(name)->copy();
 		return ExpressionResult();
 	}
+
+	if (this->root) {
+		return this->root->getValue(path, name, value);
+	}
 	
 	return ExpressionResult(
 		"Undefined variable name : " + name,
@@ -195,7 +231,7 @@ ExpressionResult Context::getValue(const Value *path, const std::string name, Va
 
 
 /**
- * @brief search if a value exist in the context or it's parents
+ * @brief search if a value exist in the context
  * 
  * @param name the value to search
  * @return bool if the value exits
@@ -205,7 +241,7 @@ bool Context::hasValue(const std::string name) const {
 }
 
 /**
- * @brief get the value from the context or its parents but throw an error if it is not found
+ * @brief get the value from the context but throw an error if it is not found
  * 
  * @param name the name of the value
  * @return Value the desired value
@@ -217,6 +253,10 @@ Value *Context::getValue(const Value *name) const {
 		throw result.getErrorMessage();
 	}
 	return value;
+}
+
+Value *Context::getValue(const std::string &name) const {
+	return this->symbols.at(name);
 }
 
 std::ostream& operator<<(std::ostream& os, const Context *context) {
