@@ -3,6 +3,7 @@
 #include <string>
 #include <queue>
 #include <stack>
+#include <tuple>
 
 #include "tokens/token.hpp"
 #include "tokens/tokentypes.hpp"
@@ -15,6 +16,7 @@
 #include "codeblocks/blockqueue.hpp"
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/line.hpp"
+#include "codeblocks/functionblock.hpp"
 #include "lexer/keywords.hpp"
 
 #include "value/types/numbers/int.hpp"
@@ -22,7 +24,7 @@
 #include "value/types/numbers/bool.hpp"
 #include "value/types/variable.hpp"
 
-
+class FunctionBlock;
 
 class Lexer {
 	public:
@@ -33,7 +35,12 @@ class Lexer {
 
 		BlockQueue& getBlocks();
 
-		static ExpressionResult tokenize(int line, std::string lineString, std::queue<Token*> &tokens, const Context *context);
+		static ExpressionResult tokenize(
+			int line, 
+			std::string lineString, 
+			std::queue<Token*> &tokens,
+			const Context *context
+		);
 
 	private:
 		void pushLine();
@@ -44,7 +51,8 @@ class Lexer {
 		ExpressionResult parseString(Token *token);
 		ExpressionResult parseLiteral(Token *token);
 		ExpressionResult parseKeyword(Token *token);
-		ExpressionResult parseFunctionCall(Token *token);
+		std::pair<ExpressionResult, FunctionBlock*> parseFunction(BaseBlock *block);
+		ExpressionResult parseFunctionCall(const Token *token);
 
 	private:
 		const Context *context;
@@ -53,8 +61,8 @@ class Lexer {
 		std::stack<CodeBlock*> keywordBlockStack;
 		BlockQueue codeBlocks;
 		/**
-		 * @brief this member allow to track if the las token was used directly by the lexer so, it allow to know it is 
-		 * @brief necessary to clean the memory of the token
+		 * @brief this member allow to track if the last token was used directly by the lexer so,
+		 * it allow to know it is necessary to clean the memory after token usage
 		 */
 		bool integrated;
 };

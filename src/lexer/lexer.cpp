@@ -236,12 +236,20 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 		new Variable(
 			token->getStringValue(),
 			token->getRange()
-		)
+		),
+		TOKEN_TYPE_LITERAL
 	));
 	return ExpressionResult();
 }
 
+/**
+ * @brief parse the given keyword token and manage each token usage
+ * 
+ * @param token the token to check
+ * @return ExpressionResult if the token was valid, otherwise an error
+ */
 ExpressionResult Lexer::parseKeyword(Token *token) {
+	// all checks for validity are made when a closing block is encounter
 	if (blockClosers.contains(token->getStringValue())) {
 		if (this->keywordBlockStack.empty()) 
 			return ExpressionResult(
@@ -250,10 +258,10 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 				this->context
 			);
 
-		CodeBlock *block = this->keywordBlockStack.top();
+		BaseBlock *block = this->keywordBlockStack.top();
+		Token *keyword = this->keywordBlockStack.top()->getKeyword();
 		this->keywordBlockStack.pop();
-
-		Token *keyword = block->getKeyword();
+		
 		const std::string &name = keyword->getStringValue();
 		const std::vector<std::string> &blockCloser = blockOpeners.at(name);
 		if (std::find(blockCloser.begin(), blockCloser.end(), token->getStringValue()) == blockCloser.end())
@@ -262,18 +270,26 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 				token->getRange(),
 				this->context
 			);
+		
+		if (keyword->getStringValue() == "fun") {
+			auto [result, function] = this->parseFunction(block);
+			if (result.error()) return result;
+			block = function;
+		}
+
 		if (!this->keywordBlockStack.empty()) {
 			if (blockClosers.contains(name))
-				this->keywordBlockStack.top()->setNext(block);
+				this->keywordBlockStack.top()->setNext(static_cast<CodeBlock*>(block));
 			else
 				this->keywordBlockStack.top()->push(block);
 		} else if (blockClosers.contains(name)){
-			static_cast<CodeBlock*>(this->codeBlocks.back())->setNext(block);
+			static_cast<CodeBlock*>(this->codeBlocks.back())->setNext(static_cast<CodeBlock*>(block));
 		} else {
 			this->codeBlocks.push(block);
 		}
 	}
 
+	// open a new block when encounter a block keyword like if, fun, while...
 	if (blockOpeners.contains(token->getStringValue())) {
 		this->pushLine();
 		this->keywordBlockStack.push(new CodeBlock(token));
@@ -281,10 +297,12 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 		return ExpressionResult();
 	}
 
-	if (parentDependancy.contains(token->getStringValue())) {
-		if (!hasParentKeywordBlock(parentDependancy.at(token->getStringValue()))) {
+	// parent dependancy is the fact that some tokens need to be in a block to be valid
+	// ex: continue must be in a loop
+	if (parentDependency.contains(token->getStringValue())) {
+		if (!hasParentKeywordBlock(parentDependency.at(token->getStringValue()))) {
 			std::string result = token->getStringValue() + "must be inside of ";
-			for (const std::string &keyword : parentDependancy.at(token->getStringValue())) {
+			for (const std::string &keyword : parentDependency.at(token->getStringValue())) {
 				result += keyword + " or ";
 			}
 			result.erase(result.end() - 4, result.end());
@@ -308,7 +326,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
  * @param token the colon token (before the function name)
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
-ExpressionResult Lexer::parseFunctionCall(Token *token) {
+ExpressionResult Lexer::parseFunctionCall(const Token *token) {
 	if (this->tokens.empty() || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
 		return ExpressionResult(
 			"Expected function name after colon token",
@@ -326,6 +344,93 @@ ExpressionResult Lexer::parseFunctionCall(Token *token) {
 	));
 	delete name;
 	return ExpressionResult();
+}
+
+/**
+ * @brief Check if the previous line is a function declaration and convert it to a function token
+ * 
+ * @param keyword the fun keyword token
+ * @return ExpressionResult if the conversion was successful, otherwise an error
+ */
+std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *block) {
+	const Token *keyword = static_cast<CodeBlock*>(block)->getKeyword();
+	if (this->codeBlocks.empty())
+		return std::make_pair(ExpressionResult(
+			"Expected function definition before function block",
+			keyword->getRange(),
+			this->context
+		), nullptr);
+	std::string name;
+	ValueType returnType;
+	std::vector<std::string>args;
+	std::vector<ValueType>types;
+
+	std::unique_ptr<Line>line {static_cast<Line*>(this->codeBlocks.popBack())};
+	if (line->size() < 3)
+		return std::make_pair(ExpressionResult(
+			"Expected function name and return type before fun keyword",
+			keyword->getRange(),
+			this->context
+		), nullptr);
+	name = line->top()->getStringValue();
+	if (line->top()->getType() != TOKEN_TYPE_LITERAL)
+		return std::make_pair(ExpressionResult(
+			"Expected function name before fun keyword",
+			line->top()->getRange(),
+			this->context
+		), nullptr);
+	
+	line->pop();
+	int i = 0;
+	Token *current = nullptr;
+	while (line->top()->getType() != TOKEN_TYPE_ARROW && line->size() > 2) {
+		current = line->pop();
+		if (i % 2 == 0) {
+			if (current->getType() != TOKEN_TYPE_VALUE_TYPE)
+				return std::make_pair(ExpressionResult(
+					"Expected value type",
+					current->getRange(),
+					this->context
+				), nullptr);
+			types.push_back(Value::valueType(current->getStringValue()));
+		} else {
+			if (current->getType() != TOKEN_TYPE_LITERAL)
+				return std::make_pair(ExpressionResult(
+					"Expected argument name",
+					current->getRange(),
+					this->context
+				), nullptr);
+			args.push_back(current->getStringValue());
+		}
+		i++;
+	}
+	if (line->top()->getType() != TOKEN_TYPE_ARROW)
+		return std::make_pair(ExpressionResult(
+			"Missing '->' token before return type",
+			line->top()->getRange(),
+			this->context 
+		), nullptr);
+	if (i % 2 != 0)
+		return std::make_pair(ExpressionResult(
+			"Missing argument name after argument type",
+			current->getRange(),
+			this->context
+		), nullptr);
+	line->pop();
+	if (line->top()->getType() != TOKEN_TYPE_VALUE_TYPE)
+		return std::make_pair(ExpressionResult(
+			"Return type expected after '->' token but got" + line->top()->getStringType(),
+			line->top()->getRange(),
+			this->context
+		), nullptr);
+	returnType = Value::valueType(line->pop()->getStringValue());
+	return std::make_pair(ExpressionResult(), new FunctionBlock(
+		name,
+		args,
+		types,
+		returnType,
+		static_cast<CodeBlock*>(block)
+	));
 }
 
 /**
