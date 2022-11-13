@@ -2,28 +2,22 @@
 
 
 ExpressionResult::ExpressionResult() : 
-	isError(false),
+	resultStatus(SUCCESS),
 	errorMessage(""),
-	errorRange(TextRange()),
-	breakLoop(false),
-	continueLoop(false)
+	errorRange(TextRange())
 {
 	this->context = nullptr;
 }
 
 ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange, const Context *context) :
-	isError(true),
+	resultStatus(ERROR),
 	errorMessage(errorMessage),
 	errorRange(errorRange),
-	breakLoop(false),
-	continueLoop(false),
 	context(context)
 {}
 
-ExpressionResult::ExpressionResult(bool breakLoop, bool continueLoop) :
-	isError(false),
-	breakLoop(breakLoop),
-	continueLoop(continueLoop)
+ExpressionResult::ExpressionResult(Status status) :
+	resultStatus(status)
 {}
 
 ExpressionResult::~ExpressionResult() {
@@ -36,19 +30,19 @@ ExpressionResult::~ExpressionResult() {
  * @return true if the result is an error
  */
 bool ExpressionResult::error() const {
-	return this->isError;
+	return this->resultStatus == ERROR;
 }
 
 bool ExpressionResult::breakingLoop() const {
-	return this->breakLoop;
+	return this->resultStatus == BREAK;
 }
 
 bool ExpressionResult::continuingLoop() const {
-	return this->continueLoop;
+	return this->resultStatus == CONTINUE;
 }
 
 bool ExpressionResult::stopInterpret() const {
-	return this->breakingLoop() || this->continuingLoop() || this->error();
+	return this->resultStatus != SUCCESS;
 }
 
 /**
@@ -57,7 +51,7 @@ bool ExpressionResult::stopInterpret() const {
  * @return true if the result is not an error
  */
 bool ExpressionResult::success() const {
-	return !this->isError;
+	return this->resultStatus == SUCCESS;
 }
 
 std::string ExpressionResult::getErrorMessage() const {
@@ -139,10 +133,8 @@ const Context *ExpressionResult::getContext() const {
 }
 
 void ExpressionResult::operator=(const ExpressionResult &other) {
-	this->isError = other.isError;
+	this->resultStatus = other.resultStatus;
 	this->errorMessage = other.errorMessage;
 	this->errorRange = other.errorRange;
-	this->breakLoop = other.breakLoop;
-	this->continueLoop = other.continueLoop;
 	this->context = other.context;
 }

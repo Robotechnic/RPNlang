@@ -8,9 +8,17 @@
 
 class ExpressionResult {
 	public:
+		enum Status {
+			SUCCESS,
+			ERROR,
+			BREAK,
+			CONTINUE,
+			RETURN
+		};
+	public:
 		ExpressionResult();
 		ExpressionResult(std::string errorMessage, TextRange errorRange, const Context *context);
-		ExpressionResult(bool breakLoop, bool continueLoop);
+		ExpressionResult(Status status);
 		~ExpressionResult();
 
 		bool error() const;
@@ -31,9 +39,8 @@ class ExpressionResult {
 
 	private:
 		void displayArrow(TextRange range, std::string lineString) const;
-		bool isError;
+		Status resultStatus;
 		std::string errorMessage;
 		TextRange errorRange;
-		bool breakLoop, continueLoop;
 		const Context *context;
 };
