@@ -44,7 +44,7 @@ const std::map<std::string, std::string> blockClosers = {
 	{"finally", "try"}
 };
 
-const std::map<std::string, std::vector<std::string>> parentDependancy = {
+const std::map<std::string, std::vector<std::string>> parentDependency = {
 	{"return"  , {"fun"}},
 	{"continue", {"while", "for"}},
 	{"break"   , {"while", "for"}}
