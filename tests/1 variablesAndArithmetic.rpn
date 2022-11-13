@@ -27,7 +27,7 @@ e false =
 a b =
 b a =
 a b == f"{}\n" :print
-#e d c a b = = = =
+e d c a b = = = =
 a b == :assert
 a b == :assert
 a c == :assert
@@ -58,10 +58,10 @@ a b <= :assert
 a b >= :not :assert
 
 "test random boolean expressions\n" :print
-a b * 7 - 4 == a b + 5 == :and :assert
-a b * 7 - 4 == a b + 5 != :and :not :assert
+a b * 7 - 4 == a b + 5 == :and :not :assert
+a b * 7 - 4 != a b + 5 == :and :assert
 a b * 7 - 4 == a b + 5 == :or :assert
-a b * 7 - 4 == a b + 5 != :or :assert
+a b * 7 - 4 != a b + 5 == :or :assert
 
 "test ord and chr\n" :print
 a "a" =
@@ -89,12 +89,12 @@ a :len 6 == :assert
 "test toInt\n" :print
 "127" :toInt f"{}\n" :print
 "127" :toInt 127 == :assert
-"127.5" :toInt f"{}\n" :print
-"127.5" :toInt 127 == :assert
+"0" :toInt f"{}\n" :print
+"0" :toInt 0 == :assert
 
 "test toFloat\n" :print
 "127" :toFloat f"{}\n" :print
-"127" :toFloat 127.0 == :assert
+"127" :toFloat 127 == :assert
 "127.5" :toFloat f"{}\n" :print
 "127.5" :toFloat 127.5 == :assert
 
