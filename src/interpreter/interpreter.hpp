@@ -56,7 +56,6 @@ class Interpreter {
 		ExpressionResult interpretIf(Line &line, CodeBlock &block);
 		ExpressionResult interpretWhile(Line &line, CodeBlock &block);
 		ExpressionResult interpretFor(Line &line, CodeBlock &block);
-		ExpressionResult interpretFunction(const Line &line, const CodeBlock &block);
 		
 		Value *returnValue;
 		Value *lastValue;

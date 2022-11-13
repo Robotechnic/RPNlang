@@ -1,5 +1,5 @@
-simpleFuncton -> none fun
-	"simpleFuncton ok\n" :print
+simpleFunction -> none fun
+	"simpleFunction ok\n" :print
 nuf
 
 paramFunction string param -> none fun
@@ -72,16 +72,12 @@ forLoopFunction int a -> none fun
 	summ f"forLoopFunction ok: {}\n" :print
 nuf
 
-
-lambda -> string fun "lambda ok\n" return nuf =
-
 main -> none fun
 	# normal function
-	:simpleFuncton
+	:simpleFunction
 	"test2" :paramFunction
 	:returnFunction :print
 	"test 4" :paramReturnFunction :print
-	:lambda :print
 	12.5 :paramArithmeticFunction
 
 

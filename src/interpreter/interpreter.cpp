@@ -72,6 +72,18 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 		result.display();
 		return false;
 	}
+	if (this->context->hasValue("main") && this->context->getType() != CONTEXT_TYPE_MODULE) {
+		Function* val = static_cast<Function*>(this->context->getValue("main"));
+		TextRange mainRange = val->getRange();
+		if (val->getType() == FUNCTION) {
+			const RPNFunction* func = val->getValue();
+			RPNFunctionResult mainResult = func->call({}, mainRange, this->context);
+			if (std::get<0>(mainResult).error()) {
+				std::get<0>(mainResult).display();
+				return false;
+			}
+		}
+	}
 
 	return true;
 }
@@ -176,6 +188,8 @@ ExpressionResult Interpreter::checkMemory() {
 ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	ExpressionResult result;
 	blocks.reset();
+	Value::deleteValue(&this->returnValue);
+	this->returnValue = None::empty();
 	while (!blocks.empty() && !result.stopInterpret()) {
 		BaseBlock *block = blocks.pop();
 		if (block->getType() == LINE_BLOCK) {
@@ -185,6 +199,13 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 			} else {
 				result = interpretLine(*l);
 			}
+		} else if (block->getType() == FUNCTION_BLOCK) {
+			FunctionBlock *f = static_cast<FunctionBlock*>(block);
+			this->context->setValue(f->getName(), new Function(
+				f->getFunction(),
+				f->lastRange(),
+				true
+			));
 		} else {
 			result = ExpressionResult(
 				"Lexer didn't to its job corectly ;(",
@@ -210,6 +231,7 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 		token = line.pop();
 		switch (token->getType()) {
 			case TOKEN_TYPE_VALUE:
+			case TOKEN_TYPE_LITERAL:
 				this->memory.push(static_cast<ValueToken*>(token)->getValue());
 				break;
 			case TOKEN_TYPE_OPERATOR:
@@ -260,8 +282,6 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 		return this->interpretWhile(line, block);
 	} else if (type == "for") {
 		return this->interpretFor(line, block);
-	} else if (type == "fun") {
-		return this->interpretFunction(line, block);
 	} else {
 		return ExpressionResult(
 			"Unknow block type",
@@ -330,9 +350,14 @@ ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
 ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 	const std::string keyword = keywordToken->getStringValue();
 	if (keyword == "break") {
-		return ExpressionResult(true, false);
+		return ExpressionResult(ExpressionResult::BREAK);
 	} else if (keyword == "continue") {
-		return ExpressionResult(false, true);
+		return ExpressionResult(ExpressionResult::CONTINUE);
+	}  else if (keyword == "return") {
+		ExpressionResult result = this->checkMemory();
+		if (result.error()) return result;
+		this->returnValue = this->lastValue->copy(false);
+		return ExpressionResult(ExpressionResult::RETURN);
 	} else {
 		return ExpressionResult(
 			"Unknow keyword " + keyword,
@@ -401,7 +426,7 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 		arguments.insert(arguments.begin(), value);
 	}
 	
-	RPNFunctionResult callResult = function->call(arguments, this->context);
+	RPNFunctionResult callResult = function->call(arguments, functionToken->getRange(), this->context);
 	for (Value *value : arguments) Value::deleteValue(&value);
 	if (std::get<0>(callResult).error()) {
 		Value::deleteValue(&std::get<1>(callResult));
@@ -496,7 +521,7 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 	}
 
 	CPPInterface i {&forParams.at(0)};
-	while (!result.breakingLoop() && (step > &zero && i < &forParams.at(1)) || (step < &zero && i > &forParams.at(1))) {
+	while (!result.breakingLoop() && ((step > &zero && i < &forParams.at(1)) || (step < &zero && i > &forParams.at(1)))) {
 		this->context->setValue(
 			variable->getStringValue(),
 			i.getValue()->copy(false)
@@ -508,8 +533,4 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 	delete i.getValue();
 	Value::deleteValue(&variable);
 	return ExpressionResult();
-}
-
-ExpressionResult Interpreter::interpretFunction(const Line &line, const CodeBlock &block) {
-	return ExpressionResult("TODO: implement function", line.lastRange(), this->context);
 }

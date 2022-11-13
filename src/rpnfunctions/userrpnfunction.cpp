@@ -55,7 +55,7 @@ RPNFunctionResult UserRPNFunction::call(
 	//check the return type	
 	Value *returnValue = interpreter.getReturnValue();
 
-	if (returnValue->getType() == NONE && returnValue->getType() != this->returnType) {
+	if (returnValue->getType() != this->returnType) {
 		return std::make_tuple(
 			ExpressionResult(
 				returnValue->getType() == NONE ? 
