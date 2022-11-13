@@ -187,9 +187,9 @@ ExpressionResult Module::addModule(std::string modulePath, std::string name, Tex
 	return Module::modules[name]->load();
 }
 
-std::map<std::string, std::shared_ptr<Module>>Module::modules = std::map<std::string, std::shared_ptr<Module>>();
+std::unordered_map<std::string, std::shared_ptr<Module>>Module::modules = std::unordered_map<std::string, std::shared_ptr<Module>>();
 
-std::map<std::string, BuiltinModule>Module::builtinModules = std::map<std::string, BuiltinModule>{
+std::unordered_map<std::string, BuiltinModule>Module::builtinModules = std::unordered_map<std::string, BuiltinModule>{
 	{"test", BuiltinModule("test", [](BuiltinModule &module) {
 		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](RPNFunctionArgs args, Context *context) {
 			std::cout<<"Test ok : "<<args[0]->getStringValue()<<std::endl;

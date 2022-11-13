@@ -1,6 +1,6 @@
 #include "rpnfunctions/builtinmap.hpp"
 
-const std::map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
+const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunctions = {
 	{"print", BuiltinRPNFunction(
 		"print",
 		{"value"},

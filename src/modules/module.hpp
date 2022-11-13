@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdexcept>
+#include <unordered_map>
 #include <filesystem>
 
 class BuiltinModule;
@@ -44,7 +45,7 @@ class Module {
 		TextRange importRange;
 		Context * context;
 
-		static std::map<std::string, std::shared_ptr<Module>> modules;
-		static std::map<std::string, BuiltinModule> builtinModules;
+		static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
+		static std::unordered_map<std::string, BuiltinModule> builtinModules;
 };
 

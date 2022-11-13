@@ -105,4 +105,4 @@ TextRange UserRPNFunction::getRange() const {
 	return this->body->getRange();
 }
 
-std::map<std::string, std::shared_ptr<UserRPNFunction>> UserRPNFunction::userFunctions;
+std::unordered_map<std::string, std::shared_ptr<UserRPNFunction>> UserRPNFunction::userFunctions;

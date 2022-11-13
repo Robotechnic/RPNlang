@@ -1,5 +1,6 @@
 #pragma once
 
+#include <unordered_map>
 #include <string>
 #include <regex>
 
@@ -22,7 +23,7 @@ const std::regex keywordsRegex("^("
 	"yrt|"
 ")$");
 
-const std::map<std::string, std::vector<std::string>> blockOpeners = {
+const std::unordered_map<std::string, std::vector<std::string>> blockOpeners = {
 	{"fun"    , {"nuf"}},
 	{"if"     , {"fi", "else"}},
 	{"while"  , {"elihw"}},
@@ -33,7 +34,7 @@ const std::map<std::string, std::vector<std::string>> blockOpeners = {
 	{"finally", {"yrt"}}
 };
 
-const std::map<std::string, std::string> blockClosers = {
+const std::unordered_map<std::string, std::string> blockClosers = {
 	{"nuf"    , "fun"},
 	{"fi"     , "if"},
 	{"elihw"  , "while"},
@@ -44,7 +45,7 @@ const std::map<std::string, std::string> blockClosers = {
 	{"finally", "try"}
 };
 
-const std::map<std::string, std::vector<std::string>> parentDependency = {
+const std::unordered_map<std::string, std::vector<std::string>> parentDependency = {
 	{"return"  , {"fun"}},
 	{"continue", {"while", "for"}},
 	{"break"   , {"while", "for"}}

@@ -6,6 +6,7 @@
 #include <tuple>
 #include <regex>
 #include <cassert>
+#include <unordered_map>
 #include "rpnfunctions/rpnfunction.hpp"
 #include "modules/module.hpp"
 #include "value/value.hpp"
@@ -29,7 +30,7 @@ class BuiltinRPNFunction : public RPNFunction {
 			Context *context
 		) const;
 
-		static const std::map<std::string, BuiltinRPNFunction> builtinFunctions;
+		static const std::unordered_map<std::string, BuiltinRPNFunction> builtinFunctions;
 
 	private:
 		BuiltinRPNFunctionType function;

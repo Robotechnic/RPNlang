@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
+
 #include "rpnfunctions/typedef.hpp"
 #include "rpnfunctions/builtinsrpnfunction.hpp"
 
@@ -12,5 +14,5 @@
 
 class BuiltinRPNFunction;
 namespace builtins {
-	extern const std::map<std::string, BuiltinRPNFunction> builtinFunctions;
+	extern const std::unordered_map<std::string, BuiltinRPNFunction> builtinFunctions;
 };

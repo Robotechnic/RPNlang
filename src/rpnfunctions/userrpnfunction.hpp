@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include "rpnfunctions/rpnfunction.hpp"
 #include "codeblocks/codeblock.hpp"
@@ -41,5 +41,5 @@ class UserRPNFunction : public RPNFunction {
 		void addParameters(const RPNFunctionArgs &args, Context *context) const;
 		CodeBlock *body;
 
-		static std::map<std::string, std::shared_ptr<UserRPNFunction>> userFunctions;
+		static std::unordered_map<std::string, std::shared_ptr<UserRPNFunction>> userFunctions;
 };

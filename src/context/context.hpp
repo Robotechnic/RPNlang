@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <ostream>
 #include "tokens/token.hpp"
@@ -10,7 +10,7 @@
 class Value;
 class ExpressionResult;
 
-typedef std::map<std::string, Value*> symbolTable;
+typedef std::unordered_map<std::string, Value*> symbolTable;
 
 class Context {
 	public:
