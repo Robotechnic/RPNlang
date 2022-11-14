@@ -53,14 +53,24 @@ RPNFunctionResult UserRPNFunction::call(
 		return std::make_tuple(result, None::empty());
 
 	//check the return type	
-	Value *returnValue = interpreter.getReturnValue();
-
-	if (returnValue->getType() != this->returnType) {
+	Value *returnValue = interpreter.getLastValue();
+	if (this->returnType == NONE) {
+		if (returnValue->getType() != this->returnType) {
+			return std::make_tuple(
+				ExpressionResult(
+					returnValue->getType() != NONE ? 
+						"Function " + this->name + " does not return any value" :
+						"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
+					this->body->lastRange(),
+					context
+				),
+				None::empty()
+			);
+		}
+	} else if (!result.returnValue()) {
 		return std::make_tuple(
 			ExpressionResult(
-				returnValue->getType() == NONE ? 
-					"Function " + this->name + " does not return any value" :
-					"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
+				"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
 				this->body->lastRange(),
 				context
 			),

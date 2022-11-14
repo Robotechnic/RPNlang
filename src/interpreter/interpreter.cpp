@@ -1,22 +1,17 @@
 #include "interpreter/interpreter.hpp"
 
 Interpreter::Interpreter() :
-	returnValue(nullptr),
 	lastValue(nullptr),
 	context(new Context("main", "<stdin>"))
 {}
 
 Interpreter::Interpreter(Context *ctx) : 
-	returnValue(nullptr),
 	lastValue(nullptr),
 	context(ctx)
 {}
 
 Interpreter::~Interpreter() {
-	if (this->lastValue != nullptr)
-		Value::deleteValue(&this->lastValue);
-	if (this->returnValue != nullptr)
-		Value::deleteValue(&this->returnValue);
+	Value::deleteValue(&this->lastValue);
 	this->memory.clear();
 }
 
@@ -78,6 +73,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 		if (val->getType() == FUNCTION) {
 			const RPNFunction* func = val->getValue();
 			RPNFunctionResult mainResult = func->call({}, mainRange, this->context);
+			delete std::get<1>(mainResult);
 			if (std::get<0>(mainResult).error()) {
 				std::get<0>(mainResult).display();
 				return false;
@@ -115,10 +111,6 @@ ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
  */
 Value *Interpreter::getLastValue() const {
 	return this->lastValue;
-}
-
-Value *Interpreter::getReturnValue() const {
-	return this->returnValue;
 }
 
 /**
@@ -188,8 +180,6 @@ ExpressionResult Interpreter::checkMemory() {
 ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	ExpressionResult result;
 	blocks.reset();
-	Value::deleteValue(&this->returnValue);
-	this->returnValue = None::empty();
 	while (!blocks.empty() && !result.stopInterpret()) {
 		BaseBlock *block = blocks.pop();
 		if (block->getType() == LINE_BLOCK) {
@@ -354,9 +344,6 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 	} else if (keyword == "continue") {
 		return ExpressionResult(ExpressionResult::CONTINUE);
 	}  else if (keyword == "return") {
-		ExpressionResult result = this->checkMemory();
-		if (result.error()) return result;
-		this->returnValue = this->lastValue->copy(false);
 		return ExpressionResult(ExpressionResult::RETURN);
 	} else {
 		return ExpressionResult(
@@ -445,7 +432,7 @@ ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
 		return this->interpret(block.getBlocks());
 	}
 	Value::deleteValue(&condition);
-	if (block.getNext() != nullptr)
+	if (block.getNext() != nullptr) 
 		return this->interpret(block.getNext()->getBlocks());
 	
 	return ExpressionResult();

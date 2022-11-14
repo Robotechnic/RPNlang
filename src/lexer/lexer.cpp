@@ -260,9 +260,8 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 
 		BaseBlock *block = this->keywordBlockStack.top();
 		Token *keyword = this->keywordBlockStack.top()->getKeyword();
-		this->keywordBlockStack.pop();
-		
 		const std::string &name = keyword->getStringValue();
+		this->keywordBlockStack.pop();
 		const std::vector<std::string> &blockCloser = blockOpeners.at(name);
 		if (std::find(blockCloser.begin(), blockCloser.end(), token->getStringValue()) == blockCloser.end())
 			return ExpressionResult(
@@ -271,7 +270,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 				this->context
 			);
 		
-		if (keyword->getStringValue() == "fun") {
+		if (name == "fun") {
 			auto [result, function] = this->parseFunction(block);
 			if (result.error()) return result;
 			block = function;
@@ -279,7 +278,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 
 		if (!this->keywordBlockStack.empty()) {
 			if (blockClosers.contains(name))
-				this->keywordBlockStack.top()->setNext(static_cast<CodeBlock*>(block));
+				static_cast<CodeBlock*>(this->keywordBlockStack.top()->getBlocks().back())->setNext(static_cast<CodeBlock*>(block));
 			else
 				this->keywordBlockStack.top()->push(block);
 		} else if (blockClosers.contains(name)){

@@ -39,7 +39,6 @@ class Interpreter {
 		ExpressionResult interpret(BlockQueue &blocks);
 
 		Value *getLastValue() const;
-		Value *getReturnValue() const;
 
 
 	private:
@@ -57,7 +56,6 @@ class Interpreter {
 		ExpressionResult interpretWhile(Line &line, CodeBlock &block);
 		ExpressionResult interpretFor(Line &line, CodeBlock &block);
 		
-		Value *returnValue;
 		Value *lastValue;
 		
 		TextRange mergeRanges(const std::vector<Value*> &values);
