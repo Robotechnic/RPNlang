@@ -41,6 +41,10 @@ bool ExpressionResult::continuingLoop() const {
 	return this->resultStatus == CONTINUE;
 }
 
+bool ExpressionResult::returnValue() const {
+	return this->resultStatus == RETURN;
+}
+
 bool ExpressionResult::stopInterpret() const {
 	return this->resultStatus != SUCCESS;
 }

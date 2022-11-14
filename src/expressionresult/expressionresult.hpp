@@ -32,6 +32,7 @@ class ExpressionResult {
 
 		bool breakingLoop() const;
 		bool continuingLoop() const;
+		bool returnValue() const;
 
 		bool stopInterpret() const;
 
