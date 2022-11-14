@@ -9,7 +9,6 @@ class TextRange {
 		TextRange();
 		TextRange(int line, int column, int length);
 		TextRange(const TextRange &other);
-		TextRange(TextRange &&other);
 
 		std::string getLine(std::string code);
 		
