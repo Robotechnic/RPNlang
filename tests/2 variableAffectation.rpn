@@ -1,0 +1,23 @@
+"check variable affectation (for memory leak)\n" :print
+# test affectation with each types
+a 2 =
+b "bdule" =
+c 7.9 =
+d true =
+e false =
+a a = # this line can cause invalid read
+a b =
+b a =
+a b == f"{}\n" :print
+e d c a b = = = = # this line can cause invalid read
+a b == :assert
+a b == :assert
+a c == :assert
+a d == :assert
+a e == :assert
+b c == :assert
+b d == :assert
+b e == :assert
+c d == :assert
+c e == :assert
+d e == :assert

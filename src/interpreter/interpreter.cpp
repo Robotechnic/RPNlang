@@ -61,7 +61,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 		return false;
 	}
 
-	this->clearLastValue();
+	Value::deleteValue(&this->lastValue);
 	result = this->interpret(lexer.getBlocks());
 	if (result.error()) {
 		result.display();
@@ -100,7 +100,7 @@ ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
 	result = lexer.lex();
 	if (result.error()) return result;
 
-	this->clearLastValue();
+	Value::deleteValue(&this->lastValue);
 	return this->interpret(lexer.getBlocks());
 }
 
@@ -111,16 +111,6 @@ ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
  */
 Value *Interpreter::getLastValue() const {
 	return this->lastValue;
-}
-
-/**
- * @brief to avoid memory leak, clear the last value before resetting it at the end of a line interpretation
- * 
- */
-void Interpreter::clearLastValue() {
-	if (this->lastValue != nullptr) {
-		Value::deleteValue(&this->lastValue);
-	}
 }
 
 /**
@@ -147,7 +137,7 @@ TextRange Interpreter::mergeRanges(const std::vector<Value*> &values) {
  */
 ExpressionResult Interpreter::checkMemory() {	
 	if (this->memory.empty()) {
-		this->clearLastValue();
+		Value::deleteValue(&this->lastValue);
 		this->lastValue = None::empty();
 		return ExpressionResult();
 	}
@@ -166,7 +156,7 @@ ExpressionResult Interpreter::checkMemory() {
 		return result;
 	}
 
-	this->clearLastValue();
+	Value::deleteValue(&this->lastValue);
 	return this->memory.popVariableValue(this->lastValue, this->context);
 }
 
@@ -366,15 +356,15 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 	result = this->memory.popVariableValue(left, this->context);
 	if (result.error()) return result;
 	if (this->memory.top()->getType() != VARIABLE) {
-		Value::deleteValue(&left);
 		return ExpressionResult(
 			"Can't assign value to a non variable",
 			this->memory.top()->getRange(),
 			this->context
 		);
 	}
-	this->context->setValue(this->memory.top()->getStringValue(), left->copy(false));
-	Value::deleteValue(&left);
+	Value *hold;
+	this->context->setValue(this->memory.top()->getStringValue(), left->copy(false), &hold);
+	if (hold != nullptr && this->lastValue == hold) this->lastValue = nullptr;
 	return result;
 }
 
@@ -432,7 +422,7 @@ ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
 		return this->interpret(block.getBlocks());
 	}
 	Value::deleteValue(&condition);
-	if (block.getNext() != nullptr) 
+	if (block.getNext() != nullptr)
 		return this->interpret(block.getNext()->getBlocks());
 	
 	return ExpressionResult();

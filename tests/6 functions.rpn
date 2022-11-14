@@ -34,6 +34,8 @@ conditionFunction bool param -> string fun
 	else
 		"conditionFunction false\n" return
 	fi
+	"conditionFunction failled\n" :print
+	1 :exit
 nuf
 
 conditionFunction1 int a int b -> int fun
@@ -64,24 +66,23 @@ whileLoopFunction string param int maxSize -> string fun
 nuf
 
 
-forLoopFunction int a -> none fun
-	summ 0 =
+forLoopFunction int a -> int fun
+	sum 0 =
 	i 0 a 1 + 1 for
-		summ i summ + =
+		sum i sum + =
 	rof
-	summ f"forLoopFunction ok: {}\n" :print
+	sum return
 nuf
 
 main -> none fun
-	# normal function
+	"Test normal function\n" :print
 	:simpleFunction
 	"test2" :paramFunction
 	:returnFunction :print
 	"test 4" :paramReturnFunction :print
 	12.5 :paramArithmeticFunction
 
-
-	# functions with conditions
+	"Test functions with conditions\n" :print
 	true :conditionFunction :print
 	false :conditionFunction :print
 
@@ -90,12 +91,22 @@ main -> none fun
 	5 7 7 :conditionFunction1 == :assert
 	8 7 6 :conditionFunction1 == :assert
 	8 1 3 :conditionFunction1 == :assert
+	
+	"Test functions with while loop\n" :print
+	test "be" 10 :whileLoopFunction =
+	test :len 12 == :assert
+	test "bebebebebebe" == :assert
+	test f"{}\n" :print
+	test "yay" 5 :whileLoopFunction =
+	test :len 6 == :assert
+	test "yayyay" == :assert
+	test f"{}\n" :print
 
-	# functions with while loop
-	"be" 10 :whileLoopFunction f"{}\n" :print
-	"yay" 5 :whileLoopFunction f"{}\n" :print
-
-	# function with for loop
-	1 :forLoopFunction
-	10 :forLoopFunction
+	"Test function with for loop\n" :print
+	test 1 :forLoopFunction =
+	test 1 == :assert
+	test f"forLoopFunction ok: {}\n" :print
+	test 10 :forLoopFunction =
+	test 55 == :assert
+	test f"forLoopFunction ok: {}\n" :print
 nuf

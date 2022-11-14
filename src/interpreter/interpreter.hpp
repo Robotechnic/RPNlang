@@ -59,7 +59,6 @@ class Interpreter {
 		Value *lastValue;
 		
 		TextRange mergeRanges(const std::vector<Value*> &values);
-		void clearLastValue();
 
 		Memory memory;
 		Context *context;

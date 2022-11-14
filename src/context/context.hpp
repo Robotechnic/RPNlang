@@ -37,9 +37,9 @@ class Context {
 
 		ContextType getType() const;
 
-		void setValue(std::string name, Value *value);
-		void setValue(const Token *name, Value *value);
-		void setValue(const Value &name, Value *value);
+		void setValue(std::string name, Value *value, Value **hold = nullptr);
+		void setValue(const Token *name, Value *value, Value **hold = nullptr);
+		void setValue(const Value &name, Value *value, Value **hold = nullptr);
 		
 		ExpressionResult getValue(const Value *name, Value *&value) const;
 		ExpressionResult getValue(const Token *name, Value *&value) const;
