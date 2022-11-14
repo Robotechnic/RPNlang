@@ -364,7 +364,13 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 	}
 	Value *hold;
 	this->context->setValue(this->memory.top()->getStringValue(), left->copy(false), &hold);
-	if (hold != nullptr && this->lastValue == hold) this->lastValue = nullptr;
+	if (hold != nullptr) {
+		if (this->lastValue == hold) 
+			this->lastValue = nullptr;
+		if (left != hold) 
+			Value::deleteValue(&left);
+	}
+	
 	return result;
 }
 

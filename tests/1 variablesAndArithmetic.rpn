@@ -2,7 +2,7 @@
 0b010111101 189 == f"{}\n" :print
 0xff727a 16740986 == f"{}\n" :print
 0xff 255 <= f"{}\n" :print
-
+	
 "check basic math\n" :print
 3 2 + f"{}\n" :print
 8 9 - f"{}\n" :print
