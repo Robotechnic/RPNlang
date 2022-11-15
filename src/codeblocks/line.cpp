@@ -51,3 +51,54 @@ TextRange Line::lastRange() const {
 	}
 	return this->tokens.back()->getRange();
 }
+
+LineIterator Line::begin() {
+	return LineIterator(this);
+}
+
+// Iterator implementation
+
+LineIterator::LineIterator(Line *line) : line(line), currentToken(0) {}
+LineIterator::LineIterator(const LineIterator &other) : line(other.line), currentToken(other.currentToken) {}
+LineIterator::~LineIterator() {}
+
+LineIterator &LineIterator::operator=(const LineIterator &other) {
+	this->line = other.line;
+	this->currentToken = other.currentToken;
+	return *this;
+}
+
+LineIterator &LineIterator::operator++() {
+	this->currentToken++;
+	return *this;
+}
+
+LineIterator LineIterator::operator++(int) {
+	LineIterator tmp(*this);
+	operator++();
+	return tmp;
+}
+
+Token *LineIterator::operator*() {
+	return this->line->tokens[this->currentToken];
+}
+
+bool LineIterator::operator==(const LineIterator &other) const {
+	return this->line == other.line && this->currentToken == other.currentToken;
+}
+
+bool LineIterator::operator!=(const LineIterator &other) const {
+	return !(*this == other);
+}
+
+LineIterator::operator bool() const {
+	return this->currentToken < this->line->tokens.size();
+}
+
+Line *LineIterator::getLine() const {
+	return this->line;
+}
+
+const Line* LineIterator::getLineConst() const {
+	return this->line;
+}

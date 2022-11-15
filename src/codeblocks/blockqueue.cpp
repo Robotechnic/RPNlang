@@ -64,3 +64,65 @@ TextRange BlockQueue::lastRange() const {
 	}
 	return this->blocks.back()->lastRange();
 }
+
+BlockQueueIterator BlockQueue::begin() {
+	return BlockQueueIterator(this, 0);
+}
+
+BlockQueueIterator BlockQueue::end() {
+	return BlockQueueIterator(this, this->blocks.size() - 1);
+}
+
+
+// Iteraror definition
+BlockQueueIterator::BlockQueueIterator(BlockQueue *queue, long unsigned int index) : queue(queue), currentBlock(index) {}
+BlockQueueIterator::BlockQueueIterator(const BlockQueueIterator &it) : queue(it.queue), currentBlock(it.currentBlock) {}
+BlockQueueIterator::~BlockQueueIterator() {}
+
+BlockQueueIterator &BlockQueueIterator::operator=(const BlockQueueIterator &it) {
+	this->queue = it.queue;
+	this->currentBlock = it.currentBlock;
+	return *this;
+}
+
+BlockQueueIterator &BlockQueueIterator::operator++() {
+	if (this->currentBlock >= this->queue->blocks.size()) {
+		throw std::runtime_error("BlockQueueIterator::operator++() called on invalid iterator");
+	}
+	this->currentBlock++;
+	return *this;
+}
+
+BlockQueueIterator BlockQueueIterator::operator++(int) {
+	BlockQueueIterator it = *this;
+	++(*this);
+	return it;
+}
+
+bool BlockQueueIterator::operator==(const BlockQueueIterator &it) const {
+	return this->queue == it.queue && this->currentBlock == it.currentBlock;
+}
+
+bool BlockQueueIterator::operator!=(const BlockQueueIterator &it) const {
+	return !(*this == it);
+}
+
+BaseBlock *BlockQueueIterator::operator*() const {
+	return this->queue->blocks.at(this->currentBlock);
+}
+
+BaseBlock *BlockQueueIterator::operator->() const {
+	return this->queue->blocks.at(this->currentBlock);
+}
+
+BlockQueueIterator::operator bool() const {
+	return this->currentBlock < this->queue->blocks.size();
+}
+
+BlockQueue *BlockQueueIterator::getQueue() const {
+	return this->queue;
+}
+
+const BlockQueue *BlockQueueIterator::getConstQueue() const {
+	return this->queue;
+}

@@ -143,10 +143,11 @@ ExpressionResult Interpreter::checkMemory() {
 	}
 
 	if (this->memory.size() > 1) {
+		int size = this->memory.size();
 		Value *last = this->memory.pop();
 		this->memory.clear(1);
 		ExpressionResult result(
-			"To much remaining values in the memory",
+			"To much remaining values in the memory (" + std::to_string(size) + ")",
 			last->getRange().merge(this->memory.top()->getRange()),
 			this->context
 		);
@@ -169,13 +170,13 @@ ExpressionResult Interpreter::checkMemory() {
  */
 ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	ExpressionResult result;
-	blocks.reset();
-	while (!blocks.empty() && !result.stopInterpret()) {
-		BaseBlock *block = blocks.pop();
+	BlockQueueIterator it = blocks.begin();
+	while (it && !result.stopInterpret()) {
+		BaseBlock *block = *(it++);
 		if (block->getType() == LINE_BLOCK) {
 			Line *l = static_cast<Line*>(block);
-			if (!blocks.empty() && blocks.front()->getType() == CODE_BLOCK) {
-				result = this->interpretBlock(*l, *static_cast<CodeBlock*>(blocks.pop()));
+			if (it && (*it)->getType() == CODE_BLOCK) {
+				result = this->interpretBlock(*l, *static_cast<CodeBlock*>(*(it++)));
 			} else {
 				result = interpretLine(*l);
 			}
@@ -204,45 +205,46 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
  * @return ExpressionResult status of the interpretation
  */
 ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
-	line.reset();
-	Token *token;
 	ExpressionResult result;
-	while (!line.empty() && !result.stopInterpret()) {
-		token = line.pop();
-		switch (token->getType()) {
+	LineIterator it = line.begin();
+	while (!result.stopInterpret() && it) {
+		switch ((*it)->getType()) {
 			case TOKEN_TYPE_VALUE:
 			case TOKEN_TYPE_LITERAL:
-				this->memory.push(static_cast<ValueToken*>(token)->getValue());
+				this->memory.push(static_cast<ValueToken*>(*it)->getValue());
 				break;
 			case TOKEN_TYPE_OPERATOR:
 			case TOKEN_TYPE_BOOLEAN_OPERATOR:
-				result = this->interpretOperator(token);
+				result = this->interpretOperator(*it);
 				break;
 			case TOKEN_TYPE_FUNCTION_CALL:
-				result = this->interpretFunctionCall(token);
+				result = this->interpretFunctionCall(*it);
 				break;
 			case TOKEN_TYPE_FSTRING:
-				result = this->interpretFString(static_cast<FStringToken*>(token));
+				result = this->interpretFString(static_cast<FStringToken*>(*it));
 				break;
 			case TOKEN_TYPE_ASSIGNMENT:
-				result = this->interpretAssignment(token);
+				result = this->interpretAssignment(*it);
 				break;
 			case TOKEN_TYPE_KEYWORD:
-				result = this->interpretKeyword(token);
+				result = this->interpretKeyword(*it);
 				break;
 			default:
 				result = ExpressionResult(
 					"Unknow token (TODO)",
-					token->getRange(),
+					(*it)->getRange(),
 					this->context
 				);
 				break;
 		}
+		it++;
 	}
 	if (result.error()) return result;
 	if (clearMemory) {
 		ExpressionResult memory = this->checkMemory();
-		if (memory.error()) return memory;
+		if (memory.error()) {
+			return memory;
+		}
 	}
 	return result;
 }

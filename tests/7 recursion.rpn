@@ -1,5 +1,5 @@
-factorial int n -> int fun
-	n 0 == if
+factorial int n-> int fun
+	n 1 <= if
 		1 return
 	fi
 	n 1 - :factorial n * return
@@ -17,7 +17,7 @@ nuf
 
 main -> none fun
 	"Factorial\n" :print 
-	4 :factorial f"{}\n" :print
+	10 :factorial f"{}\n" :print
 	"Fibonacci\n" :print
 	10 :fibonacci f"{}\n" :print
 	"Done\n" :print
