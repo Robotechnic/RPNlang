@@ -11,8 +11,6 @@
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
 
-#define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/3 whileLoops.rpn"
-
 /**
  * @brief allow shell to be destroyed when ctrl+c is pressed, this allow to save the history
  * 
@@ -28,6 +26,7 @@ void shellInput() {
 	Context *ctx = new Context("main", "<stdin>");
 	Interpreter i(ctx);
 	std::string instruction;
+	rpnShell.loadHistory();
 	rpnShell>>instruction;
 
 	while (instruction != "exit") {
@@ -61,8 +60,13 @@ void shellInput() {
 }
 
 void setWorkingDirectory(std::string path) {
-	std::string extractedPath = extractFilePath(path);
-	std::filesystem::current_path(extractedPath);
+	try {
+		std::string extractedPath = extractFilePath(path);
+		std::filesystem::current_path(std::string(std::filesystem::current_path()) + "/" + extractedPath);
+	} catch (std::filesystem::filesystem_error &e) {
+		std::cout<<"Error: "<<e.what()<<std::endl;
+		exit(1);
+	}
 }
 
 int main(int argc, char **argv) {
@@ -73,7 +77,6 @@ int main(int argc, char **argv) {
 	if (argc == 1) {
 		signal(SIGTERM, signalHandler);
 		signal(SIGINT, signalHandler);
-		rpnShell.loadHistory();
 		shellInput();
 	} else {
 		#ifdef TEST_FILE
@@ -82,9 +85,10 @@ int main(int argc, char **argv) {
 			std::string path = argv[1];
 		#endif
 		setWorkingDirectory(path);
-		Context *ctx = new Context(extractFileName(path), path, CONTEXT_TYPE_FILE);
+		std::string name = extractFileName(path);
+		Context *ctx = new Context(name, path, CONTEXT_TYPE_FILE);
 		std::string error;
-		result = Interpreter(ctx).interpretFile(path, error);
+		result = Interpreter(ctx).interpretFile(path.substr(path.find_last_of('/') + 1), error);
 		if (!result) {
 			std::cout << error << std::endl;
 		}

@@ -264,6 +264,8 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 		return this->interpretWhile(line, block);
 	} else if (type == "for") {
 		return this->interpretFor(line, block);
+	} else if (type == "try") {
+		return this->interpretTry(line, block);	
 	} else {
 		return ExpressionResult(
 			"Unknow block type",
@@ -322,8 +324,10 @@ ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
 	operatorResult result = left->applyOperator(right, operatorToken, this->context);
 	Value::deleteValue(&right);
 	Value::deleteValue(&left);
-	if (std::get<0>(result).error()) 
+	if (std::get<0>(result).error()) {
+		delete std::get<1>(result);
 		return std::get<0>(result);
+	}
 	
 	this->memory.push(std::get<1>(result));
 	return ExpressionResult();
@@ -518,4 +522,45 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 	delete i.getValue();
 	Value::deleteValue(&variable);
 	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
+	if (line.size() != 1) {
+		return ExpressionResult(
+			"Invalid number of arguments for try, expected 1 but got " + std::to_string(line.size()),
+			line.lastRange(),
+			this->context
+		);
+	}
+	if (line.top()->getType() != TOKEN_TYPE_LITERAL) {
+		return ExpressionResult(
+			"Invalid type for try, expected literal but got " + line.top()->getStringType(),
+			line.top()->getRange(),
+			this->context
+		);
+	}
+	// try
+	ExpressionResult result = this->interpret(block.getBlocks());
+	if (block.getNext() == nullptr)
+		return result;
+	if (result.error()) {
+		// catch
+		if (block.getNext()->getKeyword()->getStringValue() == "catch") {
+			this->context->setValue(
+				line.top()->getStringValue(),
+				new String(result.getErrorMessage(), line.top()->getRange(), false)
+			);
+		
+			result = this->interpret(block.getNext()->getBlocks());
+			if (result.error()) return result;
+
+			// finally
+			if (block.getNext()->getNext() != nullptr)
+				return this->interpret(block.getNext()->getNext()->getBlocks());
+		}
+	}
+	// finally
+	if (block.getNext()->getKeyword()->getStringValue() == "finally")
+		return this->interpret(block.getNext()->getBlocks());
+	return result;
 }

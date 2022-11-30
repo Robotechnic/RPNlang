@@ -1,11 +1,19 @@
-try
+e try
 	1 0 /
-catch e:
+catch
 	e f"Error: {}\n" :print
 yrt
 
-try
+e try
 	1 0 /
+finally
+	"finnaly fired correctly\n" :print
+yrt
+
+e try
+	1 0 /
+catch
+	e f"Error: {}\n" :print
 finally
 	"finnaly fired correctly\n" :print
 yrt

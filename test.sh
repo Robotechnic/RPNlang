@@ -1,11 +1,12 @@
 #!/bin/sh
 
-for example in ./tests/*
+cd build
+for example in ../tests/*
 do
 	echo "============================================================"
 	echo "Testing $example"
 	echo "============================================================"
-	./build/RPNlang "$example"
+	./RPNlang "$example"
 	if [ $? -ne 0 ]
 	then
 		echo "Test $example failed"

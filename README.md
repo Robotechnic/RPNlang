@@ -1,11 +1,18 @@
-# RPNlang
+# 1. RPNlang
 programming language interpreter based on Reverse Polish Notation just for fun ;)
 
+- [1. RPNlang](#1-rpnlang)
+	- [1.1. A beautiful syntax](#11-a-beautiful-syntax)
+	- [1.2. Exemples](#12-exemples)
+	- [1.3. How it works?](#13-how-it-works)
+	- [1.4. Language keywords](#14-language-keywords)
+	- [1.5. Types](#15-types)
 
-## A beautiful syntax
+
+## 1.1. A beautiful syntax
 In RPNlang, there is no need to use horribles and ugly curly brackets or parentheses. Instead, you use the most beautiful syntax you can imagine: the **reverse polish notation** (RPN for the insiders).
 
-## Exemples
+## 1.2. Exemples
 Exemples are better than words so, there are some just here waiting for your beautiful eyes:
 
 **Comments**:
@@ -103,11 +110,11 @@ mymath.pi 2 / mymath.cos :print
 More exemples [here](https://github.com/Robotechnic/RPNlang/tree/master/examples)
 
 
-## How it works?
+## 1.3. How it works?
 This language use a stack to store the things that you type. Each time that you use a function or a math operator, the required arguments are poped from the stack, processed and the result is pushed back to the stack. After each line of instructions, the stack must contain no more than one element (it can be empty), else the program will crash.
 RPNlang is also a strongly typed language, each variable has a type (if you define a variable it will be implicitly typed). All the types can be implicitly converted to each other if they are compatible (for example, a integer can be converted to a float).
 
-## Language keywords
+## 1.4. Language keywords
 In this languages there are just a few language specific keywords, everithing else is a function.
 | Keyword  | Description |
 |:--------:|:-----------:|
@@ -126,7 +133,7 @@ In this languages there are just a few language specific keywords, everithing el
 | `finally`| start of a finally block |
 | `yrt`    | end of try catch block |
 
-## Types
+## 1.5. Types
 There are a few types in this language:
 | Type | Description |
 |:----:|:-----------:|
