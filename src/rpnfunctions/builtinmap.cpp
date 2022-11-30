@@ -19,7 +19,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
 			std::cout<<args[0]->getStringValue();
 			std::string input;
-			std::cin>>input;
+			std::getline(std::cin, input);
 			return std::make_tuple(ExpressionResult(), new String(input, range, true));
 		}
 	)},
@@ -51,7 +51,10 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		ValueType::BOOL,
 		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
 			std::string value = args[0]->getStringValue();
-			bool isNumber = value == "true" || value == "false" || std::regex_match(value, floatRegex);
+			bool isNumber = value == "true";
+			isNumber |= value == "false";
+			isNumber |= std::regex_match(value, floatRegex);
+			isNumber |= std::regex_match(value, intRegex);
 			return std::make_tuple(ExpressionResult(), new Bool(isNumber, range, true));
 		}
 	)},

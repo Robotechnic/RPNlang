@@ -11,6 +11,7 @@
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
 
+
 /**
  * @brief allow shell to be destroyed when ctrl+c is pressed, this allow to save the history
  * 
@@ -51,7 +52,7 @@ void shellInput() {
 				default:
 					break;
 			};
-			rpnShell<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
+			rpnShell<<"\n"<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
 		}
 
 		rpnShell>>instruction;
@@ -62,7 +63,11 @@ void shellInput() {
 void setWorkingDirectory(std::string path) {
 	try {
 		std::string extractedPath = extractFilePath(path);
-		std::filesystem::current_path(std::string(std::filesystem::current_path()) + "/" + extractedPath);
+		if (extractedPath[0] == '/') {
+			std::filesystem::current_path(extractedPath);
+		} else {
+			std::filesystem::current_path(std::filesystem::current_path().string() + "/" + extractedPath);
+		}
 	} catch (std::filesystem::filesystem_error &e) {
 		std::cout<<"Error: "<<e.what()<<std::endl;
 		exit(1);
@@ -86,9 +91,10 @@ int main(int argc, char **argv) {
 		#endif
 		setWorkingDirectory(path);
 		std::string name = extractFileName(path);
+		path = path.substr(path.find_last_of('/') + 1);
 		Context *ctx = new Context(name, path, CONTEXT_TYPE_FILE);
 		std::string error;
-		result = Interpreter(ctx).interpretFile(path.substr(path.find_last_of('/') + 1), error);
+		result = Interpreter(ctx).interpretFile(path, error);
 		if (!result) {
 			std::cout << error << std::endl;
 		}

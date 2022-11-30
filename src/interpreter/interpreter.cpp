@@ -507,7 +507,7 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		if (result.error()) return result;
 		i += step;
 	}
-	delete i.getValue();
+	Value::deleteValue(&i.getValue());
 	Value::deleteValue(&variable);
 	return ExpressionResult();
 }

@@ -1,9 +1,9 @@
 fizzBuz int nb -> string fun
 	result "" =
-	nb 3 % :not if
+	nb 3 % 0 == if
 		result "Fizz" =
 	fi
-	nb 5 % :not if
+	nb 5 % 0 == if
 		result result "Buzz" + =
 	fi
 	result "" == if

@@ -1,7 +1,7 @@
-password "What is the password ?" :input =
+password "What is the password ?\n>>> " :input =
 password "hello world" == if 
-	"Hello super user ;)" :print
+	"Hello super user ;)\n" :print
 else
-	"Wrong password" :print
-	"Nb: If you are a super user, the password is 'hello world'" :print
+	"Wrong password\n" :print
+	"Nb: If you are a super user, the password is 'hello world'\n" :print
 fi

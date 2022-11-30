@@ -9,6 +9,7 @@ class CPPInterface {
 		CPPInterface(Value *value);
 		CPPInterface(const CPPInterface &other);
 		Value *getValue() const;
+		Value *&getValue();
 
 		void operator=(const CPPInterface &other);
 		void operator=(Value *other);

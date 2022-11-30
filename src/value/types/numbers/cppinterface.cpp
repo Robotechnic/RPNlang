@@ -7,6 +7,10 @@ Value *CPPInterface::getValue() const {
 	return value;
 }
 
+Value *&CPPInterface::getValue() {
+	return value;
+}
+
 void CPPInterface::operator=(const CPPInterface &other) {
 	this->value = other.value;
 }
