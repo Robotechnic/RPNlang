@@ -15,24 +15,9 @@ Interpreter::~Interpreter() {
 	this->memory.clear();
 }
 
-bool Interpreter::openFile(std::ifstream &file, std::string fileName, std::string &error) {
-	try {
-		file.open(fileName);
-		if (file.fail()) {
-			error = "Failled to open file " + fileName + " : " + std::strerror(errno) + "";
-			return false;
-		}
-	} catch (const std::exception &e) {
-		error = "File stream error :" + std::string(e.what());
-		return false;
-	}
-
-	return true;
-}
-
 bool Interpreter::interpretFile(std::string fileName, std::string &errorString) {
 	std::ifstream file;
-	if (!this->openFile(file, fileName, errorString)) {
+	if (!openFile(file, fileName, errorString)) {
 		return false;
 	}
 
@@ -101,7 +86,10 @@ ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
 	if (result.error()) return result;
 
 	Value::deleteValue(&this->lastValue);
-	return this->interpret(lexer.getBlocks());
+	result = this->interpret(lexer.getBlocks());
+	if (result.error()) return result;
+
+	return this->checkMemory();
 }
 
 /**

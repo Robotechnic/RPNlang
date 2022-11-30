@@ -96,7 +96,13 @@ void ExpressionResult::display() const {
 
 	std::cout<<this->context;
 
-	std::ifstream file(this->context->getFilePath());
+	std::ifstream file;
+	std::string errorMessage;
+	if (!openFile(file, this->context->getFilePath(), errorMessage)) {
+		std::cout<<"Error: cannot open file "<<this->context->getFilePath()<<": "<<errorMessage<<std::endl;
+		return;
+	}
+	
 	TextRange range = this->getRange();
 	std::cout << "Error : " << this->errorMessage<<std::endl;
 	std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;

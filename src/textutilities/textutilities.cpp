@@ -51,3 +51,19 @@ std::string extractFilePath(std::string path) {
 	std::filesystem::path p(path);
 	return p.parent_path();
 }
+
+
+bool openFile(std::ifstream &file, std::string fileName, std::string &error) {
+	try {
+		file.open(fileName);
+		if (file.fail()) {
+			error = "Failled to open file " + fileName + " : " + std::strerror(errno) + "";
+			return false;
+		}
+	} catch (const std::exception &e) {
+		error = "File stream error :" + std::string(e.what());
+		return false;
+	}
+
+	return true;
+}

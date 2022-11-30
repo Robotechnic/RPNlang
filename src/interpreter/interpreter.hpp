@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstring>
 #include <string>
 #include <vector>
 #include <stack>
@@ -9,6 +8,8 @@
 #include <map>
 #include <iostream>
 #include <algorithm>
+
+#include "textutilities/textutilities.hpp"
 
 #include "tokens/token.hpp"
 #include "codeblocks/blockqueue.hpp"
@@ -42,7 +43,6 @@ class Interpreter {
 
 
 	private:
-		bool openFile(std::ifstream &file, std::string fileName, std::string &error);
 
 		ExpressionResult checkMemory();
 		ExpressionResult interpretLine(Line &line, bool clearMemory = true);
