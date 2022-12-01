@@ -44,7 +44,7 @@ operatorResult String::opadd(const Value *other, const Context *context) const {
 operatorResult String::opsub(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot substract value of type " + Value::stringType(other->getType()) + " from value of type string",
+			"Cannot substract value of type " + other->getStringType() + " from value of type string",
 			other->getRange(),
 			context
 		),
@@ -56,7 +56,7 @@ operatorResult String::opmul(const Value *other, const Context *context) const {
 	if (other->getType() != INT) 
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot multiply value of type " + Value::stringType(other->getType()) + " with value of type string",
+				"Cannot multiply value of type " + other->getStringType() + " with value of type string",
 				other->getRange(),
 				context
 			),
@@ -81,7 +81,7 @@ operatorResult String::opmul(const Value *other, const Context *context) const {
 operatorResult String::opdiv(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot divide string value by value of type " + Value::stringType(other->getType()),
+			"Cannot divide string value by value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -92,7 +92,7 @@ operatorResult String::opdiv(const Value *other, const Context *context) const {
 operatorResult String::opmod(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot modulo string value by value of type " + Value::stringType(other->getType()),
+			"Cannot modulo string value by value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -103,7 +103,7 @@ operatorResult String::opmod(const Value *other, const Context *context) const {
 operatorResult String::oppow(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot power value of type " + Value::stringType(other->getType()) + " with value of type string",
+			"Cannot power value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
 			context
 		),
@@ -114,7 +114,7 @@ operatorResult String::oppow(const Value *other, const Context *context) const {
 operatorResult String::opgt(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot compare value of type " + Value::stringType(other->getType()) + " with value of type string",
+			"Cannot compare value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
 			context
 		),
@@ -125,7 +125,7 @@ operatorResult String::opgt(const Value *other, const Context *context) const {
 operatorResult String::opge(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot compare value of type " + Value::stringType(other->getType()) + " with value of type string",
+			"Cannot compare value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
 			context
 		),
@@ -136,7 +136,7 @@ operatorResult String::opge(const Value *other, const Context *context) const {
 operatorResult String::oplt(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot compare value of type " + Value::stringType(other->getType()) + " with value of type string",
+			"Cannot compare value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
 			context
 		),
@@ -147,7 +147,7 @@ operatorResult String::oplt(const Value *other, const Context *context) const {
 operatorResult String::ople(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot compare value of type " + Value::stringType(other->getType()) + " with value of type string",
+			"Cannot compare value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
 			context
 		),

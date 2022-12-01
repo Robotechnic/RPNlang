@@ -3,16 +3,38 @@
 #include <string>
 #include <vector>
 
-#include "value/types/variable.hpp"
+#include "value/value.hpp"
 #include "textutilities/textutilities.hpp"
 
-class Path : public Variable {
+class Path : public Value {
 	public:
 		Path(std::string name, TextRange range);
 		Path(std::vector<std::string> path, TextRange range);
+		
+		bool isCastableTo(ValueType type) const override;
+		bool isNumber() const override;
 
+		Value *to(ValueType type, bool interpreterValue = true) override;
+		inline Value* copy(bool interpreterValue = true) const override;
+
+		std::string getStringValue() const;
 		std::vector<std::string> getPath() const;
+
+		operatorResult opadd(const Value *other, const Context *context) const override;
+		operatorResult opsub(const Value *other, const Context *context) const override;
+		operatorResult opmul(const Value *other, const Context *context) const override;
+		operatorResult opdiv(const Value *other, const Context *context) const override;
+		operatorResult opmod(const Value *other, const Context *context) const override;
+		operatorResult oppow(const Value *other, const Context *context) const override;
+		operatorResult opgt(const Value *other, const Context *context) const override;
+		operatorResult opge(const Value *other, const Context *context) const override;
+		operatorResult oplt(const Value *other, const Context *context) const override;
+		operatorResult ople(const Value *other, const Context *context) const override;
+		operatorResult opne(const Value *other, const Context *context) const override;
+		operatorResult opeq(const Value *other, const Context *context) const override;
 	
 	private:
+		Path(std::vector<std::string> path, std::string name, TextRange range);
+		std::string name;
 		std::vector<std::string> path;
 };

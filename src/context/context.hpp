@@ -5,10 +5,12 @@
 #include <ostream>
 #include "tokens/token.hpp"
 #include "context/contexttypes.hpp"
+#include "expressionresult/expressionresult.hpp"
 #include "value/value.hpp"
+#include "value/types/path.hpp"
 
 class Value;
-class ExpressionResult;
+class Path;
 
 typedef std::unordered_map<std::string, Value*> symbolTable;
 
@@ -39,11 +41,11 @@ class Context {
 
 		void setValue(std::string name, Value *value, Value **hold = nullptr);
 		void setValue(const Token *name, Value *value, Value **hold = nullptr);
-		void setValue(const Value &name, Value *value, Value **hold = nullptr);
+		void setValue(const Value *name, Value *value, Value **hold = nullptr);
 		
 		ExpressionResult getValue(const Value *name, Value *&value) const;
 		ExpressionResult getValue(const Token *name, Value *&value) const;
-		ExpressionResult getValue(const Value *path, const std::string name, Value *&value) const;
+		ExpressionResult getModuleValue(const Value *path, Value *&value) const;
 		Value *getValue(const Value *name) const;
 		Value *getValue(const std::string &name) const;
 
@@ -60,5 +62,3 @@ class Context {
 };
 
 std::ostream& operator<<(std::ostream& os, const Context *context);
-
-#include "expressionresult/expressionresult.hpp"

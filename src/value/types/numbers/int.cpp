@@ -43,7 +43,7 @@ operatorResult Int::opadd(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot add value of type " + Value::stringType(other->getType()) + " to Int",
+				"Cannot add value of type " + other->getStringType() + " to Int",
 				other->getRange(),
 				context
 			),
@@ -75,7 +75,7 @@ operatorResult Int::opsub(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot subtract value of type " + Value::stringType(other->getType()) + " from Int",
+				"Cannot subtract value of type " + other->getStringType() + " from Int",
 				other->getRange(),
 				context
 			),
@@ -107,7 +107,7 @@ operatorResult Int::opmul(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot multiply INT by value of type " + Value::stringType(other->getType()),
+				"Cannot multiply INT by value of type " + other->getStringType(),
 				other->getRange(),
 				context
 			),
@@ -139,7 +139,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot divide INT number by value of type " + Value::stringType(other->getType()),
+				"Cannot divide INT number by value of type " + other->getStringType(),
 				other->getRange(),
 				context
 			),
@@ -204,7 +204,7 @@ operatorResult Int::opmod(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot modulo INT by value of type " + Value::stringType(other->getType()),
+				"Cannot modulo INT by value of type " + other->getStringType(),
 				other->getRange(),
 				context
 			),
@@ -269,7 +269,7 @@ operatorResult Int::oppow(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot raise value of type " + Value::stringType(other->getType()) + " to Int",
+				"Cannot raise value of type " + other->getStringType() + " to Int",
 				other->getRange(),
 				context
 			),
@@ -301,7 +301,7 @@ operatorResult Int::opgt(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot compare value of type " + Value::stringType(other->getType()) + " to Int",
+				"Cannot compare value of type " + other->getStringType() + " to Int",
 				other->getRange(),
 				context
 			),
@@ -333,7 +333,7 @@ operatorResult Int::opge(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot compare value of type " + Value::stringType(other->getType()) + " to Int",
+				"Cannot compare value of type " + other->getStringType() + " to Int",
 				other->getRange(),
 				context
 			),
@@ -365,7 +365,7 @@ operatorResult Int::oplt(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot compare value of type " + Value::stringType(other->getType()) + " to Int",
+				"Cannot compare value of type " + other->getStringType() + " to Int",
 				other->getRange(),
 				context
 			),
@@ -397,7 +397,7 @@ operatorResult Int::ople(const Value *other, const Context *context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
-				"Cannot compare value of type " + Value::stringType(other->getType()) + " to Int",
+				"Cannot compare value of type " + other->getStringType() + " to Int",
 				other->getRange(),
 				context
 			),

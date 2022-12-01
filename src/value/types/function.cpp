@@ -39,7 +39,7 @@ const RPNFunction* Function::getValue() const {
 operatorResult Function::opadd(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot add value of type " + Value::stringType(other->getType()) + " to a function",
+			"Cannot add value of type " + other->getStringType() + " to a function",
 			other->getRange(),
 			context
 		),
@@ -50,7 +50,7 @@ operatorResult Function::opadd(const Value *other, const Context *context) const
 operatorResult Function::opsub(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot subtract value of type " + Value::stringType(other->getType()) + " from a function",
+			"Cannot subtract value of type " + other->getStringType() + " from a function",
 			other->getRange(),
 			context
 		),
@@ -61,7 +61,7 @@ operatorResult Function::opsub(const Value *other, const Context *context) const
 operatorResult Function::opmul(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot multiply a function by a value of type " + Value::stringType(other->getType()),
+			"Cannot multiply a function by a value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -72,7 +72,7 @@ operatorResult Function::opmul(const Value *other, const Context *context) const
 operatorResult Function::opdiv(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot divide a function by a value of type " + Value::stringType(other->getType()),
+			"Cannot divide a function by a value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -83,7 +83,7 @@ operatorResult Function::opdiv(const Value *other, const Context *context) const
 operatorResult Function::opmod(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot modulo a function by a value of type " + Value::stringType(other->getType()),
+			"Cannot modulo a function by a value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -94,7 +94,7 @@ operatorResult Function::opmod(const Value *other, const Context *context) const
 operatorResult Function::oppow(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot exponentiate a function by a value of type " + Value::stringType(other->getType()),
+			"Cannot exponentiate a function by a value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -105,7 +105,7 @@ operatorResult Function::oppow(const Value *other, const Context *context) const
 operatorResult Function::opgt(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot compare a function to a value of type " + Value::stringType(other->getType()),
+			"Cannot compare a function to a value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -116,7 +116,7 @@ operatorResult Function::opgt(const Value *other, const Context *context) const 
 operatorResult Function::opge(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot compare a function to a value of type " + Value::stringType(other->getType()),
+			"Cannot compare a function to a value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -127,7 +127,7 @@ operatorResult Function::opge(const Value *other, const Context *context) const 
 operatorResult Function::oplt(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot compare a function to a value of type " + Value::stringType(other->getType()),
+			"Cannot compare a function to a value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),
@@ -138,7 +138,7 @@ operatorResult Function::oplt(const Value *other, const Context *context) const 
 operatorResult Function::ople(const Value *other, const Context *context) const {
 	return std::make_tuple(
 		ExpressionResult(
-			"Cannot compare a function to a value of type " + Value::stringType(other->getType()),
+			"Cannot compare a function to a value of type " + other->getStringType(),
 			other->getRange(),
 			context
 		),

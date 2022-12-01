@@ -11,6 +11,10 @@ ValueType Value::getType() const {
 	return this->type;
 }
 
+std::string Value::getStringType() const {
+	return Value::stringType(this->type);
+}
+
 TextRange Value::getRange() const {
 	return this->range;
 }
@@ -129,7 +133,7 @@ operatorResult Value::applyOperator(const Value *other, const Token *operatorTok
 }
 
 std::ostream &operator<<(std::ostream &os, const Value *value) {
-	os << "( " << Value::stringType(value->getType()) << "," << value->getStringValue() << " )";
+	os << "( " << value->getStringType() << "," << value->getStringValue() << " )";
 	return os;
 }
 

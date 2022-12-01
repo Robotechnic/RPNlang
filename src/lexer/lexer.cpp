@@ -99,6 +99,14 @@ ExpressionResult Lexer::lex() {
 			case TOKEN_TYPE_COLON:
 				result = this->parseFunctionCall(token);
 				break;
+			case TOKEN_TYPE_PATH:
+				this->currentLine->push(new ValueToken(
+					new Path(
+						token->getStringValue(),
+						token->getRange()
+					)
+				));
+				break;
 			default:
 				this->integrated = true;
 				this->currentLine->push(token);
@@ -326,12 +334,19 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
 ExpressionResult Lexer::parseFunctionCall(const Token *token) {
-	if (this->tokens.empty() || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
+	if (
+		this->tokens.empty() || 
+		(
+			this->tokens.front()->getType() != TOKEN_TYPE_LITERAL && 
+			this->tokens.front()->getType() != TOKEN_TYPE_PATH
+		)
+	) {
 		return ExpressionResult(
 			"Expected function name after colon token",
 			this->tokens.empty() ? token->getRange() : token->getRange().merge(this->tokens.front()->getRange()),
 			this->context
 		);
+	}
 	
 	Token *name = this->tokens.front();
 	this->tokens.pop();

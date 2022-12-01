@@ -15,6 +15,7 @@
 
 class BuiltinRPNFunction : public RPNFunction {
 	public:
+		BuiltinRPNFunction();
 		BuiltinRPNFunction(
 			std::string name,
 			std::vector<std::string> argsName,

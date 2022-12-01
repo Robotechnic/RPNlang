@@ -4,11 +4,10 @@
 #include <vector>
 #include "rpnfunctions/typedef.hpp"
 #include "expressionresult/expressionresult.hpp"
-#include "context/context.hpp"
-#include "value/valuetypes.hpp"
 #include "value/value.hpp"
+#include "value/valuetypes.hpp"
 #include "value/types/none.hpp"
-
+#include "context/context.hpp"
 
 class RPNFunction {
 	public:

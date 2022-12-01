@@ -103,50 +103,43 @@ std::string Module::checkPath(std::vector<std::string> path) {
 /**
  * @brief return the value of a module if it exists
  * 
- * @param pathToken the token containing the path to the module
+ * @param valuePath the token containing the path to the module
  * @param value the value to put the module value in
  * @param parentContext the parent context of the module
  * @return ExpressionResult if the value exists
  */
-ExpressionResult Module::getModuleValue(const Value *path,  Value *&value, const Context *context) {
-	std::vector<std::string> sPath = split(path->getStringValue(), '.');
-	std::string error = Module::checkPath(sPath);
-	if (error != "") {
-		return ExpressionResult(
-			error,
-			path->getRange(),
-			context
-		);
-	}
-	
-	return Module::modules.at(sPath[0])->getModuleContext()->getValue(path, sPath[1], value);
-}
-
-ExpressionResult Module::getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext) {
-	std::vector<std::string> path = split(pathToken.getValue(), '.');
+ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, const Context *parentContext) {
+	std::vector<std::string> path = static_cast<const Path*>(valuePath)->getPath();
 	std::string error = Module::checkPath(path);
 	if (error != "") {
 		return ExpressionResult(
 			error,
-			pathToken.getRange(),
+			valuePath->getRange(),
 			parentContext
 		);
 	}
 
-	return Module::modules.at(path[0])->getModuleContext()->getValue(pathToken, path[1], value);
+	return Module::modules.at(path[0])->getModuleContext()->getModuleValue(valuePath, value);
 }
 
-ExpressionResult Module::getModuleContext(const Token &pathToken, const Context *parentContext, Context *&moduleContext) {
-	std::vector<std::string> path = split(pathToken.getValue(), '.');
-	std::string error = Module::checkPath(path);
+/**
+ * @brief return the module context
+ * 
+ * @param pathToken the token containing the path to the module
+ * @param parentContext the parent context of the module
+ * @param moduleContext the module context to put the module context in
+ * @return ExpressionResult 
+ */
+ExpressionResult Module::getModuleContext(const Value *valuePath, const Context *parentContext, Context *&moduleContext) {
+	std::string error = Module::checkPath(static_cast<const Path*>(valuePath)->getPath());
 	if (error != "") {
 		return ExpressionResult(
 			error,
-			pathToken.getRange(),
+			valuePath->getRange(),
 			parentContext
 		);
 	}
-	moduleContext = Module::modules.at(path[0])->getModuleContext();
+	moduleContext = Module::modules.at(static_cast<const Path*>(valuePath)->getPath().at(0))->getModuleContext();
 	return ExpressionResult();
 }
 
@@ -160,7 +153,8 @@ bool Module::isImported(std::string modulePath, std::string &moduleName) {
 	auto it = std::find_if(Module::modules.begin(), Module::modules.end(), [modulePath](auto module) -> bool {
 		return std::filesystem::equivalent(std::get<1>(module)->getPath(), modulePath);
 	});
-	if (it == Module::modules.end()) return false;
+	if (it == Module::modules.end()) 
+		return false;
 	
 	moduleName = it->first;
 	return true;
@@ -191,14 +185,15 @@ std::unordered_map<std::string, std::shared_ptr<Module>>Module::modules = std::u
 
 std::unordered_map<std::string, BuiltinModule>Module::builtinModules = std::unordered_map<std::string, BuiltinModule>{
 	{"test", BuiltinModule("test", [](BuiltinModule &module) {
-		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](RPNFunctionArgs args, Context *context) {
+		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
 			std::cout<<"Test ok : "<<args[0]->getStringValue()<<std::endl;
 			return std::make_tuple(ExpressionResult(), None::empty());
 		});
 
-		module.addVariable("testValue",new String(
+		module.addVariable("testValue", new String(
 			std::string("testValueOk"),
-			TextRange()
+			TextRange(),
+			false
 		));
 		return ExpressionResult();
 	})},

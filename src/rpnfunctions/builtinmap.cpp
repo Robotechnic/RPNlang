@@ -222,50 +222,50 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			return std::make_tuple(result, None::empty());
 		}
 	)},
-	// {"import", BuiltinRPNFunction(
-	// 	"import",
-	// 	{"path"},
-	// 	{ValueType::STRING},
-	// 	ValueType::NONE,
-	// 	[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
-	// 		std::string path = args[0]->getStringValue();
-	// 		if (path.size() == 0) {
-	// 			return std::make_tuple(
-	// 				ExpressionResult(
-	// 					"import path cannot be empty",
-	// 					args[0]->getRange(), 
-	// 					context
-	// 				), 
-	// 				None::empty()
-	// 			);
-	// 		}
-	// 		return std::make_tuple(
-	// 			Module::addModule(path, extractFileName(path), args[0]->getRange(), context->getParent()),
-	// 			None::empty()
-	// 		);
-	// 	}
-	// )},
-	// {"importAs", BuiltinRPNFunction(
-	// 	"importAs",
-	// 	{"path", "name"},
-	// 	{ValueType::STRING, ValueType::STRING},
-	// 	ValueType::NONE,
-	// 	[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
-	// 		std::string path = args[0]->getStringValue();
-	// 		if (path.size() == 0) {
-	// 			return std::make_tuple(
-	// 				ExpressionResult(
-	// 					"import path cannot be empty",
-	// 					args[0]->getRange(), 
-	// 					context
-	// 				), 
-	// 				None::empty()
-	// 			);
-	// 		}
-	// 		return std::make_tuple(
-	// 			Module::addModule(path, args[1]->getStringValue(), args[0]->getRange(), context->getParent()),
-	// 			None::empty()
-	// 		);
-	// 	}
-	// )}
+	{"import", BuiltinRPNFunction(
+		"import",
+		{"path"},
+		{ValueType::STRING},
+		ValueType::NONE,
+		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+			std::string path = args[0]->getStringValue();
+			if (path.size() == 0) {
+				return std::make_tuple(
+					ExpressionResult(
+						"import path cannot be empty",
+						args[0]->getRange(), 
+						context
+					), 
+					None::empty()
+				);
+			}
+			return std::make_tuple(
+				Module::addModule(path, extractFileName(path), args[0]->getRange(), context->getParent()),
+				None::empty()
+			);
+		}
+	)},
+	{"importAs", BuiltinRPNFunction(
+		"importAs",
+		{"path", "name"},
+		{ValueType::STRING, ValueType::STRING},
+		ValueType::NONE,
+		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+			std::string path = args[0]->getStringValue();
+			if (path.size() == 0) {
+				return std::make_tuple(
+					ExpressionResult(
+						"import path cannot be empty",
+						args[0]->getRange(), 
+						context
+					), 
+					None::empty()
+				);
+			}
+			return std::make_tuple(
+				Module::addModule(path, args[1]->getStringValue(), args[0]->getRange(), context->getParent()),
+				None::empty()
+			);
+		}
+	)}
 };

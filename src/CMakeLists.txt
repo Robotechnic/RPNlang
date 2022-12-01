@@ -26,17 +26,20 @@ list(APPEND sources
 	
 	# RPN lang types
 	${CMAKE_CURRENT_LIST_DIR}/value/value.cpp
+)
+
+include(${CMAKE_CURRENT_LIST_DIR}/value/types/CMakeLists.txt)
+
+list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/rpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinsrpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinmap.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/userrpnfunction.cpp
-
-	# ${CMAKE_CURRENT_LIST_DIR}/modules/builtinmodule.cpp
-	# ${CMAKE_CURRENT_LIST_DIR}/modules/module.cpp
+	${CMAKE_CURRENT_LIST_DIR}/modules/builtinmodule.cpp
+	${CMAKE_CURRENT_LIST_DIR}/modules/module.cpp
 )
 
-include(${CMAKE_CURRENT_LIST_DIR}/value/types/CMakeLists.txt)
-# include(${CMAKE_CURRENT_LIST_DIR}/modules/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/modules/CMakeLists.txt)
 
 list(APPEND sources
 	# code processing

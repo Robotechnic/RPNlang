@@ -18,6 +18,24 @@ std::vector<std::string> split(std::string str, char delimiter) {
 }
 
 /**
+ * @brief join a vector of strings in a string
+ * 
+ * @param str the vector to join
+ * @param delimiter the delimiter to join the vector
+ * @return std::string the resulting string
+ */
+std::string join(std::vector<std::string> str, char delimiter) {
+	std::string result;
+	for (int i = 0; i < str.size(); i++) {
+		result += str[i];
+		if (i != str.size() - 1) {
+			result += delimiter;
+		}
+	}
+	return result;
+}
+
+/**
  * @brief display vector of strings in the output stream
  * 
  * @param os current output stream

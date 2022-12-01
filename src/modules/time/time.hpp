@@ -6,7 +6,9 @@
 #include <iostream>
 
 #include "expressionresult/expressionresult.hpp"
-#include "value/types.hpp"
 #include "value/value.hpp"
+#include "value/types/string.hpp"
+#include "value/types/numbers/int.hpp"
+#include "modules/builtinmodule.hpp"
 
 ExpressionResult timeLoader(BuiltinModule &module);

@@ -17,7 +17,7 @@ Value *Variable::to(ValueType type, bool interpreterValue) {
 	throw std::runtime_error("Invalid value type");
 }
 
-Value *Variable::copy(bool interpreterValue) const {
+inline Value *Variable::copy(bool interpreterValue) const {
 	return new Variable(value, range);
 }
 

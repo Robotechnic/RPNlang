@@ -6,14 +6,17 @@
 
 class BuiltinModule;
 
-#include "context/context.hpp"
+#include "value/value.hpp"
+#include "value/types/path.hpp"
+
 #include "expressionresult/expressionresult.hpp"
 #include "textutilities/textrange.hpp"
 #include "interpreter/interpreter.hpp"
 #include "rpnfunctions/typedef.hpp"
 #include "modules/builtinmodule.hpp"
+#include "context/context.hpp"
 
-// modules
+// builtin modules
 #include "modules/math/math.hpp"
 #include "modules/time/time.hpp"
 #include "modules/random/random.hpp"
@@ -35,9 +38,8 @@ class Module {
 
 		static std::string checkPath(std::vector<std::string> path);
 		static ExpressionResult addModule(std::string modulePath, std::string name, TextRange importRange, const Context *context);
-		static ExpressionResult getModuleValue(const Value *path, Value *&value, const Context *parentContext);
-		static ExpressionResult getModuleValue(const Token &pathToken, Value *&value, const Context *parentContext);
-		static ExpressionResult getModuleContext(const Token &pathToken, const Context *parentContext, Context *&moduleContext);
+		static ExpressionResult getModuleValue(const Value *valuePath, Value *&value, const Context *parentContext);
+		static ExpressionResult getModuleContext(const Value *valuePath, const Context *parentContext, Context *&moduleContext);
 
 	private:
 		std::string path;

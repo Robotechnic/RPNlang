@@ -2,6 +2,7 @@
 
 class ExpressionResult;
 class Context;
+class Value;
 
 #include <string>
 #include <stdexcept>
@@ -10,9 +11,7 @@ class Context;
 #include "tokens/tokentypes.hpp"
 #include "value/valuetypes.hpp"
 #include "textutilities/textrange.hpp"
-#include "context/context.hpp"
 
-class Value;
 typedef std::tuple<ExpressionResult, Value*> operatorResult;
 
 class Value {
@@ -35,6 +34,7 @@ class Value {
 
 		TextRange getRange() const;
 		ValueType getType() const;
+		std::string getStringType() const;
 
 		void concatValueRange(const Value *other);
 		void concatValueRange(const Token *other);
@@ -75,3 +75,5 @@ std::ostream &operator<<(std::ostream &os, const Value *value);
 namespace std {
 	std::string to_string(const Value *value);
 };
+
+#include "expressionresult/expressionresult.hpp"

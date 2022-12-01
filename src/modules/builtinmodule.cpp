@@ -1,5 +1,7 @@
 #include "modules/builtinmodule.hpp"
 
+std::unordered_map<std::string, BuiltinRPNFunction> BuiltinModule::builtinFunctions = std::unordered_map<std::string, BuiltinRPNFunction>();
+
 BuiltinModule::BuiltinModule() : isLoaded(false), name(""), loader(nullptr), context(nullptr) {}
 
 BuiltinModule::BuiltinModule(std::string name, loadFunction loader) :
@@ -36,18 +38,20 @@ void BuiltinModule::addFunction(
 		std::vector<ValueType> argumentsTypes,
 		ValueType returnType,
 		BuiltinRPNFunctionType function
-	) {
+) {
+	this->builtinFunctions.insert(
+		this->builtinFunctions.begin(), 
+		std::pair<std::string, BuiltinRPNFunction>(
+			name, 
+			BuiltinRPNFunction(name, argsName, argumentsTypes, returnType, function)
+		)
+	);
 	context->setValue(
 		name,
 		new Function(
-			new BuiltinRPNFunction(
-				name,
-				argsName,
-				argumentsTypes,
-				returnType,
-				function
-			),
-			TextRange()
+			static_cast<RPNFunction*>(&this->builtinFunctions[name]),
+			TextRange(),
+			false
 		)
 	);
 }

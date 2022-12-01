@@ -9,8 +9,8 @@
 
 #include "expressionresult/expressionresult.hpp"
 #include "context/context.hpp"
-#include "value/valuetypes.hpp"
 #include "value/value.hpp"
+#include "value/valuetypes.hpp"
 
 class BuiltinRPNFunction;
 namespace builtins {

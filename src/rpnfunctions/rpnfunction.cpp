@@ -87,7 +87,7 @@ ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Cont
 			return ExpressionResult(
 				"Function call argument type mismatch, expected " + 
 				Value::stringType(this->argsTypes[i]) + 
-				" but got " + Value::stringType(args[i]->getType()),
+				" but got " + args[i]->getStringType(),
 				args[i]->getRange(),
 				context
 			);

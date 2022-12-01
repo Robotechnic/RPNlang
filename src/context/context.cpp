@@ -166,10 +166,10 @@ void Context::setValue(const Token *name, Value *value, Value **hold) {
 	this->symbols[nameStr] = value;
 }
 
-void Context::setValue(const Value &name, Value *value, Value **hold) {
-	if (name.getType() != VARIABLE)
+void Context::setValue(const Value *name, Value *value, Value **hold) {
+	if (name->getType() != VARIABLE)
 		throw std::runtime_error("Context::setValue() - name is not a variable");
-	std::string nameStr = name.getStringValue();
+	std::string nameStr = name->getStringValue();
 	if (this->symbols.contains(nameStr) && this->symbols[nameStr] != nullptr) {
 		if (hold)
 			(*hold) = this->symbols[nameStr];
@@ -221,18 +221,15 @@ ExpressionResult Context::getValue(const Token *name, Value *&value) const {
 	);
 }
 
-ExpressionResult Context::getValue(const Value *path, const std::string name, Value *&value) const {
-	if (this->symbols.find(name) != this->symbols.end()) {
-		value = this->symbols.at(name)->copy();
+ExpressionResult Context::getModuleValue(const Value *path, Value *&value) const {
+	std::string nameStr = static_cast<const Path*>(path)->getPath().back();
+	if (this->symbols.find(nameStr) != this->symbols.end()) {
+		value = this->symbols.at(nameStr);
 		return ExpressionResult();
-	}
-
-	if (this->root) {
-		return this->root->getValue(path, name, value);
 	}
 	
 	return ExpressionResult(
-		"Undefined variable name : " + name,
+		"Undefined variable name : " + nameStr,
 		path->getRange(),
 		this
 	);

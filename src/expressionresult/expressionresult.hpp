@@ -6,6 +6,8 @@
 #include "textutilities/textrange.hpp"
 #include "context/context.hpp"
 
+class Context;
+
 class ExpressionResult {
 	public:
 		enum Status {
@@ -28,7 +30,7 @@ class ExpressionResult {
 		const Context *getContext() const;
 
 		void displayLineError(std::string line) const;
-		void display () const;
+		void display() const;
 
 		bool breakingLoop() const;
 		bool continuingLoop() const;

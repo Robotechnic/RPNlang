@@ -19,10 +19,8 @@
 #include "codeblocks/functionblock.hpp"
 #include "lexer/keywords.hpp"
 
-#include "value/types/numbers/int.hpp"
-#include "value/types/numbers/float.hpp"
-#include "value/types/numbers/bool.hpp"
-#include "value/types/variable.hpp"
+#include "value/value.hpp"
+#include "value/valuetypes.hpp"
 
 class FunctionBlock;
 

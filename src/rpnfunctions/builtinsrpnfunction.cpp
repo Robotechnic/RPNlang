@@ -1,5 +1,7 @@
 #include "rpnfunctions/builtinsrpnfunction.hpp"
 
+BuiltinRPNFunction::BuiltinRPNFunction() : RPNFunction("",{},{},NONE), function(nullptr) {}
+
 BuiltinRPNFunction::BuiltinRPNFunction(
 			std::string name,
 			std::vector<std::string> argsName,

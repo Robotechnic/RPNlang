@@ -2,6 +2,7 @@
 
 #include <string>
 #include <functional>
+#include <unordered_map>
 #include "expressionresult/expressionresult.hpp"
 #include "rpnfunctions/typedef.hpp"
 #include "rpnfunctions/builtinsrpnfunction.hpp"
@@ -9,6 +10,8 @@
 
 class BuiltinModule;
 typedef std::function<ExpressionResult(BuiltinModule&)> loadFunction;
+
+class BuiltinRPNFunction;
 
 class BuiltinModule {
 	public:
@@ -33,4 +36,6 @@ class BuiltinModule {
 		std::string name;
 		loadFunction loader;
 		Context *context;
+
+		static std::unordered_map<std::string, BuiltinRPNFunction> builtinFunctions;
 };
