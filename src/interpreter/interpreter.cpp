@@ -2,10 +2,10 @@
 
 Interpreter::Interpreter() :
 	lastValue(nullptr),
-	context(new Context("main", "<stdin>"))
+	context(std::make_shared<Context>("main", "<stdin>"))
 {}
 
-Interpreter::Interpreter(Context *ctx) : 
+Interpreter::Interpreter(ContextPtr ctx) : 
 	lastValue(nullptr),
 	context(ctx)
 {}
@@ -37,7 +37,8 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 	}
 	file.close();
 	
-	if (error) return false;				
+	if (error)
+		return false;				
 
 	Lexer lexer(tokens, this->context);
 	result = lexer.lex();
@@ -201,11 +202,14 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 			case TOKEN_TYPE_LITERAL:
 				this->memory.push(static_cast<ValueToken*>(*it)->getValue());
 				break;
+			case TOKEN_TYPE_PATH:
+			
 			case TOKEN_TYPE_OPERATOR:
 			case TOKEN_TYPE_BOOLEAN_OPERATOR:
 				result = this->interpretOperator(*it);
 				break;
 			case TOKEN_TYPE_FUNCTION_CALL:
+			case TOKEN_TYPE_MODULE_FUNCTION_CALL:
 				result = this->interpretFunctionCall(*it);
 				break;
 			case TOKEN_TYPE_FSTRING:
@@ -375,7 +379,11 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 		function = &builtins::builtinFunctions.at(functionToken->getStringValue());
 	} else {
 		Value *value;
-		result = this->context->getValue(functionToken, value);
+		if (functionToken->getType() == TOKEN_TYPE_FUNCTION_CALL) {
+			result = this->context->getValue(functionToken, value);
+		} else {
+			result = Module::getModuleValue(functionToken, value, context);
+		}
 		if (result.error()) return result;
 		if (value->getType() != FUNCTION)
 			return ExpressionResult(
@@ -403,7 +411,14 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 		arguments.insert(arguments.begin(), value);
 	}
 	
-	RPNFunctionResult callResult = function->call(arguments, functionToken->getRange(), this->context);
+	RPNFunctionResult callResult;
+	if (functionToken->getType() == TOKEN_TYPE_FUNCTION_CALL) {
+		callResult = function->call(arguments, functionToken->getRange(), this->context);
+	} else {
+		ContextPtr ctx;
+		ExpressionResult result = Module::getModuleContext(functionToken, this->context, ctx);
+		callResult = function->call(arguments, functionToken->getRange(), ctx);
+	}
 	for (Value *value : arguments) Value::deleteValue(&value);
 	if (std::get<0>(callResult).error()) {
 		Value::deleteValue(&std::get<1>(callResult));
@@ -464,7 +479,7 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		if (result.error()) return result;
 		if (!param->isCastableTo(INT)) {
 			return ExpressionResult(
-				"Invalid type for for loop parameter, expected int but got " + Value::stringType(param->getType()),
+				"Invalid type for for loop parameter, expected int but got " + param->getStringType(),
 				block.getRange(),
 				this->context
 			);

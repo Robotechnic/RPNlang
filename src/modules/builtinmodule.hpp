@@ -17,6 +17,7 @@ class BuiltinModule {
 	public:
 		BuiltinModule();
 		BuiltinModule(std::string name, loadFunction loader);
+		~BuiltinModule();
 
 		ExpressionResult load();
 
@@ -29,13 +30,13 @@ class BuiltinModule {
 		);
 		void addVariable(std::string name, Value *value);
 
-		Context * getModuleContext();
+		ContextPtr  getModuleContext();
 
 	private:
 		bool isLoaded;
 		std::string name;
 		loadFunction loader;
-		Context *context;
+		ContextPtr context;
 
 		static std::unordered_map<std::string, BuiltinRPNFunction> builtinFunctions;
 };

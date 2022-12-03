@@ -19,6 +19,7 @@ enum TokenType {
 
 	// this tokens will stay as they are durring lexing
 	TOKEN_TYPE_FUNCTION_CALL,
+	TOKEN_TYPE_MODULE_FUNCTION_CALL,
 	TOKEN_TYPE_OPERATOR,
 	TOKEN_TYPE_BOOLEAN_OPERATOR,
 	TOKEN_TYPE_VALUE_TYPE,

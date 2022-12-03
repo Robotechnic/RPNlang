@@ -30,7 +30,7 @@ Value *String::copy(bool interpreterValue) const {
 	return new String(this->value, this->range, interpreterValue);
 }
 
-operatorResult String::opadd(const Value *other, const Context *context) const {
+operatorResult String::opadd(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(),
 		new String(
@@ -41,7 +41,7 @@ operatorResult String::opadd(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::opsub(const Value *other, const Context *context) const {
+operatorResult String::opsub(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot substract value of type " + other->getStringType() + " from value of type string",
@@ -52,7 +52,7 @@ operatorResult String::opsub(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::opmul(const Value *other, const Context *context) const {
+operatorResult String::opmul(const Value *other, const ContextPtr &context) const {
 	if (other->getType() != INT) 
 		return std::make_tuple(
 			ExpressionResult(
@@ -78,7 +78,7 @@ operatorResult String::opmul(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::opdiv(const Value *other, const Context *context) const {
+operatorResult String::opdiv(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot divide string value by value of type " + other->getStringType(),
@@ -89,7 +89,7 @@ operatorResult String::opdiv(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::opmod(const Value *other, const Context *context) const {
+operatorResult String::opmod(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot modulo string value by value of type " + other->getStringType(),
@@ -100,7 +100,7 @@ operatorResult String::opmod(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::oppow(const Value *other, const Context *context) const {
+operatorResult String::oppow(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot power value of type " + other->getStringType() + " with value of type string",
@@ -111,7 +111,7 @@ operatorResult String::oppow(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::opgt(const Value *other, const Context *context) const {
+operatorResult String::opgt(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare value of type " + other->getStringType() + " with value of type string",
@@ -122,7 +122,7 @@ operatorResult String::opgt(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::opge(const Value *other, const Context *context) const {
+operatorResult String::opge(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare value of type " + other->getStringType() + " with value of type string",
@@ -133,7 +133,7 @@ operatorResult String::opge(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::oplt(const Value *other, const Context *context) const {
+operatorResult String::oplt(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare value of type " + other->getStringType() + " with value of type string",
@@ -144,7 +144,7 @@ operatorResult String::oplt(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::ople(const Value *other, const Context *context) const {
+operatorResult String::ople(const Value *other, const ContextPtr &context) const {
 	return std::make_tuple(
 		ExpressionResult(
 			"Cannot compare value of type " + other->getStringType() + " with value of type string",
@@ -155,7 +155,7 @@ operatorResult String::ople(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::opne(const Value *other, const Context *context) const {
+operatorResult String::opne(const Value *other, const ContextPtr &context) const {
 	if (other->getType() != STRING) 
 		return std::make_tuple(
 			ExpressionResult(),
@@ -176,7 +176,7 @@ operatorResult String::opne(const Value *other, const Context *context) const {
 	);
 }
 
-operatorResult String::opeq(const Value *other, const Context *context) const {
+operatorResult String::opeq(const Value *other, const ContextPtr &context) const {
 	if (other->getType() != STRING) 
 		return std::make_tuple(
 			ExpressionResult(),

@@ -42,7 +42,8 @@ int BlockQueue::size() const {
 
 void BlockQueue::clear() {
 	for (auto block : this->blocks)
-		if (block != nullptr) delete block;
+		if (block != nullptr) 
+			delete block;
 	this->blocks.clear();
 }
 

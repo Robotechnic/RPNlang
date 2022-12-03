@@ -24,7 +24,7 @@ RPNFunction::~RPNFunction() {}
 RPNFunctionResult RPNFunction::call(
 	const RPNFunctionArgs &args,
 	const TextRange &range,
-	Context *context
+	ContextPtr context
 ) const {
 	TextRange errorRange = range;
 	if (args.size() != 0) {
@@ -33,11 +33,11 @@ RPNFunctionResult RPNFunction::call(
 			errorRange.merge(args.back()->getRange());
 		}
 	}
-	context->setChild(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
+	ContextPtr functionContext = std::make_shared<Context>(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
 	return std::make_tuple(ExpressionResult(
 			"Function is not callable", 
 			range,
-			context->getChild()
+			functionContext
 		),
 		None::empty()
 	);
@@ -49,7 +49,7 @@ RPNFunctionResult RPNFunction::call(
  * @param args arguments provided by the user
  * @return ExpressionResult if the arguments are correct
  */
-ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Context *context) const{
+ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const ContextPtr &context) const {
 	if (args.size() != this->argsName.size()) {
 		TextRange range(0, 0, 0);
 		if (args.size() != 0) {
@@ -79,7 +79,7 @@ ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const Conte
  * @param args the arguments provided by the user
  * @return ExpressionResult if the arguments are correct
  */
-ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Context *context) const{
+ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const ContextPtr &context) const {
 	for (size_t i = 0; i < args.size(); i++) {
 		if (args[i]->getType() == this->argsTypes[i]) continue;
 		

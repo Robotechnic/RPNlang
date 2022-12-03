@@ -39,7 +39,7 @@ std::string Int::getStringValue() const {
 	return std::to_string(value);
 }
 
-operatorResult Int::opadd(const Value *other, const Context *context) const {
+operatorResult Int::opadd(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -71,7 +71,7 @@ operatorResult Int::opadd(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::opsub(const Value *other, const Context *context) const {
+operatorResult Int::opsub(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -103,7 +103,7 @@ operatorResult Int::opsub(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::opmul(const Value *other, const Context *context) const {
+operatorResult Int::opmul(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -135,7 +135,7 @@ operatorResult Int::opmul(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::opdiv(const Value *other, const Context *context) const {
+operatorResult Int::opdiv(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -200,7 +200,7 @@ operatorResult Int::opdiv(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::opmod(const Value *other, const Context *context) const {
+operatorResult Int::opmod(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -265,7 +265,7 @@ operatorResult Int::opmod(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::oppow(const Value *other, const Context *context) const {
+operatorResult Int::oppow(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -297,7 +297,7 @@ operatorResult Int::oppow(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::opgt(const Value *other, const Context *context) const {
+operatorResult Int::opgt(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -329,7 +329,7 @@ operatorResult Int::opgt(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::opge(const Value *other, const Context *context) const {
+operatorResult Int::opge(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -361,7 +361,7 @@ operatorResult Int::opge(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::oplt(const Value *other, const Context *context) const {
+operatorResult Int::oplt(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -393,7 +393,7 @@ operatorResult Int::oplt(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::ople(const Value *other, const Context *context) const {
+operatorResult Int::ople(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(
@@ -425,7 +425,7 @@ operatorResult Int::ople(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::opne(const Value *other, const Context *context) const {
+operatorResult Int::opne(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(),
@@ -453,7 +453,7 @@ operatorResult Int::opne(const Value *other, const Context *context) const {
 	};
 }
 
-operatorResult Int::opeq(const Value *other, const Context *context) const {
+operatorResult Int::opeq(const Value *other, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_tuple(
 			ExpressionResult(),

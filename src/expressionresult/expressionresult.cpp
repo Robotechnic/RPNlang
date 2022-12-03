@@ -5,15 +5,13 @@ ExpressionResult::ExpressionResult() :
 	resultStatus(SUCCESS),
 	errorMessage(""),
 	errorRange(TextRange())
-{
-	this->context = nullptr;
-}
+{}
 
-ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange, const Context *context) :
+ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange, ContextPtr parentContext) :
 	resultStatus(ERROR),
 	errorMessage(errorMessage),
 	errorRange(errorRange),
-	context(context)
+	context(parentContext)
 {}
 
 ExpressionResult::ExpressionResult(Status status) :
@@ -138,7 +136,7 @@ void ExpressionResult::displayArrow(TextRange range, std::string lineString) con
 	std::cout << std::endl;
 }
 
-const Context *ExpressionResult::getContext() const {
+ContextPtr ExpressionResult::getContext() const {
 	return this->context;
 }
 

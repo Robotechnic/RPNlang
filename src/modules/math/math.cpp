@@ -1,7 +1,7 @@
 #include "modules/math/math.hpp"
 
 ExpressionResult mathLoader(BuiltinModule &module){
-	module.addFunction("sqrt", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("sqrt", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(), 
 			new Float(
@@ -12,7 +12,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("pow", {"base", "exponent"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("pow", {"base", "exponent"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -21,7 +21,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("sin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("sin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -30,7 +30,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("cos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("cos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -39,7 +39,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("tan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("tan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -48,7 +48,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("asin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("asin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -57,7 +57,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("acos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("acos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -66,7 +66,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("atan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("atan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -75,7 +75,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("atan2", {"y", "x"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("atan2", {"y", "x"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -84,7 +84,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("sinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("sinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -93,7 +93,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("cosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("cosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -102,7 +102,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("tanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("tanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -111,7 +111,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("asinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("asinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -120,7 +120,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("acosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("acosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -129,7 +129,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("atanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("atanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -138,7 +138,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("exp", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("exp", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -147,7 +147,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("log", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("log", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -156,7 +156,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("log10", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("log10", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -165,7 +165,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("log2", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("log2", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -174,7 +174,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("log", {"base", "value"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("log", {"base", "value"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -186,7 +186,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("floor", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("floor", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -195,7 +195,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("ceil", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("ceil", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -204,7 +204,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("round", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("round", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -213,7 +213,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("abs", {"value"}, {INT}, INT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("abs", {"value"}, {INT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(), 
 			new Int(
@@ -224,7 +224,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("fabs", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("fabs", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -235,7 +235,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("deg", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("deg", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -244,7 +244,7 @@ ExpressionResult mathLoader(BuiltinModule &module){
 		);
 	});
 
-	module.addFunction("rad", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, Context *context) {
+	module.addFunction("rad", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(

@@ -4,7 +4,7 @@ Token::Token() : type(TOKEN_TYPE_UNKNOWN) {}
 Token::Token(TokenType type) :	type(type) {}
 Token::Token(const TextRange range, TokenType type) : range(range), type(type) {}
 
-bool Token::isNumber() const{
+bool Token::isNumber() const {
 	return this->type == TOKEN_TYPE_FLOAT || 
 		   this->type == TOKEN_TYPE_INT ||
 		   this->type == TOKEN_TYPE_HEX ||

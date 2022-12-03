@@ -36,7 +36,7 @@ class BlockQueue {
 	friend BlockQueueIterator;
 };
 
-class BlockQueueIterator{
+class BlockQueueIterator {
 	public:
 		using iterator_category = std::forward_iterator_tag;
 		using value_type = BaseBlock;

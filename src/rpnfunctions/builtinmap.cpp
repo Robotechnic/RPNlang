@@ -6,7 +6,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::cout << args[0]->getStringValue();
 			return std::make_tuple(ExpressionResult(), None::empty());
 		}
@@ -16,7 +16,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::STRING,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::cout<<args[0]->getStringValue();
 			std::string input;
 			std::getline(std::cin, input);
@@ -28,7 +28,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::INT,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_tuple(ExpressionResult(), new Int(args[0]->getStringValue().size(), range, true));
 		}
 	)},
@@ -37,7 +37,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value", "start", "length"},
 		{ValueType::STRING, ValueType::INT, ValueType::INT},
 		ValueType::STRING,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::string value = args[0]->getStringValue();
 			int start = static_cast<Int *>(args[1])->getValue();
 			int length = static_cast<Int *>(args[2])->getValue();
@@ -49,7 +49,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::BOOL,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::string value = args[0]->getStringValue();
 			bool isNumber = value == "true";
 			isNumber |= value == "false";
@@ -63,7 +63,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::INT,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
 			if (std::regex_match(args[0]->getStringValue(), intRegex)) {
 				std::get<1>(result) = new Int(std::stoi(args[0]->getStringValue()), range, true);
@@ -83,7 +83,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::FLOAT,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
 			if (std::regex_match(args[0]->getStringValue(), floatRegex) || 
 				std::regex_match(args[0]->getStringValue(), intRegex)
@@ -105,7 +105,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::FLOAT},
 		ValueType::STRING,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_tuple(ExpressionResult(), new String(args[0]->getStringValue(), range, true));
 		}
 	)},
@@ -114,7 +114,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value1", "value2"},
 		{ValueType::BOOL, ValueType::BOOL},
 		ValueType::BOOL,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_tuple(
 				ExpressionResult(), 
 				new Bool(
@@ -130,7 +130,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value1", "value2"},
 		{ValueType::BOOL, ValueType::BOOL},
 		ValueType::BOOL,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_tuple(
 				ExpressionResult(),
 				new Bool(
@@ -146,7 +146,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::BOOL},
 		ValueType::BOOL,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_tuple(
 				ExpressionResult(), 
 				new Bool(
@@ -162,7 +162,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::INT,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::tuple<ExpressionResult, Value*> result = std::make_pair(ExpressionResult(), nullptr);
 			if (args[0]->getStringValue().size() != 1) {
 				std::get<0>(result) = ExpressionResult(
@@ -181,7 +181,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::INT},
 		ValueType::STRING,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_tuple(
 				ExpressionResult(), 
 				new String(
@@ -197,7 +197,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::INT},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			exit(static_cast<Int*>(args[0])->getValue());
 			// Should never reach this point
 			return std::make_tuple(ExpressionResult(), None::empty());
@@ -208,7 +208,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::BOOL},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			ExpressionResult result;
 
 			if (!static_cast<Bool *>(args[0])->getValue()) {
@@ -227,7 +227,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"path"},
 		{ValueType::STRING},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::string path = args[0]->getStringValue();
 			if (path.size() == 0) {
 				return std::make_tuple(
@@ -250,7 +250,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"path", "name"},
 		{ValueType::STRING, ValueType::STRING},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::string path = args[0]->getStringValue();
 			if (path.size() == 0) {
 				return std::make_tuple(

@@ -22,7 +22,7 @@ class UserRPNFunction : public RPNFunction {
 		RPNFunctionResult call(
 			const RPNFunctionArgs &args,
 			const TextRange &range,
-			Context *context
+			ContextPtr context
 		) const override;
 
 		static std::shared_ptr<UserRPNFunction> addFunction(
@@ -38,7 +38,7 @@ class UserRPNFunction : public RPNFunction {
 		static std::shared_ptr<UserRPNFunction> getFunction(std::string name);
 
 	private:
-		void addParameters(const RPNFunctionArgs &args, Context *context) const;
+		void addParameters(const RPNFunctionArgs &args, const ContextPtr &context) const;
 		CodeBlock *body;
 
 		static std::unordered_map<std::string, std::shared_ptr<UserRPNFunction>> userFunctions;

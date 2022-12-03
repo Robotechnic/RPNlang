@@ -22,7 +22,7 @@ class RPNFunction {
 		virtual RPNFunctionResult call(
 			const RPNFunctionArgs &args,
 			const TextRange &range,
-			Context *context
+			ContextPtr context
 		) const;
 
 		size_t getArgumentsCount() const;
@@ -30,8 +30,8 @@ class RPNFunction {
 		TextRange getRange() const;
 
 	protected:
-		ExpressionResult checkTypes(const RPNFunctionArgs &args, const Context *context) const;
-		ExpressionResult checkArgs(const RPNFunctionArgs &args, const Context *context) const;
+		ExpressionResult checkTypes(const RPNFunctionArgs &args, const ContextPtr &context) const;
+		ExpressionResult checkArgs(const RPNFunctionArgs &args, const ContextPtr &context) const;
 		
 
 		std::string name;

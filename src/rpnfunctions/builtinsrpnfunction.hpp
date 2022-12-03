@@ -28,7 +28,7 @@ class BuiltinRPNFunction : public RPNFunction {
 		RPNFunctionResult call(
 			const RPNFunctionArgs &args,
 			const TextRange &range,
-			Context *context
+			ContextPtr context
 		) const;
 
 		static const std::unordered_map<std::string, BuiltinRPNFunction> builtinFunctions;

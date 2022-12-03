@@ -19,7 +19,7 @@ class ExpressionResult {
 		};
 	public:
 		ExpressionResult();
-		ExpressionResult(std::string errorMessage, TextRange errorRange, const Context *context);
+		ExpressionResult(std::string errorMessage, TextRange errorRange, ContextPtr parentContext);
 		ExpressionResult(Status status);
 		~ExpressionResult();
 
@@ -27,7 +27,7 @@ class ExpressionResult {
 		bool success() const;
 		std::string getErrorMessage() const;
 		TextRange getRange() const;
-		const Context *getContext() const;
+		ContextPtr getContext() const;
 
 		void displayLineError(std::string line) const;
 		void display() const;
@@ -45,5 +45,5 @@ class ExpressionResult {
 		Status resultStatus;
 		std::string errorMessage;
 		TextRange errorRange;
-		const Context *context;
+		ContextPtr context;
 };

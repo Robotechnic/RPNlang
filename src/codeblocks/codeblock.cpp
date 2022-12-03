@@ -5,9 +5,8 @@ CodeBlock::CodeBlock(Token *keyword) : BaseBlock(CODE_BLOCK), keyword(keyword), 
 CodeBlock::~CodeBlock() {
 	this->clear();
 	delete this->keyword;
-	if (this->next != nullptr) {
+	if (this->next != nullptr)
 		delete this->next;
-	}
 }
 
 void CodeBlock::push(BaseBlock *block) {

@@ -2,9 +2,9 @@
 "test builtin module\n" :print
 "test" :import
 
-"coucou" :test.testFunction
-
 test.testValue f"Test value : {}\n" :print
+test.testValue "testValueOk" == :assert
+"coucou" :test.testFunction
 
 "modules ok\n" :print
 

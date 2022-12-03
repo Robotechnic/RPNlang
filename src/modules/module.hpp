@@ -24,28 +24,29 @@ class BuiltinModule;
 class Module {
 	public:
 		Module();
-		Module(std::string path, std::string name, const Context * parentContext, TextRange importRange);
+		Module(std::string path, std::string name, const ContextPtr  parentContext, TextRange importRange);
 		Module(const Module &other);
 		~Module();
 
 		ExpressionResult load();
 
-		Context * getModuleContext();
-		std::string getPath() { return path; };
+		ContextPtr  getModuleContext() const;
+		std::string getPath() const;
 
 		static bool isModule(std::string moduleName);
 		static bool isImported(std::string modulePath, std::string &moduleName);
 
 		static std::string checkPath(std::vector<std::string> path);
-		static ExpressionResult addModule(std::string modulePath, std::string name, TextRange importRange, const Context *context);
-		static ExpressionResult getModuleValue(const Value *valuePath, Value *&value, const Context *parentContext);
-		static ExpressionResult getModuleContext(const Value *valuePath, const Context *parentContext, Context *&moduleContext);
+		static ExpressionResult addModule(std::string modulePath, std::string name, TextRange importRange, const ContextPtr &context);
+		static ExpressionResult getModuleValue(const Token *tokenPath, Value *&value, const ContextPtr &parentContext);
+		static ExpressionResult getModuleValue(const Value *valuePath, Value *&value, const ContextPtr &parentContext);
+		static ExpressionResult getModuleContext(const Token *tokenPath, const ContextPtr &parentContext, ContextPtr &moduleContext);
 
 	private:
 		std::string path;
 		std::string name;
 		TextRange importRange;
-		Context * context;
+		ContextPtr context;
 
 		static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
 		static std::unordered_map<std::string, BuiltinModule> builtinModules;

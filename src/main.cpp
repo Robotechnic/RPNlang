@@ -24,7 +24,7 @@ void signalHandler(int signum) {
 }
 
 void shellInput() {
-	Context *ctx = new Context("main", "<stdin>");
+	ContextPtr ctx = std::make_shared<Context>("main", "<stdin>");
 	Interpreter i(ctx);
 	std::string instruction;
 	rpnShell.loadHistory();
@@ -57,7 +57,6 @@ void shellInput() {
 
 		rpnShell>>instruction;
 	}
-	delete ctx;
 }
 
 void setWorkingDirectory(std::string path) {
@@ -92,13 +91,12 @@ int main(int argc, char **argv) {
 		setWorkingDirectory(path);
 		std::string name = extractFileName(path);
 		path = path.substr(path.find_last_of('/') + 1);
-		Context *ctx = new Context(name, path, CONTEXT_TYPE_FILE);
+		ContextPtr ctx = std::make_shared<Context>(name, path, CONTEXT_TYPE_FILE);
 		std::string error;
 		result = Interpreter(ctx).interpretFile(path, error);
 		if (!result) {
 			std::cout << error << std::endl;
 		}
-		delete ctx;
 	}
 
 	return result ? 0 : 1;

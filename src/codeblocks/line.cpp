@@ -28,7 +28,8 @@ int Line::size() const {
 
 void Line::clear() {
 	for (auto token : this->tokens)
-		if (token != nullptr) delete token;
+		if (token != nullptr) 
+			delete token;
 	this->tokens.clear();
 }
 

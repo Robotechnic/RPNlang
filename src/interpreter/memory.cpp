@@ -17,13 +17,17 @@ Value*& Memory::pop() {
 	return value;
 }
 
-ExpressionResult Memory::popVariableValue(Value *&value, const Context *context) {
-	if (this->stack.top()->getType() != VARIABLE) {
+ExpressionResult Memory::popVariableValue(Value *&value, const ContextPtr &context) {
+	if (this->stack.top()->getType() != VARIABLE && this->stack.top()->getType() != PATH) {
 		value = this->pop();
 		return ExpressionResult();
 	}
 	
-	ExpressionResult result = context->getValue(this->stack.top(), value);
+	ExpressionResult result;
+	if (this->stack.top()->getType() == VARIABLE)
+		result = context->getValue(this->stack.top(), value);
+	else
+		result = Module::getModuleValue(this->stack.top(), value, context);
 	if (result.error()) return result;
 	Value::deleteValue(&this->stack.top());
 	this->stack.pop();
@@ -58,7 +62,7 @@ unsigned long int Memory::size() {
  * @param ctx the current context
  * @return ExpressionResult if the stack size is correct or not
  */
-ExpressionResult Memory::sizeExpected(unsigned long int size, std::string message, TextRange range, const Context *ctx) {
+ExpressionResult Memory::sizeExpected(unsigned long int size, std::string message, TextRange range, const ContextPtr &ctx) {
 	if (this->stack.size() == 0 && size != 0) 
 		return ExpressionResult(message + " (Memory is empty)", range, ctx);
 	if (this->stack.size() < size) {
@@ -79,13 +83,19 @@ ExpressionResult Memory::sizeExpected(unsigned long int size, std::string messag
  * @param context the current context
  * @return ExpressionResult the result of the operation
  */
-ExpressionResult Memory::topVariableToValue(const Context *context) {
+ExpressionResult Memory::topVariableToValue(const ContextPtr &context) {
 	if (this->stack.size() == 0) 
 		throw std::runtime_error("Memory::topVariableToValue: stack is empty");
-	if (this->stack.top()->getType() != VARIABLE) return ExpressionResult();
+	if (this->stack.top()->getType() != VARIABLE && this->stack.top()->getType() != PATH) 
+		return ExpressionResult();
 
 	Value *value;
-	ExpressionResult result = context->getValue(this->stack.top(), value);
+	ExpressionResult result;
+	if (this->stack.top()->getType() == VARIABLE)
+		result = context->getValue(this->stack.top(), value);
+	else
+		result = Module::getModuleValue(this->stack.top(), value, context);
+	
 	Value::deleteValue(&this->stack.top());
 	this->stack.pop();
 	if (result.error()) return result;

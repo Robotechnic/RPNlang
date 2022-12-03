@@ -8,7 +8,9 @@ BuiltinModule::BuiltinModule(std::string name, loadFunction loader) :
 	isLoaded(false),
 	name(name), 
 	loader(loader), 
-	context(new Context(name, "<builtin>", CONTEXT_TYPE_MODULE)) {}
+	context(new Context(name, "<builtin-" + name + ">", CONTEXT_TYPE_MODULE)) {}
+
+BuiltinModule::~BuiltinModule() {}
 
 /**
  * @brief load the module if it hasn't been loaded yet
@@ -66,6 +68,6 @@ void BuiltinModule::addVariable(std::string name, Value *value) {
 	context->setValue(name, value);
 }
 
-Context * BuiltinModule::getModuleContext() {
+ContextPtr  BuiltinModule::getModuleContext() {
 	return this->context;
 }

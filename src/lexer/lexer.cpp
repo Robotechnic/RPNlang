@@ -1,9 +1,9 @@
 #include "lexer/lexer.hpp"
 
-Lexer::Lexer(std::queue<Token*> tokens, const Context *context) : tokens(tokens) {
-	this->context = context;
-	this->currentLine = new Line();
-}
+Lexer::Lexer(std::queue<Token*> tokens, ContextPtr context) :
+	context(context),
+	currentLine(new Line()),
+	tokens(tokens) {}
 
 Lexer::~Lexer() {
 	delete this->currentLine;
@@ -353,7 +353,7 @@ ExpressionResult Lexer::parseFunctionCall(const Token *token) {
 
 	this->currentLine->push(new StringToken(
 		token->getRange().merge(name->getRange()),
-		TOKEN_TYPE_FUNCTION_CALL,
+		name->getType() == TOKEN_TYPE_LITERAL ? TOKEN_TYPE_FUNCTION_CALL : TOKEN_TYPE_MODULE_FUNCTION_CALL,
 		name->getStringValue()
 	));
 	delete name;
@@ -455,7 +455,7 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
  * @param tokens the vector of tokens to fill
  * @return ExpressionResult if the line is a valid expression
  */
-ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<Token*> &tokens, const Context *context) {
+ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<Token*> &tokens, const ContextPtr &context) {
 	int column = 0;
 	std::smatch match;
 	while (lineString.size() > 0) {

@@ -2,10 +2,8 @@
 
 #include <string>
 #include <vector>
-#include <stack>
 #include <queue>
 #include <fstream>
-#include <map>
 #include <iostream>
 #include <algorithm>
 
@@ -16,15 +14,15 @@
 #include "codeblocks/line.hpp"
 #include "codeblocks/codeblock.hpp"
 
+#include "value/value.hpp"
+#include "value/types.hpp"
+#include "value/types/numbers/cppinterface.hpp"
+
 #include "lexer/lexer.hpp"
 #include "expressionresult/expressionresult.hpp"
 #include "context/context.hpp"
 
 #include "interpreter/memory.hpp"
-
-#include "value/value.hpp"
-#include "value/types.hpp"
-#include "value/types/numbers/cppinterface.hpp"
 
 #include "rpnfunctions/rpnfunction.hpp"
 #include "rpnfunctions/builtinmap.hpp"
@@ -32,7 +30,7 @@
 class Interpreter {
 	public:
 		Interpreter();
-		Interpreter(Context *ctx);
+		Interpreter(ContextPtr ctx);
 		~Interpreter();
 
 		bool interpretFile(std::string fileName, std::string &errorString);
@@ -43,7 +41,6 @@ class Interpreter {
 
 
 	private:
-
 		ExpressionResult checkMemory();
 		ExpressionResult interpretLine(Line &line, bool clearMemory = true);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
@@ -62,5 +59,5 @@ class Interpreter {
 		TextRange mergeRanges(const std::vector<Value*> &values);
 
 		Memory memory;
-		Context *context;
+		ContextPtr context;
 };

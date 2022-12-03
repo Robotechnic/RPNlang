@@ -6,12 +6,12 @@ Module::Module() :
 	importRange(TextRange(0, 0, 0)),
 	context(nullptr) {}
 
-Module::Module(std::string path, std::string name, const Context * parentContext, TextRange importRange) : 
+Module::Module(std::string path, std::string name, ContextPtr  parentContext, TextRange importRange) : 
 	path(path), 
 	name(name),
-	importRange(importRange) {
-	context = new Context(name, path, parentContext, CONTEXT_TYPE_MODULE);
-}
+	importRange(importRange),
+	context(std::make_shared<Context>(name, path, parentContext, CONTEXT_TYPE_MODULE, true))
+{}
 
 Module::Module(const Module &other) : 
 	path(other.path), 
@@ -19,11 +19,7 @@ Module::Module(const Module &other) :
 	importRange(other.importRange),
 	context(other.context) {}
 
-Module::~Module() {
-	// if (this->context != nullptr) {
-	// 	delete this->context;
-	// }
-}
+Module::~Module() {}
 
 /**
  * @brief load the module interpret it
@@ -41,12 +37,12 @@ ExpressionResult Module::load() {
 
 	Interpreter moduleLoader = Interpreter(this->context);
 	std::string error;
-	if (moduleLoader.interpretFile(path, error)) return ExpressionResult();
+	if (moduleLoader.interpretFile(path, error))
+		return ExpressionResult();
 	
 	if (Module::builtinModules.find(path) != Module::builtinModules.end()) {
 		Module::builtinModules[path].load();
-		const Context *parent = this->context->getParent();
-		delete this->context;
+		ContextPtr parent = this->context->getParent();
 		this->context = Module::builtinModules[path].getModuleContext();
 		this->context->setParent(parent);
 
@@ -63,13 +59,17 @@ ExpressionResult Module::load() {
 /**
  * @brief return the module context
  * 
- * @return Context *the module context
+ * @return ContextPtr the module context
  */
-Context * Module::getModuleContext() {
-	if (context == nullptr) {
+ContextPtr Module::getModuleContext() const {
+	if (context.use_count() == 0) {
 		throw std::runtime_error("Module is not loaded");
 	}
 	return this->context;
+}
+
+std::string Module::getPath() const {
+	return this->path;
 }
 
 /**
@@ -108,7 +108,7 @@ std::string Module::checkPath(std::vector<std::string> path) {
  * @param parentContext the parent context of the module
  * @return ExpressionResult if the value exists
  */
-ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, const Context *parentContext) {
+ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, const ContextPtr &parentContext) {
 	std::vector<std::string> path = static_cast<const Path*>(valuePath)->getPath();
 	std::string error = Module::checkPath(path);
 	if (error != "") {
@@ -119,8 +119,23 @@ ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, c
 		);
 	}
 
-	return Module::modules.at(path[0])->getModuleContext()->getModuleValue(valuePath, value);
+	return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, valuePath->getRange(), value);
 }
+
+ExpressionResult Module::getModuleValue(const Token *tokenPath, Value *&value, const ContextPtr &parentContext) {
+	std::vector<std::string> path = split(tokenPath->getStringValue(), '.');
+	std::string error = Module::checkPath(path);
+	if (error != "") {
+		return ExpressionResult(
+			error,
+			tokenPath->getRange(),
+			parentContext
+		);
+	}
+
+	return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, tokenPath->getRange(), value);
+}
+
 
 /**
  * @brief return the module context
@@ -130,16 +145,17 @@ ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, c
  * @param moduleContext the module context to put the module context in
  * @return ExpressionResult 
  */
-ExpressionResult Module::getModuleContext(const Value *valuePath, const Context *parentContext, Context *&moduleContext) {
-	std::string error = Module::checkPath(static_cast<const Path*>(valuePath)->getPath());
+ExpressionResult Module::getModuleContext(const Token *tokenPath, const ContextPtr &parentContext, ContextPtr &moduleContext) {
+	std::vector<std::string> path = split(tokenPath->getStringValue(), '.');
+	std::string error = Module::checkPath(path);
 	if (error != "") {
 		return ExpressionResult(
 			error,
-			valuePath->getRange(),
+			tokenPath->getRange(),
 			parentContext
 		);
 	}
-	moduleContext = Module::modules.at(static_cast<const Path*>(valuePath)->getPath().at(0))->getModuleContext();
+	moduleContext = Module::modules.at(path.at(0))->getModuleContext();
 	return ExpressionResult();
 }
 
@@ -169,7 +185,7 @@ bool Module::isImported(std::string modulePath, std::string &moduleName) {
  * @param parentContext the parent context of the module import
  * @return ExpressionResult if the module is loaded correctly
  */
-ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const Context *parentContext) {
+ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const ContextPtr &parentContext) {
 	std::string importedName;
 	if (modulePath != name && Module::isImported(modulePath, importedName)) {
 		if (importedName != name)
@@ -185,7 +201,7 @@ std::unordered_map<std::string, std::shared_ptr<Module>>Module::modules = std::u
 
 std::unordered_map<std::string, BuiltinModule>Module::builtinModules = std::unordered_map<std::string, BuiltinModule>{
 	{"test", BuiltinModule("test", [](BuiltinModule &module) {
-		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, Context *context) {
+		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::cout<<"Test ok : "<<args[0]->getStringValue()<<std::endl;
 			return std::make_tuple(ExpressionResult(), None::empty());
 		});

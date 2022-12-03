@@ -3,5 +3,6 @@
 name "test1" =
 
 moduleCalculation -> string fun
-	test2.bidule " " + name  return
+	hello
+	test2.bidule " " + name +  return
 nuf

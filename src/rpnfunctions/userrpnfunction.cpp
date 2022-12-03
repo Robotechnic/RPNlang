@@ -28,7 +28,7 @@ UserRPNFunction::~UserRPNFunction() {
  * @param args the arguments provided by the user
  * @param variables the variables in context
  */
-void UserRPNFunction::addParameters(const RPNFunctionArgs &args, Context *context) const {
+void UserRPNFunction::addParameters(const RPNFunctionArgs &args, const ContextPtr &context) const {
 	for (size_t i = 0; i < args.size(); i++) {
 		context->setValue(this->argsName[i], args[i]->to(this->argsTypes[i], false));
 	}
@@ -37,16 +37,16 @@ void UserRPNFunction::addParameters(const RPNFunctionArgs &args, Context *contex
 RPNFunctionResult UserRPNFunction::call(
 	const RPNFunctionArgs &args,
 	const TextRange &range,
-	Context *context
+	ContextPtr context
 ) const {
 	ExpressionResult result = this->checkArgs(args, context);
 	if (result.error()) 
 		return std::make_tuple(result, None::empty());
 
-	context->setChild(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
-	this->addParameters(args, context->getChild());
+	ContextPtr functionContext = std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
+	this->addParameters(args, functionContext);
 
-	Interpreter interpreter(context->getChild());
+	Interpreter interpreter(functionContext);
 	result = interpreter.interpret(this->body->getBlocks());
 
 	if (result.error()) 

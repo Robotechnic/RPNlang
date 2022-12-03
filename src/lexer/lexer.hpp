@@ -26,7 +26,7 @@ class FunctionBlock;
 
 class Lexer {
 	public:
-		Lexer(std::queue<Token*> tokens, const Context *context);
+		Lexer(std::queue<Token*> tokens, ContextPtr context);
 		~Lexer();
 
 		ExpressionResult lex();
@@ -37,7 +37,7 @@ class Lexer {
 			int line, 
 			std::string lineString, 
 			std::queue<Token*> &tokens,
-			const Context *context
+			const ContextPtr &context
 		);
 
 	private:
@@ -53,7 +53,7 @@ class Lexer {
 		ExpressionResult parseFunctionCall(const Token *token);
 
 	private:
-		const Context *context;
+		ContextPtr context;
 		Line *currentLine;
 		std::queue<Token*> tokens;
 		std::stack<CodeBlock*> keywordBlockStack;
