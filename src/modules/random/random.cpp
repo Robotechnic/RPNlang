@@ -1,7 +1,7 @@
 #include "modules/random/random.hpp"
 
 
-ExpressionResult randomLoader(BuiltinModule &module) {
+ExpressionResult randomLoader(CppModule &module) {
 	module.addFunction("seed", {"seed"}, {INT}, NONE, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		std::srand(static_cast<Int *>(args[0])->getValue());
 		return std::make_tuple(ExpressionResult(), None::empty());

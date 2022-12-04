@@ -199,8 +199,8 @@ ExpressionResult Module::addModule(std::string modulePath, std::string name, Tex
 
 std::unordered_map<std::string, std::shared_ptr<Module>>Module::modules = std::unordered_map<std::string, std::shared_ptr<Module>>();
 
-std::unordered_map<std::string, BuiltinModule>Module::builtinModules = std::unordered_map<std::string, BuiltinModule>{
-	{"test", BuiltinModule("test", [](BuiltinModule &module) {
+std::unordered_map<std::string, CppModule>Module::builtinModules = std::unordered_map<std::string, CppModule>{
+	{"test", CppModule("test", [](CppModule &module) {
 		module.addFunction("testFunction", {"value"}, {STRING}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::cout<<"Test ok : "<<args[0]->getStringValue()<<std::endl;
 			return std::make_tuple(ExpressionResult(), None::empty());
@@ -214,7 +214,7 @@ std::unordered_map<std::string, BuiltinModule>Module::builtinModules = std::unor
 		return ExpressionResult();
 	})},
 
-	{"math", BuiltinModule("math", mathLoader)},
-	{"time", BuiltinModule("time", timeLoader)},
-	{"random", BuiltinModule("random", randomLoader)}
+	{"math", CppModule("math", mathLoader)},
+	{"time", CppModule("time", timeLoader)},
+	{"random", CppModule("random", randomLoader)}
 };

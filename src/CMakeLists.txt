@@ -2,40 +2,14 @@ list(APPEND includes
 	${CMAKE_CURRENT_LIST_DIR}
 )
 
-
-list(APPEND sources
-	# utility	
-	${CMAKE_CURRENT_LIST_DIR}/textutilities/textutilities.cpp
-	${CMAKE_CURRENT_LIST_DIR}/textutilities/textrange.cpp
-	${CMAKE_CURRENT_LIST_DIR}/textutilities/escapecharacters.cpp
-	
-	# base types
-	${CMAKE_CURRENT_LIST_DIR}/tokens/token.cpp
-)
-
-include(${CMAKE_CURRENT_LIST_DIR}/tokens/tokens/CMakeLists.txt)
-
 list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/baseblock.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/codeblock.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/line.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/blockqueue.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/functionblock.cpp
-	${CMAKE_CURRENT_LIST_DIR}/context/context.cpp
-	${CMAKE_CURRENT_LIST_DIR}/expressionresult/expressionresult.cpp
-	
-	# RPN lang types
-	${CMAKE_CURRENT_LIST_DIR}/value/value.cpp
-)
-
-include(${CMAKE_CURRENT_LIST_DIR}/value/types/CMakeLists.txt)
-
-list(APPEND sources
-	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/rpnfunction.cpp
-	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinsrpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinmap.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/userrpnfunction.cpp
-	${CMAKE_CURRENT_LIST_DIR}/modules/builtinmodule.cpp
 	${CMAKE_CURRENT_LIST_DIR}/modules/module.cpp
 )
 
@@ -54,3 +28,7 @@ list(APPEND sources
 	# main
 	${CMAKE_CURRENT_LIST_DIR}/main.cpp
 )
+
+add_executable(RPNlang ${sources}) 
+target_include_directories(RPNlang PUBLIC ${includes})
+target_link_libraries(RPNlang RPNlangLib)

@@ -7,17 +7,18 @@
 #include "rpnfunctions/typedef.hpp"
 #include "rpnfunctions/builtinsrpnfunction.hpp"
 #include "value/value.hpp"
+#include "value/types/function.hpp"
 
-class BuiltinModule;
-typedef std::function<ExpressionResult(BuiltinModule&)> loadFunction;
+class CppModule;
+typedef std::function<ExpressionResult(CppModule&)> loadFunction;
 
 class BuiltinRPNFunction;
 
-class BuiltinModule {
+class CppModule {
 	public:
-		BuiltinModule();
-		BuiltinModule(std::string name, loadFunction loader);
-		~BuiltinModule();
+		CppModule();
+		CppModule(std::string name, loadFunction loader);
+		~CppModule();
 
 		ExpressionResult load();
 

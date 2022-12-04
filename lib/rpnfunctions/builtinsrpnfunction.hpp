@@ -8,7 +8,6 @@
 #include <cassert>
 #include <unordered_map>
 #include "rpnfunctions/rpnfunction.hpp"
-#include "modules/module.hpp"
 #include "value/value.hpp"
 #include "value/valuetypes.hpp"
 #include "rpnfunctions/typedef.hpp"

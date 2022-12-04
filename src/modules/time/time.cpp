@@ -1,6 +1,6 @@
 #include "modules/time/time.hpp"
 
-ExpressionResult timeLoader(BuiltinModule &module) {
+ExpressionResult timeLoader(CppModule &module) {
 	module.addFunction("sleep", {"time"}, {FLOAT}, NONE, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<Int *>(args[0])->getValue()));
 		return std::make_tuple(ExpressionResult(), None::empty());

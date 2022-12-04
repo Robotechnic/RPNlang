@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <filesystem>
 
-class BuiltinModule;
+class CppModule;
 
 #include "value/value.hpp"
 #include "value/types/path.hpp"
@@ -13,7 +13,7 @@ class BuiltinModule;
 #include "textutilities/textrange.hpp"
 #include "interpreter/interpreter.hpp"
 #include "rpnfunctions/typedef.hpp"
-#include "modules/builtinmodule.hpp"
+#include "cppmodule/cppmodule.hpp"
 #include "context/context.hpp"
 
 // builtin modules
@@ -49,6 +49,6 @@ class Module {
 		ContextPtr context;
 
 		static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
-		static std::unordered_map<std::string, BuiltinModule> builtinModules;
+		static std::unordered_map<std::string, CppModule> builtinModules;
 };
 

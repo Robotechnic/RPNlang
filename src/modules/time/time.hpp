@@ -9,6 +9,6 @@
 #include "value/value.hpp"
 #include "value/types/string.hpp"
 #include "value/types/numbers/int.hpp"
-#include "modules/builtinmodule.hpp"
+#include "cppmodule/cppmodule.hpp"
 
-ExpressionResult timeLoader(BuiltinModule &module);
+ExpressionResult timeLoader(CppModule &module);

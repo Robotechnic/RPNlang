@@ -6,6 +6,6 @@
 #include "expressionresult/expressionresult.hpp"
 #include "value/value.hpp"
 #include "value/types.hpp"
-#include "modules/builtinmodule.hpp"
+#include "cppmodule/cppmodule.hpp"
 
-ExpressionResult randomLoader(BuiltinModule &module);
+ExpressionResult randomLoader(CppModule &module);

@@ -4,6 +4,6 @@
 #include "expressionresult/expressionresult.hpp"
 #include "value/value.hpp"
 #include "value/types/numbers/float.hpp"
-#include "modules/builtinmodule.hpp"
+#include "cppmodule/cppmodule.hpp"
 
-ExpressionResult mathLoader(BuiltinModule &module);
+ExpressionResult mathLoader(CppModule &module);

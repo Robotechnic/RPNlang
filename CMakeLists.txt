@@ -5,7 +5,5 @@ set(CMAKE_CXX_FLAGS "-Wall")
 
 project(RPNlang CXX)
 
+include(lib/CMakeLists.txt)
 include(src/CMakeLists.txt)
-
-add_executable(RPNlang ${sources}) 
-target_include_directories(RPNlang PUBLIC ${includes})

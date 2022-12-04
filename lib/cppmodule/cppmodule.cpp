@@ -1,23 +1,23 @@
-#include "modules/builtinmodule.hpp"
+#include "cppmodule/cppmodule.hpp"
 
-std::unordered_map<std::string, BuiltinRPNFunction> BuiltinModule::builtinFunctions = std::unordered_map<std::string, BuiltinRPNFunction>();
+std::unordered_map<std::string, BuiltinRPNFunction> CppModule::builtinFunctions = std::unordered_map<std::string, BuiltinRPNFunction>();
 
-BuiltinModule::BuiltinModule() : isLoaded(false), name(""), loader(nullptr), context(nullptr) {}
+CppModule::CppModule() : isLoaded(false), name(""), loader(nullptr), context(nullptr) {}
 
-BuiltinModule::BuiltinModule(std::string name, loadFunction loader) :
+CppModule::CppModule(std::string name, loadFunction loader) :
 	isLoaded(false),
-	name(name), 
+	name(name),
 	loader(loader), 
 	context(new Context(name, "<builtin-" + name + ">", CONTEXT_TYPE_MODULE)) {}
 
-BuiltinModule::~BuiltinModule() {}
+CppModule::~CppModule() {}
 
 /**
  * @brief load the module if it hasn't been loaded yet
  * 
  * @return ExpressionResult the result of the load operation
  */
-ExpressionResult BuiltinModule::load() {
+ExpressionResult CppModule::load() {
 	if (isLoaded) return ExpressionResult();
 	this->loader(*this);
 	isLoaded = true;
@@ -34,7 +34,7 @@ ExpressionResult BuiltinModule::load() {
  * @param returnType the return type of the function
  * @param function the function to add
  */
-void BuiltinModule::addFunction(
+void CppModule::addFunction(
 		std::string name,
 		std::vector<std::string> argsName,
 		std::vector<ValueType> argumentsTypes,
@@ -64,10 +64,10 @@ void BuiltinModule::addFunction(
  * @param name the name of the variable
  * @param value the value of the variable
  */
-void BuiltinModule::addVariable(std::string name, Value *value) {
+void CppModule::addVariable(std::string name, Value *value) {
 	context->setValue(name, value);
 }
 
-ContextPtr  BuiltinModule::getModuleContext() {
+ContextPtr  CppModule::getModuleContext() {
 	return this->context;
 }

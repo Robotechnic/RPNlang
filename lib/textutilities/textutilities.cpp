@@ -26,7 +26,7 @@ std::vector<std::string> split(std::string str, char delimiter) {
  */
 std::string join(std::vector<std::string> str, char delimiter) {
 	std::string result;
-	for (int i = 0; i < str.size(); i++) {
+	for (size_t i = 0; i < str.size(); i++) {
 		result += str[i];
 		if (i != str.size() - 1) {
 			result += delimiter;

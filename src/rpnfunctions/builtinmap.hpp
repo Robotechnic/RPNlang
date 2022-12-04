@@ -4,13 +4,13 @@
 #include <vector>
 #include <unordered_map>
 
-#include "rpnfunctions/typedef.hpp"
-#include "rpnfunctions/builtinsrpnfunction.hpp"
-
 #include "expressionresult/expressionresult.hpp"
 #include "context/context.hpp"
 #include "value/value.hpp"
 #include "value/valuetypes.hpp"
+#include "rpnfunctions/typedef.hpp"
+#include "rpnfunctions/builtinsrpnfunction.hpp"
+#include "modules/module.hpp"
 
 class BuiltinRPNFunction;
 namespace builtins {
