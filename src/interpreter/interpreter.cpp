@@ -174,7 +174,7 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 			this->context->setValue(f->getName(), new Function(
 				f->getFunction(),
 				f->lastRange(),
-				true
+				false
 			));
 		} else {
 			result = ExpressionResult(
