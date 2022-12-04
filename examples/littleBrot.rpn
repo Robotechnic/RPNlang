@@ -1,5 +1,8 @@
-# this programm draw mandelbrot set with ascii characters in given size
+# this programm draw mandelbrot set with ascii characters in given format
+# it allow to benchmark the language
+
 "math" :import
+"time" :import
 
 intInput string prompt -> int fun
 	result prompt :input =
@@ -39,5 +42,8 @@ main -> none fun
 	height "Height of the set : " :intInput =
 	char "Character to draw with : " :input =
 	maxIter "Maximum number of iterations : " :intInput =
+	start :time.time =
 	width height char maxIter :mandelbrot
+	end :time.time =
+	end start - 1000.0 / f"Ellapsed time : {} seconds\n" :print
 nuf
