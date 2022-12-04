@@ -13,8 +13,6 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/modules/module.cpp
 )
 
-include(${CMAKE_CURRENT_LIST_DIR}/modules/CMakeLists.txt)
-
 list(APPEND sources
 	# code processing
 	${CMAKE_CURRENT_LIST_DIR}/lexer/lexer.cpp

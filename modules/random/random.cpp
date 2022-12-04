@@ -1,4 +1,4 @@
-#include "modules/random/random.hpp"
+#include "random.hpp"
 
 
 ExpressionResult randomLoader(CppModule &module) {

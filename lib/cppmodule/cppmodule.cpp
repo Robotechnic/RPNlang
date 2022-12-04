@@ -1,6 +1,6 @@
 #include "cppmodule/cppmodule.hpp"
 
-std::unordered_map<std::string, BuiltinRPNFunction> CppModule::builtinFunctions = std::unordered_map<std::string, BuiltinRPNFunction>();
+std::unordered_map<std::string, BuiltinRPNFunction> CppModule::moduleFunctions = std::unordered_map<std::string, BuiltinRPNFunction>();
 
 CppModule::CppModule() : isLoaded(false), name(""), loader(nullptr), context(nullptr) {}
 
@@ -41,8 +41,8 @@ void CppModule::addFunction(
 		ValueType returnType,
 		BuiltinRPNFunctionType function
 ) {
-	this->builtinFunctions.insert(
-		this->builtinFunctions.begin(), 
+	this->moduleFunctions.insert(
+		this->moduleFunctions.begin(), 
 		std::pair<std::string, BuiltinRPNFunction>(
 			name, 
 			BuiltinRPNFunction(name, argsName, argumentsTypes, returnType, function)
@@ -51,7 +51,7 @@ void CppModule::addFunction(
 	context->setValue(
 		name,
 		new Function(
-			static_cast<RPNFunction*>(&this->builtinFunctions[name]),
+			static_cast<RPNFunction*>(&this->moduleFunctions[name]),
 			TextRange(),
 			false
 		)

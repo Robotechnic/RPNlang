@@ -1,4 +1,4 @@
-#include "modules/math/math.hpp"
+#include "math.hpp"
 
 ExpressionResult mathLoader(CppModule &module){
 	module.addFunction("sqrt", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {

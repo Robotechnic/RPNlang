@@ -21,6 +21,5 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/cppmodule/cppmodule.cpp
 )
 
-
 add_library(RPNlangLib STATIC ${sources})
 target_include_directories(RPNlangLib PUBLIC ${CMAKE_CURRENT_LIST_DIR})

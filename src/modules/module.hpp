@@ -16,10 +16,6 @@ class CppModule;
 #include "cppmodule/cppmodule.hpp"
 #include "context/context.hpp"
 
-// builtin modules
-#include "modules/math/math.hpp"
-#include "modules/time/time.hpp"
-#include "modules/random/random.hpp"
 
 class Module {
 	public:

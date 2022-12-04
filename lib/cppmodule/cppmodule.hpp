@@ -39,5 +39,5 @@ class CppModule {
 		loadFunction loader;
 		ContextPtr context;
 
-		static std::unordered_map<std::string, BuiltinRPNFunction> builtinFunctions;
+		static std::unordered_map<std::string, BuiltinRPNFunction> moduleFunctions;
 };

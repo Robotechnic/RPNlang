@@ -1,4 +1,4 @@
-#include "modules/time/time.hpp"
+#include "time.hpp"
 
 ExpressionResult timeLoader(CppModule &module) {
 	module.addFunction("sleep", {"time"}, {FLOAT}, NONE, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {

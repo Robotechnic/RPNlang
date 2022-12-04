@@ -185,7 +185,7 @@ bool Module::isImported(std::string modulePath, std::string &moduleName) {
  * @param parentContext the parent context of the module import
  * @return ExpressionResult if the module is loaded correctly
  */
-ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const ContextPtr &parentContext) {
+ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const ContextPtr &parentContext) {	
 	std::string importedName;
 	if (modulePath != name && Module::isImported(modulePath, importedName)) {
 		if (importedName != name)
@@ -196,6 +196,7 @@ ExpressionResult Module::addModule(std::string modulePath, std::string name, Tex
 	Module::modules[name] = std::make_shared<Module>(Module(modulePath, name, parentContext, importRange));
 	return Module::modules[name]->load();
 }
+
 
 std::unordered_map<std::string, std::shared_ptr<Module>>Module::modules = std::unordered_map<std::string, std::shared_ptr<Module>>();
 
@@ -213,8 +214,4 @@ std::unordered_map<std::string, CppModule>Module::builtinModules = std::unordere
 		));
 		return ExpressionResult();
 	})},
-
-	{"math", CppModule("math", mathLoader)},
-	{"time", CppModule("time", timeLoader)},
-	{"random", CppModule("random", randomLoader)}
 };
