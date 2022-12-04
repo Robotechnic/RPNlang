@@ -14,3 +14,12 @@ test.testValue "testValueOk" == :assert
 
 testUser.test f"{}\n" :print
 :testUser.bidule
+
+# math functions
+"math" :import
+math.PI f"Pi : {}\n" :print
+
+x 0 10 1 for
+	x 0.0 10.0 0.0 1.0 :math.map f"{} " :print
+rof
+"\n" :print

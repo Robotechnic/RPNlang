@@ -253,6 +253,22 @@ ExpressionResult mathLoader(CppModule &module){
 		);
 	});
 
+	module.addFunction("map", {"value", "min", "max", "newMin", "newMax"}, {FLOAT, FLOAT, FLOAT, FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+		// simple linear mapping
+		// (value - min) * (newMax - newMin) / (max - min) + newMin
+		return std::make_tuple(
+			ExpressionResult(),
+			new Float(
+				(static_cast<Float *>(args[0])->getValue() - static_cast<Float *>(args[1])->getValue()) *
+				(static_cast<Float *>(args[4])->getValue() - static_cast<Float *>(args[3])->getValue()) /
+				(static_cast<Float *>(args[2])->getValue() - static_cast<Float *>(args[1])->getValue()) +
+				static_cast<Float *>(args[3])->getValue(),
+				range,
+				true
+			)
+		);
+	});
+
 	module.addVariable("PI",
 		new Float(
 			(float)M_PI,

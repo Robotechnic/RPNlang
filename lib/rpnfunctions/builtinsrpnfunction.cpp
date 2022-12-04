@@ -26,7 +26,14 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	if (args.size() > 0) {
 		functionRange.merge(args[0]->getRange());
 	}
-	result = this->function(args, functionRange, functionContext);
+
+	RPNFunctionArgs converted;
+	for (size_t i = 0; i < args.size(); i++) {
+		converted.push_back(args.at(i)->to(this->argsTypes.at(i)));
+	}
+	result = this->function(converted, functionRange, functionContext);
+	for (Value *val : converted)
+		delete val;
 	assert(
 		std::get<1>(result) != nullptr &&
 		"BuiltinRPNFunction::call: result.second is nullptr"
