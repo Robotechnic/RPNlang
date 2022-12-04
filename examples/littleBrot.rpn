@@ -1,0 +1,43 @@
+# this programm draw mandelbrot set with ascii characters in given size
+"math" :import
+
+intInput string prompt -> int fun
+	result prompt :input =
+	result :isNumber :not while
+		result prompt :input =
+	elihw
+	result :toInt return
+nuf
+
+mandelbrot int width int height string char int maxIter -> none fun
+	py 0 height 1 for
+		px 0 width 1 for
+			cx px 0 width -2 0.47 :math.map =
+			cy py 0 height -1.2 1.2 :math.map =
+			x 0 =
+			y 0 =
+			i 0 =
+			x 2 ^ y 2 ^ + 4 < i maxIter < :and while
+				xt x 2 ^ y 2 ^ - cx + =
+				y 2 x * y * cy + =
+				x xt =
+				i i 1 + =
+			elihw
+			i maxIter >= if
+				char :print
+			else
+				" " :print 
+			fi
+		rof
+		"\n" :print
+	rof
+nuf
+
+
+main -> none fun
+	width "Width of the set : " :intInput 2 * =
+	height "Height of the set : " :intInput =
+	char "Character to draw with : " :input =
+	maxIter "Maximum number of iterations : " :intInput =
+	width height char maxIter :mandelbrot
+nuf
