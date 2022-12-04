@@ -1,7 +1,6 @@
-set(TARGET time)
-add_library(${TARGET} SHARED ${CMAKE_CURRENT_LIST_DIR}/${TARGET}.cpp)
-target_link_libraries(${TARGET} PRIVATE RPNlangLib)
+add_library(time SHARED ${CMAKE_CURRENT_LIST_DIR}/time.cpp)
+target_link_libraries(time PRIVATE RPNlangLib)
 add_custom_command(
 	TARGET math POST_BUILD COMMAND
-	mv ${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET}.so ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/${TARGET}.so
+	mv ${CMAKE_CURRENT_BINARY_DIR}/libtime.so ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/time.so
 )

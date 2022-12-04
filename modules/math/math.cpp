@@ -1,6 +1,6 @@
 #include "math.hpp"
 
-ExpressionResult mathLoader(CppModule &module){
+ExpressionResult loader(CppModule &module){
 	module.addFunction("sqrt", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(), 

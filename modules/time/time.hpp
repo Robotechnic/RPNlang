@@ -11,4 +11,4 @@
 #include "value/types/numbers/int.hpp"
 #include "cppmodule/cppmodule.hpp"
 
-ExpressionResult timeLoader(CppModule &module);
+ExpressionResult loader(CppModule &module);
