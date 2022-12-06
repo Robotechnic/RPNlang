@@ -252,6 +252,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		ValueType::NONE,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::string path = args[0]->getStringValue();
+			std::string name = args[1]->getStringValue();
 			if (path.size() == 0) {
 				return std::make_tuple(
 					ExpressionResult(
@@ -262,8 +263,18 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 					None::empty()
 				);
 			}
+			if (!std::regex_match(name, literalRegex)) {
+				return std::make_tuple(
+					ExpressionResult(
+						"Module name must be a valid identifier",
+						args[1]->getRange(), 
+						context
+					), 
+					None::empty()
+				);
+			}
 			return std::make_tuple(
-				Module::addModule(path, args[1]->getStringValue(), args[0]->getRange(), context->getParent()),
+				Module::addModule(path, name, args[0]->getRange(), context->getParent()),
 				None::empty()
 			);
 		}
