@@ -5,6 +5,7 @@
 
 randomTerminalColor -> none fun
 	:terminal.clear
+	:terminal.home
 	width :terminal.width =
 	height :terminal.height =
 	y 0 height 1 for
@@ -16,6 +17,7 @@ nuf
 
 rgbTerminalColors -> none fun
 	:terminal.clear
+	:terminal.home
 	width :terminal.width =
 	height :terminal.height =
 	y 0 height 1 for
@@ -30,6 +32,7 @@ nuf
 
 randomRGBTerminalColors -> none fun
 	:terminal.clear
+	:terminal.home
 	width :terminal.width =
 	height :terminal.height =
 	y 0 height 1 for

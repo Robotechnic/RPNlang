@@ -6,6 +6,7 @@
 #include "value/types/string.hpp"
 
 #include <sys/ioctl.h>
+#include <termios.h>
 
 enum TEXT_COLORS {
 	BLACK   = 30,

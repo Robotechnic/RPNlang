@@ -26,7 +26,6 @@ std::string Shell::getCommand() {
 	std::cout<<this->prompt;
 	char c;
 	while ((c = this->getChar()) != '\n') {
-		// std::cout<<int(c)<<std::endl;
 		if (this->isSpecialChar(c)) {
 			this->handleSpecialChar(c);
 		} else {

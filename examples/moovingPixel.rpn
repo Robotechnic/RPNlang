@@ -1,0 +1,44 @@
+"terminal" :import
+"time" :import
+
+drawCharacter int x int y -> none fun
+	x 1 + y 1 - "o" terminal.RED terminal.DEFAULT_BACKGROUND :terminal.drawText
+	x y "/|\" terminal.BLUE terminal.DEFAULT_BACKGROUND :terminal.drawText
+	x y 1 +"/ \\"  terminal.GREEN terminal.DEFAULT_BACKGROUND :terminal.drawText
+nuf
+
+
+
+:terminal.clear
+:terminal.rawMode
+width :terminal.width =
+height :terminal.height =
+key "" =
+x width 2 / =
+y height 2 / =
+
+lastTime :time.time 0.1 + =
+
+key "a" != while
+width :terminal.width =
+height :terminal.height =
+:terminal.clear
+width 2 / 7 - 1 "Press a to exit" terminal.DEFAULT terminal.DEFAULT_BACKGROUND :terminal.drawText
+x y :drawCharacter
+x 5 - y 2 + :time.time lastTime - f"render {} ms" terminal.DEFAULT terminal.DEFAULT_BACKGROUND :terminal.drawText
+lastTime :time.time =
+key "z" == y 2 > :and if
+	y y 1 - =
+else key "s" == y height 2 - < :and if
+	y y 1 + =
+else key "d" == x width 7 - < :and if
+	x x 1 + =
+else key "q" == x 6 > :and if
+	x x 1 - =
+fi fi fi fi
+:terminal.flush
+key :terminal.getKey =
+elihw
+
+:terminal.normalMode
+:terminal.end
