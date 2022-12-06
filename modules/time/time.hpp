@@ -11,7 +11,7 @@
 #include "value/types/numbers/int.hpp"
 #include "cppmodule/cppmodule.hpp"
 
-ExpressionResult loader(CppModule &module);
+ExpressionResult loader(CppModule *module);
 
 ModuleAPI moduleAPI {
 	"Time",

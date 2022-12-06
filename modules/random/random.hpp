@@ -10,7 +10,7 @@
 #include "value/types/numbers/int.hpp"
 #include "value/types/numbers/float.hpp"
 
-ExpressionResult loader(CppModule &module);
+ExpressionResult loader(CppModule *module);
 
 ModuleAPI moduleAPI {
 	"Random",

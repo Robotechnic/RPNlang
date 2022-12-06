@@ -37,23 +37,14 @@ ExpressionResult Module::load() {
 
 	Interpreter moduleLoader = Interpreter(this->context);
 	std::string error;
-	if (moduleLoader.interpretFile(path, error))
-		return ExpressionResult();
-	
-	if (Module::builtinModules.find(path) != Module::builtinModules.end()) {
-		Module::builtinModules[path].load();
-		ContextPtr parent = this->context->getParent();
-		this->context = Module::builtinModules[path].getModuleContext();
-		this->context->setParent(parent);
+	if (!moduleLoader.interpretFile(path, error))
+		return ExpressionResult(
+			"Failed to load module " + name + " at " + path + "(" + error + ")",
+			this->importRange,
+			this->context->getParent()
+		);
 
-		return ExpressionResult();
-	}
-	
-	return ExpressionResult(
-		"Failed to load module " + name + " at " + path + "(" + error + ")",
-		this->importRange,
-		this->context->getParent()
-	);
+	return ExpressionResult();
 }
 
 /**
@@ -79,7 +70,10 @@ std::string Module::getPath() const {
  * @return bool true if the name is a module name
  */
 bool Module::isModule(std::string moduleName) {
-	return Module::modules.find(moduleName) != Module::modules.end();
+	return (
+		Module::modules.find(moduleName) != Module::modules.end() || 
+		Module::builtinModules.find(moduleName) != Module::builtinModules.end()
+	);
 }
 
 /**
@@ -119,7 +113,12 @@ ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, c
 		);
 	}
 
-	return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, valuePath->getRange(), value);
+	if (Module::modules.find(path[0]) != Module::modules.end())
+		return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, valuePath->getRange(), value);
+	else if (Module::builtinModules.find(path[0]) != Module::builtinModules.end())
+		return Module::builtinModules.at(path[0]).getModuleContext()->getModuleValue(path, valuePath->getRange(), value);
+	else
+		throw std::runtime_error("Module::getModuleValue: module not found");
 }
 
 ExpressionResult Module::getModuleValue(const Token *tokenPath, Value *&value, const ContextPtr &parentContext) {
@@ -133,7 +132,12 @@ ExpressionResult Module::getModuleValue(const Token *tokenPath, Value *&value, c
 		);
 	}
 
-	return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, tokenPath->getRange(), value);
+	if (Module::modules.find(path[0]) != Module::modules.end())
+		return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, tokenPath->getRange(), value);
+	else if (Module::builtinModules.find(path[0]) != Module::builtinModules.end())
+		return Module::builtinModules.at(path[0]).getModuleContext()->getModuleValue(path, tokenPath->getRange(), value);
+	else
+		throw std::runtime_error("Module::getModuleValue: module not found");
 }
 
 
@@ -155,7 +159,12 @@ ExpressionResult Module::getModuleContext(const Token *tokenPath, const ContextP
 			parentContext
 		);
 	}
-	moduleContext = Module::modules.at(path.at(0))->getModuleContext();
+	if (Module::modules.find(path[0]) != Module::modules.end())
+		moduleContext = Module::modules.at(path.at(0))->getModuleContext();
+	else if (Module::builtinModules.find(path[0]) != Module::builtinModules.end())
+		moduleContext = Module::builtinModules.at(path.at(0)).getModuleContext();
+	else
+		throw std::runtime_error("Module::getModuleContext: module not found");
 	return ExpressionResult();
 }
 
@@ -207,7 +216,8 @@ ExpressionResult Module::addModule(std::string modulePath, std::string name, Tex
 		);
 	}
 
-	
+	builtinModules[name] = CppModule(name);
+	return builtinModules[name].load(importRange);
 }
 
 

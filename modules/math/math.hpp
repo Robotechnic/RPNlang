@@ -6,7 +6,7 @@
 #include "value/value.hpp"
 #include "value/types/numbers/float.hpp"
 
-ExpressionResult loader(CppModule &module);
+ExpressionResult loader(CppModule *module);
 
 ModuleAPI moduleAPI {
 	"Math",

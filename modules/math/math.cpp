@@ -1,7 +1,7 @@
 #include "math.hpp"
 
-ExpressionResult loader(CppModule &module){
-	module.addFunction("sqrt", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+ExpressionResult loader(CppModule *module){
+	module->addFunction("sqrt", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(), 
 			new Float(
@@ -12,7 +12,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("pow", {"base", "exponent"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("pow", {"base", "exponent"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -21,7 +21,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("sin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("sin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -30,7 +30,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("cos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("cos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -39,7 +39,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("tan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("tan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -48,7 +48,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("asin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("asin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -57,7 +57,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("acos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("acos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -66,7 +66,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("atan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("atan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -75,7 +75,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("atan2", {"y", "x"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("atan2", {"y", "x"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -84,7 +84,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("sinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("sinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -93,7 +93,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("cosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("cosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -102,7 +102,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("tanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("tanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -111,7 +111,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("asinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("asinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -120,7 +120,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("acosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("acosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -129,7 +129,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("atanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("atanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -138,7 +138,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("exp", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("exp", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -147,7 +147,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("log", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("log", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -156,7 +156,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("log10", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("log10", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -165,7 +165,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("log2", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("log2", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -174,7 +174,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("log", {"base", "value"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("log", {"base", "value"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -186,7 +186,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("floor", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("floor", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -195,7 +195,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("ceil", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("ceil", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -204,7 +204,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("round", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("round", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -213,7 +213,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("abs", {"value"}, {INT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("abs", {"value"}, {INT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(), 
 			new Int(
@@ -224,7 +224,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("fabs", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("fabs", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -235,7 +235,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("deg", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("deg", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -244,7 +244,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("rad", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("rad", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		return std::make_tuple(
 			ExpressionResult(),
 			new Float(
@@ -253,7 +253,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addFunction("map", {"value", "min", "max", "newMin", "newMax"}, {FLOAT, FLOAT, FLOAT, FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("map", {"value", "min", "max", "newMin", "newMax"}, {FLOAT, FLOAT, FLOAT, FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		// simple linear mapping
 		// (value - min) * (newMax - newMin) / (max - min) + newMin
 		return std::make_tuple(
@@ -269,7 +269,7 @@ ExpressionResult loader(CppModule &module){
 		);
 	});
 
-	module.addVariable("PI",
+	module->addVariable("PI",
 		new Float(
 			(float)M_PI,
 			TextRange(),
@@ -277,7 +277,7 @@ ExpressionResult loader(CppModule &module){
 		)
 	);
 
-	module.addVariable("E",
+	module->addVariable("E",
 		new Float(
 			(float)M_E,
 			TextRange(),
@@ -285,7 +285,7 @@ ExpressionResult loader(CppModule &module){
 		)
 	);
 
-	module.addVariable("PHI",
+	module->addVariable("PHI",
 		new Float(
 			1.618033988749f,
 			TextRange(),
@@ -293,7 +293,7 @@ ExpressionResult loader(CppModule &module){
 		)
 	);
 
-	module.addVariable("TAU",
+	module->addVariable("TAU",
 		new Float(
 			(float)M_PI_2,
 			TextRange(),

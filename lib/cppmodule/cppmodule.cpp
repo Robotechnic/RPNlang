@@ -1,27 +1,46 @@
 #include "cppmodule/cppmodule.hpp"
 
 std::unordered_map<std::string, BuiltinRPNFunction> CppModule::moduleFunctions = std::unordered_map<std::string, BuiltinRPNFunction>();
+std::string CppModule::builtinModulesPath = "";
 
-CppModule::CppModule() : isLoaded(false), name(""), loader(nullptr), context(nullptr) {}
+CppModule::CppModule() : name(""), context(nullptr) {}
 
-CppModule::CppModule(std::string name, loadFunction loader) :
-	isLoaded(false),
+CppModule::CppModule(std::string name) :
 	name(name),
-	loader(loader), 
 	context(new Context(name, "<builtin-" + name + ">", CONTEXT_TYPE_MODULE)) {}
 
-CppModule::~CppModule() {}
+CppModule::~CppModule() {
+	if (this->handle) {
+		dlclose(this->handle);
+	}
+}
 
 /**
  * @brief load the module if it hasn't been loaded yet
  * 
  * @return ExpressionResult the result of the load operation
  */
-ExpressionResult CppModule::load() {
-	if (isLoaded) return ExpressionResult();
-	this->loader(*this);
-	isLoaded = true;
+ExpressionResult CppModule::load(TextRange imortRange) {
+	this->handle = dlopen((CppModule::builtinModulesPath + "/" + name + ".so").c_str(), RTLD_LAZY);
+	if (!this->handle) {
+		return ExpressionResult(
+			"Error while loading module " + name + ": " + dlerror(),
+			imortRange,
+			this->context
+		);
+	}
+	dlerror();
 
+	ModuleAPI *api = (ModuleAPI*)dlsym(this->handle, "moduleAPI");
+	const char* dlsym_error = dlerror();
+	if (dlsym_error) {
+		return ExpressionResult(
+			"Error while loading module " + name + ": " + dlsym_error,
+			imortRange,
+			this->context
+		);
+	}
+	api->loader(this);
 	return ExpressionResult();
 }
 
@@ -80,5 +99,14 @@ ContextPtr  CppModule::getModuleContext() {
  * @return false if the module is not builtin
  */
 bool CppModule::isBuiltin(std::string name) {
-	return std::filesystem::exists("rpnModules/" + name + ".so");
+	return std::filesystem::exists(CppModule::builtinModulesPath + "/" + name + ".so");
+}
+
+/**
+ * @brief set the path to the rpnModules folder
+ * 
+ * @param path the path to the rpnModules folder
+ */
+void CppModule::setBuiltinModulesPath(std::string path) {
+	CppModule::builtinModulesPath = path;
 }

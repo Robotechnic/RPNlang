@@ -6,6 +6,7 @@
 
 #include "textutilities/textutilities.hpp"
 #include "expressionresult/expressionresult.hpp"
+#include "cppmodule/cppmodule.hpp"
 #include "interpreter/interpreter.hpp"
 #include "context/context.hpp"
 #include "shell/colors.hpp"
@@ -78,6 +79,8 @@ int main(int argc, char **argv) {
 	#ifdef TEST_FILE
 		argc = 0;
 	#endif
+
+	CppModule::setBuiltinModulesPath(std::filesystem::canonical(std::filesystem::current_path()).string() + "/RPNmodules");
 	if (argc == 1) {
 		signal(SIGTERM, signalHandler);
 		signal(SIGINT, signalHandler);

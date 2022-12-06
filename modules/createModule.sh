@@ -46,7 +46,7 @@ cat > "$1".hpp << EOF
 #pragma once' >
 #include "expressionresult/expressionresult.hpp"
 #include "cppmodule/cppmodule.hpp"
-ExpressionResult loader(CppModule &module);
+ExpressionResult loader(CppModule *module);
 
 ModuleAPI moduleAPI {
 	name = "$1",
