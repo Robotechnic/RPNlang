@@ -71,3 +71,14 @@ void CppModule::addVariable(std::string name, Value *value) {
 ContextPtr  CppModule::getModuleContext() {
 	return this->context;
 }
+
+/**
+ * @brief check in the rpnModules folder if a module is builtin
+ * 
+ * @param name the name of the module
+ * @return true if the module is builtin
+ * @return false if the module is not builtin
+ */
+bool CppModule::isBuiltin(std::string name) {
+	return std::filesystem::exists("rpnModules/" + name + ".so");
+}
