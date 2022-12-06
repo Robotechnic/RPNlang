@@ -43,7 +43,7 @@ name="$value"
 
 # create header file
 cat > "$1".hpp << EOF
-#pragma once' >
+#pragma once
 #include "expressionresult/expressionresult.hpp"
 #include "cppmodule/cppmodule.hpp"
 ExpressionResult loader(CppModule *module);
