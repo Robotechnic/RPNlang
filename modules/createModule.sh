@@ -69,10 +69,10 @@ EOF
 
 # create CMakeLists.txt
 cat > "CMakeLists.txt" << EOF
-add_library($1 SHARED ${CMAKE_CURRENT_LIST_DIR}/$1.cpp)' > CMakeLists.txt
-target_link_libraries($1 PRIVATE RPNlangLib)' >> CMakeLists.txt
-add_custom_command(' >> CMakeLists.txt
-	TARGET $1 POST_BUILD COMMAND' >> CMakeLists.txt
-	mv ${CMAKE_CURRENT_BINARY_DIR}/lib$1.so ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/$1.so' >> CMakeLists.txt
-)' >> CMakeLists.txt
+add_library($1 SHARED ${CMAKE_CURRENT_LIST_DIR}/$1.cpp)
+target_link_libraries($1 PRIVATE RPNlangLib)
+add_custom_command(
+	TARGET $1 POST_BUILD COMMAND
+	mv ${CMAKE_CURRENT_BINARY_DIR}/lib$1.so ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/$1.so
+)
 EOF
