@@ -7,9 +7,10 @@ ExpressionResult loader(CppModule *module) {
 	});
 
 	module->addVariable("testValue", new String(
-		std::string("testValueOk"),
+		"testValueOk",
 		TextRange(),
 		false
 	));
 	return ExpressionResult();
 };
+

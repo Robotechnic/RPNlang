@@ -5,6 +5,7 @@
 #include "cppmodule/cppmodule.hpp"
 #include "value/value.hpp"
 #include "value/types/numbers/float.hpp"
+#include "value/types/numbers/int.hpp"
 
 ExpressionResult loader(CppModule *module);
 

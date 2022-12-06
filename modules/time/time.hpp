@@ -9,6 +9,7 @@
 #include "value/value.hpp"
 #include "value/types/string.hpp"
 #include "value/types/numbers/int.hpp"
+#include "value/types/numbers/float.hpp"
 #include "cppmodule/cppmodule.hpp"
 
 ExpressionResult loader(CppModule *module);

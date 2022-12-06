@@ -18,10 +18,10 @@ class BuiltinRPNFunction;
 
 struct ModuleAPI {
 	// this fieds will be used in future versions
-	std::string name;
-	std::string description;
-	std::string version;
-	std::string author;
+	const char* name;
+	const char* description;
+	const char* version;
+	const char* author;
 	// this is the only required field
 	loadFunction loader;
 };
@@ -43,7 +43,7 @@ class CppModule {
 		);
 		void addVariable(std::string name, Value *value);
 
-		ContextPtr  getModuleContext();
+		ContextPtr getModuleContext();
 		static bool isBuiltin(std::string name);
 		static void setBuiltinModulesPath(std::string path);
 
@@ -51,7 +51,8 @@ class CppModule {
 		std::string name;
 		ContextPtr context;
 		void *handle;
-
+		
+		static unsigned int openModulesCount;
 		static std::string builtinModulesPath;
 		static std::unordered_map<std::string, BuiltinRPNFunction> moduleFunctions;
 };

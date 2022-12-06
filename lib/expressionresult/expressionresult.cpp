@@ -97,6 +97,10 @@ void ExpressionResult::display() const {
 	TextRange range = this->getRange();
 	std::cout << "Error : " << this->errorMessage<<std::endl;
 
+	if (this->context->getType() == CONTEXT_TYPE_MODULE || this->context->getType() == CONTEXT_TYPE_BUILTIN_MODULE) {
+		return;
+	}
+
 	std::ifstream file;
 	std::string errorMessage;
 	if (!openFile(file, this->context->getFilePath(), errorMessage)) {

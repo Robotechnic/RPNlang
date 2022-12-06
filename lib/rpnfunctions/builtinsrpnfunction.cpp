@@ -8,7 +8,14 @@ BuiltinRPNFunction::BuiltinRPNFunction(
 			std::vector<ValueType> argumentsTypes,
 			ValueType returnType,
 			BuiltinRPNFunctionType function
-		) : RPNFunction(name, argsName, argumentsTypes, returnType), function(function) {}
+		) : RPNFunction(name, argsName, argumentsTypes, returnType), function(function) {
+	if (this->function == nullptr) {
+		throw std::invalid_argument("BuiltinRPNFunction::BuiltinRPNFunction: function is nullptr");
+	}
+	if (argsName.size() != argumentsTypes.size()) {
+		throw std::invalid_argument("BuiltinRPNFunction::BuiltinRPNFunction: argsName.size() != argumentsTypes.size()");
+	}
+}
 
 BuiltinRPNFunction::~BuiltinRPNFunction() {}
 

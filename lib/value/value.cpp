@@ -5,7 +5,6 @@ Value::Value(ValueType type, const TextRange range, bool interpreterValue) :
 	range(range),
 	type(type) {}
 
-Value::~Value() {}
 
 ValueType Value::getType() const {
 	return this->type;

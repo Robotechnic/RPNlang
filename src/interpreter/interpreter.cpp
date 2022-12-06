@@ -53,7 +53,7 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
 		result.display();
 		return false;
 	}
-	if (this->context->hasValue("main") && this->context->getType() != CONTEXT_TYPE_MODULE) {
+	if (this->context->hasValue("main") && this->context->getType() != CONTEXT_TYPE_MODULE && this->context->getType() != CONTEXT_TYPE_BUILTIN_MODULE) {
 		Function* val = static_cast<Function*>(this->context->getValue("main"));
 		TextRange mainRange = val->getRange();
 		if (val->getType() == FUNCTION) {
@@ -202,8 +202,6 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 			case TOKEN_TYPE_LITERAL:
 				this->memory.push(static_cast<ValueToken*>(*it)->getValue());
 				break;
-			case TOKEN_TYPE_PATH:
-			
 			case TOKEN_TYPE_OPERATOR:
 			case TOKEN_TYPE_BOOLEAN_OPERATOR:
 				result = this->interpretOperator(*it);

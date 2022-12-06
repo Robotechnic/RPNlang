@@ -44,23 +44,25 @@ name="$value"
 # create header file
 cat > "$1".hpp << EOF
 #pragma once
+
 #include "expressionresult/expressionresult.hpp"
 #include "cppmodule/cppmodule.hpp"
+
 ExpressionResult loader(CppModule *module);
 
 ModuleAPI moduleAPI {
-	name = "$1",
-	description = "$description",
-	version = "1.0",
-	author = "$name",
-	loader = loader
+	"$1",
+	"$description",
+	"1.0",
+	"$name",
+	loader
 };
 EOF
 
 # create source file
 cat > "$1".cpp << EOF
 #include "$1.hpp"
-ExpressionResult loader(CppModule &module) {
+ExpressionResult loader(CppModule *module) {
 	ExpressionResult result;
 	// TODO: implement module
 	return result;
@@ -69,10 +71,10 @@ EOF
 
 # create CMakeLists.txt
 cat > "CMakeLists.txt" << EOF
-add_library($1 SHARED ${CMAKE_CURRENT_LIST_DIR}/$1.cpp)
+add_library($1 SHARED \${CMAKE_CURRENT_LIST_DIR}/$1.cpp)
 target_link_libraries($1 PRIVATE RPNlangLib)
 add_custom_command(
 	TARGET $1 POST_BUILD COMMAND
-	mv ${CMAKE_CURRENT_BINARY_DIR}/lib$1.so ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/$1.so
+	mv \${CMAKE_CURRENT_BINARY_DIR}/lib$1.so \${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/$1.so
 )
 EOF

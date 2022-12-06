@@ -1,7 +1,7 @@
 #include "time.hpp"
 
 ExpressionResult loader(CppModule *module) {
-	module->addFunction("sleep", {"time"}, {FLOAT}, NONE, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+	module->addFunction("sleep", {"time"}, {INT}, NONE, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<Int *>(args[0])->getValue()));
 		return std::make_tuple(ExpressionResult(), None::empty());
 	});

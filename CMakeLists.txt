@@ -6,9 +6,8 @@ set(CMAKE_CXX_FLAGS "-Wall -fPIC")
 project(RPNlang CXX)
 
 # generate RPNmodule folder in build directory
-add_custom_command(
-	OUTPUT RPNlang COMMAND
-	mkdir -p RPNmodules
+execute_process(
+	COMMAND mkdir -p RPNmodules
 )
 
 # import all three config

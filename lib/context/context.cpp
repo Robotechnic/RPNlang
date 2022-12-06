@@ -83,8 +83,14 @@ void Context::setFilePath(std::string filePath) {
 }
 
 std::string Context::getFilePath() const {
-	if ((this->type == CONTEXT_TYPE_FILE || this->type == CONTEXT_TYPE_MODULE) && this->filePath != "<builtin>")
+	if ((
+		this->type == CONTEXT_TYPE_FILE || 
+		this->type == CONTEXT_TYPE_MODULE || 
+		this->type == CONTEXT_TYPE_BUILTIN_MODULE) 
+		&& this->filePath != "<builtin>"
+	) {
 		return this->filePath;
+	}
 	
 	if (this->parent != nullptr)
 		return this->parent->getFilePath();
@@ -243,6 +249,7 @@ std::ostream& operator<<(std::ostream& os, const ContextPtr &context) {
 			os << "In file: ";
 			break;
 		case CONTEXT_TYPE_MODULE:
+		case CONTEXT_TYPE_BUILTIN_MODULE:
 			os <<"In module: ";
 			break;
 	}

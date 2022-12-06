@@ -17,7 +17,7 @@ typedef std::tuple<ExpressionResult, Value*> operatorResult;
 class Value {
 	public:
 		Value(ValueType type, const TextRange range, bool interpreterValue);
-		virtual ~Value();
+		virtual ~Value() = default;
 		
 		virtual bool isCastableTo(ValueType type) const = 0;
 		virtual bool isNumber() const = 0;

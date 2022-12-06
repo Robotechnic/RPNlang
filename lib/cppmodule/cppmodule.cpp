@@ -2,16 +2,24 @@
 
 std::unordered_map<std::string, BuiltinRPNFunction> CppModule::moduleFunctions = std::unordered_map<std::string, BuiltinRPNFunction>();
 std::string CppModule::builtinModulesPath = "";
+unsigned int CppModule::openModulesCount = 0;
 
-CppModule::CppModule() : name(""), context(nullptr) {}
+CppModule::CppModule() : name(""), context(nullptr), handle(nullptr) {}
 
 CppModule::CppModule(std::string name) :
 	name(name),
-	context(new Context(name, "<builtin-" + name + ">", CONTEXT_TYPE_MODULE)) {}
+	context(new Context(name, "<builtin-" + name + ">", CONTEXT_TYPE_BUILTIN_MODULE)), 
+	handle(nullptr) {}
 
 CppModule::~CppModule() {
-	if (this->handle) {
-		dlclose(this->handle);
+	if (!this->handle) {
+		return;
+	}
+	CppModule::openModulesCount--;
+	if (CppModule::openModulesCount < 0) {
+		if(dlclose(this->handle) != 0) {
+			std::cerr<<"Error while closing module "<<name<<": "<<dlerror()<<std::endl;
+		}
 	}
 }
 
@@ -21,6 +29,7 @@ CppModule::~CppModule() {
  * @return ExpressionResult the result of the load operation
  */
 ExpressionResult CppModule::load(TextRange imortRange) {
+	CppModule::openModulesCount++;
 	this->handle = dlopen((CppModule::builtinModulesPath + "/" + name + ".so").c_str(), RTLD_LAZY);
 	if (!this->handle) {
 		return ExpressionResult(
@@ -36,6 +45,13 @@ ExpressionResult CppModule::load(TextRange imortRange) {
 	if (dlsym_error) {
 		return ExpressionResult(
 			"Error while loading module " + name + ": " + dlsym_error,
+			imortRange,
+			this->context
+		);
+	}
+	if (!api) {
+		return ExpressionResult(
+			"Error while loading module " + name + ": moduleAPI is null",
 			imortRange,
 			this->context
 		);
