@@ -11,3 +11,11 @@
 #include "value/types/numbers/float.hpp"
 
 ExpressionResult loader(CppModule &module);
+
+ModuleAPI moduleAPI {
+	"Random",
+	"RPNlang random module",
+	"1.0",
+	"Robotechnic",
+	loader
+};

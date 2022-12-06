@@ -7,3 +7,11 @@
 #include "value/types/numbers/float.hpp"
 
 ExpressionResult loader(CppModule &module);
+
+ModuleAPI moduleAPI {
+	"Math",
+	"RPNlang math module",
+	"1.0",
+	"Robotechnic",
+	loader
+};

@@ -187,14 +187,27 @@ bool Module::isImported(std::string modulePath, std::string &moduleName) {
  */
 ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const ContextPtr &parentContext) {	
 	std::string importedName;
-	if (modulePath != name && Module::isImported(modulePath, importedName)) {
-		if (importedName != name)
-			Module::modules[name] = Module::modules[importedName];
-		return ExpressionResult();
+	// check if the module is user defined
+	if (modulePath != name) {
+		if (Module::isImported(modulePath, importedName)) {
+			if (importedName != name)
+				Module::modules[name] = Module::modules[importedName];
+			return ExpressionResult();
+		}
+		Module::modules[name] = std::make_shared<Module>(modulePath, name, parentContext, importRange);
+		return Module::modules[name]->load();
 	}
 
-	Module::modules[name] = std::make_shared<Module>(Module(modulePath, name, parentContext, importRange));
-	return Module::modules[name]->load();
+	// check if the module is builtin
+	if (!CppModule::isBuiltin(name)) {
+		return ExpressionResult(
+			"Builtin module '" + name + "' does not exist",
+			importRange,
+			parentContext
+		);
+	}
+
+	
 }
 
 

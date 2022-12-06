@@ -12,3 +12,11 @@
 #include "cppmodule/cppmodule.hpp"
 
 ExpressionResult loader(CppModule &module);
+
+ModuleAPI moduleAPI {
+	"Time",
+	"RPNlang time module",
+	"1.0",
+	"Robotechnic",
+	loader
+};
