@@ -2,39 +2,77 @@
 # This script creates a new module in the current directory.
 # Usage: createModule.sh <module name>
 
-path=$(dirname "`realpath $0`")
-echo "$path"
-
 if [ $# -ne 1 ]; then
 	echo "Usage: createModule.sh <module name>"
 	exit 1
 fi
 
+# Check for valid module name
+grep -q "^[a-zA-Z0-9_\-]\+$" <<< "$1"
+if [ $? -ne 0 ]; then
+  echo "Module name can only contain letters, numbers, dashes and underscores"
+  exit 1
+fi
 
 # go to the directory where this script is located
-path=$(dirname "`realpath $0`")
+path=$(dirname "`realpath "$0"`")
 cd "$path"
+
+# Check if module with the same name already exists
+if [ -d "$1" ]; then
+  echo "Module with the same name already exists"
+  exit 1
+fi
+
 mkdir "$1"
 cd "./$1"
 
+function ask {
+	value=""
+	echo -n "$1 [$2]: "
+	read value
+	if [ -z "$value" ]; then
+		value=$2
+	fi
+}
+
+ask "Short description of the module" "''"
+description="$value"
+ask "Name" `whoami`
+name="$value"
+
 # create header file
-echo '#pragma once' > "$1".hpp
-echo '#include "expressionresult/expressionresult.hpp"' >> "$1".hpp
-echo '#include "cppmodule/cppmodule.hpp"' >> "$1".hpp
-echo 'ExpressionResult loader(CppModule &module);' >> "$1".hpp
+cat > "$1".hpp << EOF
+#pragma once' >
+#include "expressionresult/expressionresult.hpp"
+#include "cppmodule/cppmodule.hpp"
+ExpressionResult loader(CppModule &module);
+
+ModuleAPI moduleAPI {
+	name = "$1",
+	description = "$description",
+	version = "1.0",
+	author = "$name",
+	loader = loader
+};
+EOF
 
 # create source file
-echo '#include "'"$1"'.hpp"' > "$1".cpp
-echo 'ExpressionResult loader(CppModule &module) {' >> "$1".cpp
-echo '	ExpressionResult result;' >> "$1".cpp
-echo '	// TODO: implement module' >> "$1".cpp
-echo '	return result;' >> "$1".cpp
-echo '}' >> "$1".cpp
+cat > "$1".cpp << EOF
+#include "$1.hpp"
+ExpressionResult loader(CppModule &module) {
+	ExpressionResult result;
+	// TODO: implement module
+	return result;
+}
+EOF
 
-# create MakeLists.txt
-echo 'add_library('"$1"' SHARED ${CMAKE_CURRENT_LIST_DIR}/'"$1"'.cpp)' > CMakeLists.txt
-echo 'target_link_libraries('"$1"' PRIVATE RPNlangLib)' >> CMakeLists.txt
-echo 'add_custom_command(' >> CMakeLists.txt
-echo '	TARGET '"$1"' POST_BUILD COMMAND' >> CMakeLists.txt
-echo '	mv ${CMAKE_CURRENT_BINARY_DIR}/lib'"$1"'.so ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/'"$1"'.so' >> CMakeLists.txt
-echo ')' >> CMakeLists.txt
+# create CMakeLists.txt
+cat > "CMakeLists.txt" << EOF
+add_library($1 SHARED ${CMAKE_CURRENT_LIST_DIR}/$1.cpp)' > CMakeLists.txt
+target_link_libraries($1 PRIVATE RPNlangLib)' >> CMakeLists.txt
+add_custom_command(' >> CMakeLists.txt
+	TARGET $1 POST_BUILD COMMAND' >> CMakeLists.txt
+	mv ${CMAKE_CURRENT_BINARY_DIR}/lib$1.so ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/$1.so' >> CMakeLists.txt
+)' >> CMakeLists.txt
+EOF
