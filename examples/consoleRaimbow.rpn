@@ -1,0 +1,53 @@
+"terminal" :import
+"random" :import
+"math" :import
+"time" :import
+
+randomTerminalColor -> none fun
+	:terminal.clear
+	width :terminal.width =
+	height :terminal.height =
+	y 0 height 1 for
+		x 0 width 1 for
+			x y 40 49 :random.randRange :terminal.setPixelColor
+		rof
+	rof
+nuf
+
+rgbTerminalColors -> none fun
+	:terminal.clear
+	width :terminal.width =
+	height :terminal.height =
+	y 0 height 1 for
+		x 0 width 1 for
+			sum x y + 0 width height + 0 255 :math.map =
+			cx x 0 width 0 255 :math.map =
+			cy y 0 height 0 255 :math.map =
+			x y sum cx cy :terminal.setRGBPixelColor
+		rof
+	rof
+nuf
+
+randomRGBTerminalColors -> none fun
+	:terminal.clear
+	width :terminal.width =
+	height :terminal.height =
+	y 0 height 1 for
+		x 0 width 1 for
+			r 0 255 :random.randRange =
+			g 0 255 :random.randRange =
+			b 0 255 :random.randRange =
+			x y r g b :terminal.setRGBPixelColor
+		rof
+	rof
+nuf
+
+main -> none fun
+	:randomRGBTerminalColors
+	3000 :time.sleep
+	:rgbTerminalColors
+	3000 :time.sleep
+	:randomTerminalColor
+	3000 :time.sleep
+	"Finished\n" :print
+nuf
