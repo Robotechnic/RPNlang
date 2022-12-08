@@ -7,9 +7,9 @@
  * @param delimiter the delimiter to split the string
  * @return std::vector<std::string> the resulting vector
  */
-std::vector<std::string> split(std::string str, char delimiter) {
+std::vector<std::string> split(std::string_view str, char delimiter) {
 	std::vector<std::string> result;
-	std::stringstream ss(str);
+	std::stringstream ss(str.data());
 	std::string item;
 	while (std::getline(ss, item, delimiter)) {
 		result.push_back(item);
@@ -24,7 +24,7 @@ std::vector<std::string> split(std::string str, char delimiter) {
  * @param delimiter the delimiter to join the vector
  * @return std::string the resulting string
  */
-std::string join(std::vector<std::string> str, char delimiter) {
+std::string join(const std::vector<std::string> &str, char delimiter) {
 	std::string result;
 	for (size_t i = 0; i < str.size(); i++) {
 		result += str[i];
@@ -60,22 +60,25 @@ std::ostream &operator<<(std::ostream &os, const std::vector<std::string> &v) {
  * @param path the path to extract the name from
  * @return std::string the name of the file
  */
-std::string extractFileName(std::string path) {
+std::string extractFileName(std::string_view path) {
 	std::filesystem::path p(path);
 	return p.stem();
 }
 
-std::string extractFilePath(std::string path) {
+std::string extractFilePath(std::string_view path) {
 	std::filesystem::path p(path);
 	return p.parent_path();
 }
 
 
-bool openFile(std::ifstream &file, std::string fileName, std::string &error) {
+bool openFile(std::ifstream &file, std::string_view fileName, std::string &error) {
 	try {
-		file.open(fileName);
+		file.open(fileName.data());
 		if (file.fail()) {
-			error = "Failled to open file " + fileName + " : " + std::strerror(errno) + "";
+			error = "Failled to open file ";
+			error += fileName.data();
+			error += " : ";
+			error += std::strerror(errno);
 			return false;
 		}
 	} catch (const std::exception &e) {

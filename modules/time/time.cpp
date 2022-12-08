@@ -33,7 +33,7 @@ ExpressionResult loader(CppModule *module) {
 	module->addFunction("strTime", {"format"}, {STRING}, STRING, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		std::time_t t = std::time(nullptr);
 		char buffer[100];
-		if (std::strftime(buffer, sizeof(buffer), args[0]->getStringValue().c_str(), std::localtime(&t)))
+		if (std::strftime(buffer, sizeof(buffer), args[0]->getStringValue().data(), std::localtime(&t)))
 			return std::make_tuple(
 				ExpressionResult(), 
 				new String(
@@ -45,7 +45,7 @@ ExpressionResult loader(CppModule *module) {
 
 		return std::make_tuple(
 				ExpressionResult(
-					"Could not parse date format: " + args[0]->getStringValue(), 
+					"Could not parse date format: " + args[0]->getStringValue(),
 					args[0]->getRange(),
 					context
 				), 

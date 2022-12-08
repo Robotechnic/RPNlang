@@ -6,9 +6,9 @@ unsigned int CppModule::openModulesCount = 0;
 
 CppModule::CppModule() : name(""), context(nullptr), handle(nullptr) {}
 
-CppModule::CppModule(std::string name) :
+CppModule::CppModule(std::string_view name) :
 	name(name),
-	context(new Context(name, "<builtin-" + name + ">", CONTEXT_TYPE_BUILTIN_MODULE)), 
+	context(new Context(name, "<builtin-" + std::string(name) + ">", CONTEXT_TYPE_BUILTIN_MODULE)), 
 	handle(nullptr) {}
 
 CppModule::~CppModule() {
@@ -70,7 +70,7 @@ ExpressionResult CppModule::load(TextRange imortRange) {
  * @param function the function to add
  */
 void CppModule::addFunction(
-		std::string name,
+		const std::string &name,
 		std::vector<std::string> argsName,
 		std::vector<ValueType> argumentsTypes,
 		ValueType returnType,
@@ -99,7 +99,7 @@ void CppModule::addFunction(
  * @param name the name of the variable
  * @param value the value of the variable
  */
-void CppModule::addVariable(std::string name, Value *value) {
+void CppModule::addVariable(const std::string &name, Value *value) {
 	context->setValue(name, value);
 }
 
@@ -114,7 +114,7 @@ ContextPtr  CppModule::getModuleContext() {
  * @return true if the module is builtin
  * @return false if the module is not builtin
  */
-bool CppModule::isBuiltin(std::string name) {
+bool CppModule::isBuiltin(const std::string &name) {
 	return std::filesystem::exists(CppModule::builtinModulesPath + "/" + name + ".so");
 }
 
@@ -123,6 +123,6 @@ bool CppModule::isBuiltin(std::string name) {
  * 
  * @param path the path to the rpnModules folder
  */
-void CppModule::setBuiltinModulesPath(std::string path) {
+void CppModule::setBuiltinModulesPath(const std::string &path) {
 	CppModule::builtinModulesPath = path;
 }

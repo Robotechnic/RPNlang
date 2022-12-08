@@ -105,7 +105,7 @@ ExpressionResult loader(CppModule *module) {
 
 	module->addFunction(
 		"setAscii", {"x", "y", "letter", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::string letter = args[0]->getStringValue();
+			const std::string letter = args[0]->getStringValue();
 			int x = static_cast<Int*>(args[1])->getValue();
 			int y = static_cast<Int*>(args[2])->getValue();
 			int color = static_cast<Int*>(args[3])->getValue();
@@ -138,7 +138,7 @@ ExpressionResult loader(CppModule *module) {
 
 	module->addFunction(
 		"setRGBAscii", {"x", "y", "letter", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::string letter = args[0]->getStringValue();
+			const std::string letter = args[0]->getStringValue();
 			int x = static_cast<Int*>(args[1])->getValue();
 			int y = static_cast<Int*>(args[2])->getValue();
 			int red = static_cast<Int*>(args[3])->getValue();
@@ -186,7 +186,7 @@ ExpressionResult loader(CppModule *module) {
 
 	module->addFunction(
 		"drawText", {"x", "y", "text", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::string text = args[2]->getStringValue();
+			const std::string text = args[2]->getStringValue();
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			int color = static_cast<Int*>(args[3])->getValue();
@@ -219,7 +219,7 @@ ExpressionResult loader(CppModule *module) {
 
 	module->addFunction(
 		"drawTextRGB", {"x", "y", "text", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::string text = args[0]->getStringValue();
+			const std::string text = args[0]->getStringValue();
 			int x = static_cast<Int*>(args[1])->getValue();
 			int y = static_cast<Int*>(args[2])->getValue();
 			int red = static_cast<Int*>(args[3])->getValue();

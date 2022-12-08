@@ -19,14 +19,14 @@ Context::Context(const Context *other) :
 	root(other->root)
 	{}
 
-Context::Context(std::string name, std::string filePath, ContextType type) :
+Context::Context(std::string_view name, std::string_view filePath, ContextType type) :
 	name(name),
 	filePath(filePath),
 	symbols(),
 	type(type)
 	{}
 
-Context::Context(std::string name, std::string filePath, ContextPtr parent, ContextType type, bool root) :
+Context::Context(std::string_view name, std::string_view filePath, ContextPtr parent, ContextType type, bool root) :
 	name(name),
 	filePath(filePath),
 	symbols(),
@@ -41,14 +41,14 @@ Context::Context(std::string name, std::string filePath, ContextPtr parent, Cont
 		}
 	}
 
-Context::Context(std::string name, std::string filePath, symbolTable symbols, ContextType type) :
+Context::Context(std::string_view name, std::string_view filePath, symbolTable symbols, ContextType type) :
 	name(name),
 	filePath(filePath),
 	symbols(symbols),
 	type(type)
 	{}
 
-Context::Context(std::string name, std::string filePath, symbolTable symbols, ContextPtr parent, ContextType type, bool root) :
+Context::Context(std::string_view name, std::string_view filePath, symbolTable symbols, ContextPtr parent, ContextType type, bool root) :
 	name(name),
 	filePath(filePath),
 	symbols(symbols),
@@ -70,7 +70,7 @@ Context::~Context() {
 	}
 }
 
-void Context::setName(std::string name) {
+inline void Context::setName(std::string_view name) {
 	this->name = name;
 }
 
@@ -78,7 +78,7 @@ std::string Context::getName() const {
 	return this->name;
 }
 
-void Context::setFilePath(std::string filePath) {
+inline void Context::setFilePath(std::string_view filePath) {
 	this->filePath = filePath;
 }
 
@@ -116,7 +116,7 @@ ContextPtr Context::getParent() const {
  * @param name the name of the value
  * @param value the value to set
  */
-void Context::setValue(std::string name, Value *value, Value **hold) {
+void Context::setValue(const std::string &name, Value *value, Value **hold) {
 	if (this->symbols.contains(name) && this->symbols[name] != nullptr) {
 		if (hold)
 			(*hold) = this->symbols[name];
@@ -166,7 +166,7 @@ ExpressionResult Context::getValue(const Value *name, Value *&value) {
 	}
 
 	return ExpressionResult(
-		"Undefined variable name : " + nameStr,
+		"Undefined variable name : " + std::string(nameStr),
 		name->getRange(),
 		this->shared_from_this()
 	);
@@ -211,8 +211,8 @@ ExpressionResult Context::getModuleValue(std::vector<std::string> path, TextRang
  * @param name the value to search
  * @return bool if the value exits
  */
-bool Context::hasValue(const std::string name) const {
-	return this->symbols.find(name) != this->symbols.end();
+bool Context::hasValue(std::string_view name) const {
+	return this->symbols.find(name.data()) != this->symbols.end();
 }
 
 /**

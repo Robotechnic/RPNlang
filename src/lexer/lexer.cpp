@@ -72,7 +72,7 @@ ExpressionResult Lexer::lex() {
 			case TOKEN_TYPE_INT:
 				this->currentLine->push(new ValueToken(
 					new Int(
-						std::stoi(token->getStringValue()),
+						std::stoi(token->getStringValue().data()),
 						token->getRange(),
 						false
 					)
@@ -81,7 +81,7 @@ ExpressionResult Lexer::lex() {
 			case TOKEN_TYPE_FLOAT:
 				this->currentLine->push(new ValueToken(
 					new Float(
-						std::stof(token->getStringValue()),
+						std::stof(token->getStringValue().data()),
 						token->getRange(),
 						false
 					)
@@ -134,7 +134,7 @@ ExpressionResult Lexer::lex() {
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
 ExpressionResult Lexer::parseBinNumber(Token *token) {
-	std::string value = token->getStringValue(), result = "";
+	const std::string value = token->getStringValue();
 	int64_t number = 0;
 	for (char c : value) {
 		if (c == 0 && number == 0) continue;
@@ -154,7 +154,7 @@ ExpressionResult Lexer::parseBinNumber(Token *token) {
  * @return ExpressionResult the converted token
  */
 ExpressionResult Lexer::parseHexNumber(Token *token) {
-	std::string value = token->getStringValue();
+	const std::string value = token->getStringValue();
 	int64_t number = 0;
 	for (char c : value) {
 		number <<= 4;
@@ -169,8 +169,7 @@ ExpressionResult Lexer::parseHexNumber(Token *token) {
 }
 
 ExpressionResult Lexer::parseFString(Token *token) {
-	std::string value = token->getStringValue();
-	value = escapeCharacters(value);
+	const std::string value = escapeCharacters(std::string(token->getStringValue()));
 
 	std::vector<std::string> parts;
 	parts.push_back("");
@@ -202,7 +201,7 @@ ExpressionResult Lexer::parseFString(Token *token) {
 			parts.back() += *it;
 		}
 	}
-
+	
 	this->currentLine->push(new FStringToken(
 		token->getRange(),
 		parts
@@ -235,7 +234,7 @@ ExpressionResult Lexer::parseString(Token *token) {
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
 ExpressionResult Lexer::parseLiteral(Token *token) {
-	if (std::regex_match(token->getStringValue(), keywordsRegex)) {
+	if (std::regex_match(token->getStringValue().data(), keywordsRegex)) {
 		token->setType(TOKEN_TYPE_KEYWORD);
 		return this->parseKeyword(token);
 	}
@@ -374,8 +373,7 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
 			keyword->getRange(),
 			this->context
 		), nullptr);
-	std::string name;
-	ValueType returnType;
+	
 	std::vector<std::string>args;
 	std::vector<ValueType>types;
 
@@ -386,7 +384,6 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
 			keyword->getRange(),
 			this->context
 		), nullptr);
-	name = line->top()->getStringValue();
 	if (line->top()->getType() != TOKEN_TYPE_LITERAL)
 		return std::make_pair(ExpressionResult(
 			"Expected function name before fun keyword",
@@ -394,7 +391,7 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
 			this->context
 		), nullptr);
 	
-	line->pop();
+	const std::string name = line->pop()->getStringValue();
 	int i = 0;
 	Token *current = nullptr;
 	while (line->top()->getType() != TOKEN_TYPE_ARROW && line->size() > 2) {
@@ -437,7 +434,9 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
 			line->top()->getRange(),
 			this->context
 		), nullptr);
-	returnType = Value::valueType(line->pop()->getStringValue());
+	
+	ValueType returnType = Value::valueType(line->pop()->getStringValue());
+
 	return std::make_pair(ExpressionResult(), new FunctionBlock(
 		name,
 		args,
@@ -450,26 +449,27 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
 /**
  * @brief take a line of code and convert it to a vector of tokens
  * 
- * @param line the current line number
+ * @param lineNumber the current line number
  * @param lineString the current line of code
  * @param tokens the vector of tokens to fill
  * @return ExpressionResult if the line is a valid expression
  */
-ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<Token*> &tokens, const ContextPtr &context) {
-	int column = 0;
+ExpressionResult Lexer::tokenize(int lineNumber, std::string lineString, std::queue<Token*> &tokens, const ContextPtr &context) {
+	unsigned int column = 0;
 	std::smatch match;
+	std::string value;
 	while (lineString.size() > 0) {
-		int i = 0;
+		size_t i = 0;
 		match = std::smatch();
-		while (match.size() == 0 && i < TOKEN_TYPES) {
+		while (match.size() == 0 && i < tokenRegexes.size()) {
 			std::regex regex = std::get<0>(tokenRegexes[i]);
 			if (std::regex_search(lineString, match, regex)) {
 				TokenType type = std::get<1>(tokenRegexes[i]);
-				std::string value = match.str(1);
+				value = match.str(1);
 				if (type == TOKEN_TYPE_COMMENT)
 					return ExpressionResult();
 				if (type != TOKEN_TYPE_INDENT)
-					tokens.push(new StringToken(line, column, type, value));
+					tokens.push(new StringToken(lineNumber, column, type, value));
 				else
 					column += 1;
 			}
@@ -479,7 +479,7 @@ ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<To
 		if (match.size() == 0) {
 			return ExpressionResult(
 				"Unexpected char",
-				TextRange(line, column, 1),
+				TextRange(lineNumber, column, 1),
 				context
 			);
 		}
@@ -492,6 +492,5 @@ ExpressionResult Lexer::tokenize(int line, std::string lineString, std::queue<To
 			column++;
 		}
 	}
-
 	return ExpressionResult();
 }

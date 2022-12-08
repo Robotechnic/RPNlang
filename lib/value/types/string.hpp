@@ -8,9 +8,9 @@
 
 class String : public Value {
 	public:
-		String(std::string value, TextRange range, bool interpreterValue);
+		String(std::string_view value, TextRange range, bool interpreterValue);
 
-		std::string getStringValue() const;
+		inline std::string getStringValue() const;
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };

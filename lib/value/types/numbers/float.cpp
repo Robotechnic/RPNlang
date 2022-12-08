@@ -1,6 +1,6 @@
 #include "value/types/numbers/float.hpp"
 
-Float::Float(std::string value, TextRange range, bool interpreterValue) : 
+Float::Float(const std::string &value, TextRange range, bool interpreterValue) : 
 	Value(FLOAT, range, interpreterValue),
 	value(std::stof(value)){}
 
@@ -35,7 +35,7 @@ Value *Float::to(ValueType type, bool interpreterValue) {
 	return new Float(value, range, interpreterValue);
 }
 
-std::string Float::getStringValue() const {
+inline std::string Float::getStringValue() const {
 	std::string value = std::to_string(this->value);
 	// remove trailing zeros and decimal point if there are no digits after it
 	value.erase(value.find_last_not_of('0') + 1, std::string::npos);

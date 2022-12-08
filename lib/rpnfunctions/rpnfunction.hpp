@@ -12,7 +12,7 @@
 class RPNFunction {
 	public:
 		RPNFunction(
-			const std::string &name,
+			std::string_view name,
 			const std::vector<std::string> &argsName,
 			const std::vector<ValueType> &argsTypes,
 			const ValueType &returnType

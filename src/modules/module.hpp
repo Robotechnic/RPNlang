@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <unordered_map>
 #include <filesystem>
+#include <string_view>
 
 class CppModule;
 
@@ -20,7 +21,7 @@ class CppModule;
 class Module {
 	public:
 		Module();
-		Module(std::string path, std::string name, const ContextPtr  parentContext, TextRange importRange);
+		Module(std::string_view path, std::string_view name, const ContextPtr  parentContext, TextRange importRange);
 		Module(const Module &other);
 		~Module();
 
@@ -29,11 +30,11 @@ class Module {
 		ContextPtr  getModuleContext() const;
 		std::string getPath() const;
 
-		static bool isModule(std::string moduleName);
-		static bool isImported(std::string modulePath, std::string &moduleName);
+		static bool isModule(const std::string &moduleName);
+		static bool isImported(std::string_view modulePath, std::string &moduleName);
 
 		static std::string checkPath(std::vector<std::string> path);
-		static ExpressionResult addModule(std::string modulePath, std::string name, TextRange importRange, const ContextPtr &context);
+		static ExpressionResult addModule(std::string_view modulePath, const std::string &name, TextRange importRange, const ContextPtr &context);
 		static ExpressionResult getModuleValue(const Token *tokenPath, Value *&value, const ContextPtr &parentContext);
 		static ExpressionResult getModuleValue(const Value *valuePath, Value *&value, const ContextPtr &parentContext);
 		static ExpressionResult getModuleContext(const Token *tokenPath, const ContextPtr &parentContext, ContextPtr &moduleContext);

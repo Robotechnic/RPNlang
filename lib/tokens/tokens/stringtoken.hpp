@@ -5,11 +5,11 @@
 
 class StringToken : public Token {
 	public: 
-		StringToken(int line, int column, TokenType type, std::string value);
-		StringToken(TextRange range, TokenType type, std::string value);
+		StringToken(int line, int column, TokenType type, std::string_view value);
+		StringToken(TextRange range, TokenType type, std::string_view value);
 		~StringToken() override {};
 
-		void setValue(std::string value);
+		void setValue(std::string_view value);
 		std::string getValue() const;
 		std::string getStringValue() const;
 

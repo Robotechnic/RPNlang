@@ -50,7 +50,7 @@ Token* CodeBlock::getKeyword() {
 }
 
 void CodeBlock::display() const {
-	const std::string &name = this->keyword->getStringValue();
+	const std::string name = this->keyword->getStringValue();
 	std::cout << "CodeBlock: " << name << std::endl;
 	this->blocks.display();
 	std::cout<< "End CodeBlock: " << name << std::endl;

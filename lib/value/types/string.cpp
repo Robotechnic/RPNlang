@@ -1,6 +1,6 @@
 #include "value/types/string.hpp"
 
-String::String(std::string value, TextRange range, bool interpreterValue) :
+String::String(std::string_view value, TextRange range, bool interpreterValue) :
 	Value(STRING, range, interpreterValue),
 	value(value) {}
 
@@ -11,7 +11,7 @@ bool String::isCastableTo(ValueType type) const {
 		type == BOOL;
 }
 
-std::string String::getStringValue() const {
+inline std::string String::getStringValue() const {
 	return value;
 }
 
@@ -34,7 +34,7 @@ operatorResult String::opadd(const Value *other, const ContextPtr &context) cons
 	return std::make_tuple(
 		ExpressionResult(),
 		new String(
-			value + other->getStringValue(),
+			value + std::string(other->getStringValue()),
 			TextRange::merge(this->range, other->getRange()),
 			true
 		)

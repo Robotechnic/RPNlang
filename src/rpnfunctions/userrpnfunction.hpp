@@ -26,7 +26,7 @@ class UserRPNFunction : public RPNFunction {
 		) const override;
 
 		static std::shared_ptr<UserRPNFunction> addFunction(
-			std::string name,
+			const std::string &name,
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argsTypes,
 			ValueType returnType, 
@@ -35,7 +35,7 @@ class UserRPNFunction : public RPNFunction {
 
 		TextRange getRange() const;
 
-		static std::shared_ptr<UserRPNFunction> getFunction(std::string name);
+		static std::shared_ptr<UserRPNFunction> getFunction(const std::string &name);
 
 	private:
 		void addParameters(const RPNFunctionArgs &args, const ContextPtr &context) const;

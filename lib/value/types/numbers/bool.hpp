@@ -16,7 +16,7 @@ class String;
 
 class Bool : public Value {
 	public:
-		Bool(std::string value, TextRange range, bool interpreterValue);
+		Bool(const std::string &value, TextRange range, bool interpreterValue);
 		Bool(bool value, TextRange range, bool interpreterValue);
 
 		bool isCastableTo(ValueType type) const override;
@@ -29,7 +29,7 @@ class Bool : public Value {
 			return new Bool(false, TextRange(), true);
 		}
 
-		std::string getStringValue() const;
+		inline std::string getStringValue() const;
 
 		bool getValue() const { return value; };
 

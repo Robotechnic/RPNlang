@@ -77,7 +77,7 @@ void setWorkingDirectory(std::string path) {
 int main(int argc, char **argv) {
 	bool result = true;
 	#ifdef TEST_FILE
-		argc = 0;
+		argc = 2;
 	#endif
 
 	CppModule::setBuiltinModulesPath(std::filesystem::canonical(std::filesystem::current_path()).string() + "/RPNmodules");

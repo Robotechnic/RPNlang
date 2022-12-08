@@ -10,7 +10,7 @@ class ValueToken : public Token {
 
 		Value *&getValue();
 
-		std::string getStringValue() const override;
+		inline std::string getStringValue() const override;
 
 	private:
 		bool accessed;

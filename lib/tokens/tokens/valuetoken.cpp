@@ -14,6 +14,6 @@ Value *&ValueToken::getValue() {
 	return this->value;
 }
 
-std::string ValueToken::getStringValue() const {
+inline std::string ValueToken::getStringValue() const {
 	return this->value->getStringValue();
 }

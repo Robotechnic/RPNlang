@@ -16,7 +16,7 @@ class Function : public Value {
 		Value *to(ValueType type, bool interpreterValue = true);
 		inline Value *copy(bool interpreterValue = true) const override;
 
-		std::string getStringValue() const;
+		inline std::string getStringValue() const;
 
 		const RPNFunction* getValue() const;
 

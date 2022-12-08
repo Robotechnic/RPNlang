@@ -1,6 +1,6 @@
 #include "value/types/variable.hpp"
 
-Variable::Variable(std::string value, TextRange range) :
+Variable::Variable(std::string_view value, TextRange range) :
 	Value(VARIABLE, range, false),
 	value(value) {}
 
@@ -9,7 +9,7 @@ bool Variable::isCastableTo(ValueType type) const {
 	return type == VARIABLE;
 }
 
-std::string Variable::getStringValue() const {
+inline std::string Variable::getStringValue() const {
 	return value;
 }
 

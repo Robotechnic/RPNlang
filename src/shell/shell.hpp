@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <cstdlib>
 #include <cstring>
@@ -18,7 +19,7 @@ class Shell {
 		~Shell();
 		std::string getCommand();
 
-		bool loadHistory(std::string historyFile = "");
+		bool loadHistory(std::string_view historyFile = "");
 		void saveHistory();
 
 		void operator>>(std::string& str);
@@ -67,7 +68,7 @@ extern Shell rpnShell;
 
 
 Shell& operator<<(Shell& out, std::ostream& (*os)(std::ostream&));
-Shell& operator<<(Shell& out, const std::string &str);
+Shell& operator<<(Shell& out, std::string_view str);
 Shell& operator<<(Shell& out,const color &c);
 Shell& operator<<(Shell& out, const background &b);
 Shell& operator<<(Shell& out, const format &s);

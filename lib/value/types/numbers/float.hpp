@@ -16,7 +16,7 @@ class String;
 
 class Float : public Value {
 	public:
-		Float(std::string value, TextRange range, bool interpreterValue);
+		Float(const std::string &value, TextRange range, bool interpreterValue);
 		Float(float value, TextRange range, bool interpreterValue);
 
 		bool isCastableTo(ValueType type) const override;
@@ -29,7 +29,7 @@ class Float : public Value {
 			return new Float(0, TextRange(), true);
 		}
 
-		std::string getStringValue() const;
+		inline std::string getStringValue() const;
 
 		float getValue() const { return value; };
 

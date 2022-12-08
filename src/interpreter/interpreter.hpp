@@ -33,8 +33,8 @@ class Interpreter {
 		Interpreter(ContextPtr ctx);
 		~Interpreter();
 
-		bool interpretFile(std::string fileName, std::string &errorString);
-		ExpressionResult interpretLine(std::string line, int lineNumber = 0);
+		bool interpretFile(std::string_view fileName, std::string &errorString);
+		ExpressionResult interpretLine(std::string_view line, int lineNumber = 0);
 		ExpressionResult interpret(BlockQueue &blocks);
 
 		Value *getLastValue() const;

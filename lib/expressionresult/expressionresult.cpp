@@ -7,7 +7,14 @@ ExpressionResult::ExpressionResult() :
 	errorRange(TextRange())
 {}
 
-ExpressionResult::ExpressionResult(std::string errorMessage, TextRange errorRange, ContextPtr parentContext) :
+ExpressionResult::ExpressionResult(std::string_view errorMessage, TextRange errorRange, ContextPtr parentContext) :
+	resultStatus(ERROR),
+	errorMessage(errorMessage),
+	errorRange(errorRange),
+	context(parentContext)
+{}
+
+ExpressionResult::ExpressionResult(std::string_view errorMessage, TextRange &&errorRange, ContextPtr parentContext) :
 	resultStatus(ERROR),
 	errorMessage(errorMessage),
 	errorRange(errorRange),
@@ -18,8 +25,32 @@ ExpressionResult::ExpressionResult(Status status) :
 	resultStatus(status)
 {}
 
-ExpressionResult::~ExpressionResult() {
-	this->errorMessage.clear();
+ExpressionResult::ExpressionResult(const ExpressionResult &other) noexcept :
+	resultStatus(other.resultStatus),
+	errorMessage(other.errorMessage),
+	errorRange(other.errorRange),
+	context(other.context)
+{}
+
+ExpressionResult::ExpressionResult(ExpressionResult &&other) noexcept :
+	resultStatus(other.resultStatus),
+	errorMessage(other.errorMessage),
+	errorRange(other.errorRange),
+	context(other.context)
+{}
+
+void ExpressionResult::operator=(const ExpressionResult &other) noexcept {
+	this->resultStatus = other.resultStatus;
+	this->errorMessage = other.errorMessage;
+	this->errorRange = other.errorRange;
+	this->context = other.context;
+}
+
+void ExpressionResult::operator=(ExpressionResult &&other) noexcept {
+	this->resultStatus = other.resultStatus;
+	this->errorMessage = other.errorMessage;
+	this->errorRange = other.errorRange;
+	this->context = other.context;
 }
 
 /**
@@ -69,7 +100,7 @@ TextRange ExpressionResult::getRange() const {
  * 
  * @param code lines of code
  */
-void ExpressionResult::displayLineError(std::string code) const {
+void ExpressionResult::displayLineError(std::string_view code) const {
 	std::cout<<std::endl;
 	std::cout<<this->context;
 	
@@ -122,7 +153,7 @@ void ExpressionResult::display() const {
 	this->displayArrow(range, lineString);
 }
 
-void ExpressionResult::displayArrow(TextRange range, std::string lineString) const {
+void ExpressionResult::displayArrow(TextRange range, std::string_view lineString) const {
 	for (long unsigned int i = 0; i <= range.columnEnd; i++) {
 		if (i < range.columnStart) {
 			if (lineString[i] == '\t') {
@@ -143,11 +174,4 @@ void ExpressionResult::displayArrow(TextRange range, std::string lineString) con
 
 ContextPtr ExpressionResult::getContext() const {
 	return this->context;
-}
-
-void ExpressionResult::operator=(const ExpressionResult &other) {
-	this->resultStatus = other.resultStatus;
-	this->errorMessage = other.errorMessage;
-	this->errorRange = other.errorRange;
-	this->context = other.context;
 }

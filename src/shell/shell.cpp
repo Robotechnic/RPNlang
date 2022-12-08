@@ -46,7 +46,7 @@ std::string Shell::getCommand() {
  * @brief Load the command history from the history file
  * 
  */
-bool Shell::loadHistory(std::string historyFile) {
+bool Shell::loadHistory(std::string_view historyFile) {
 	if (historyFile != "") {
 		this->historyFile = historyFile;
 	} else {
@@ -94,7 +94,7 @@ void Shell::saveHistory() {
 	std::cout<<"Saving history to '" << this->historyFile << "'"<<std::endl;
 	std::cout<<"History size : " << this->history.size() << std::endl;
 
-	for (std::string line : this->history) {
+	for (const std::string &line : this->history) {
 		file << line << std::endl;
 	}
 
@@ -424,7 +424,7 @@ Shell& operator<<(Shell& out, std::ostream& (*os)(std::ostream&)) {
 	return out;
 }
 
-Shell& operator<<(Shell& out, const std::string &str) {
+Shell& operator<<(Shell& out, std::string_view str) {
 	std::cout<<str;
 	return out;
 }

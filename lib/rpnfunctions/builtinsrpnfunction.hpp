@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <string_view>
 #include <vector>
 #include <tuple>
 #include <regex>
@@ -16,7 +17,7 @@ class BuiltinRPNFunction : public RPNFunction {
 	public:
 		BuiltinRPNFunction();
 		BuiltinRPNFunction(
-			std::string name,
+			std::string_view name,
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argumentsTypes,
 			ValueType returnType,

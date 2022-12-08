@@ -16,7 +16,7 @@ class String;
 
 class Int : public Value {
 	public:
-		Int(std::string value, TextRange range, bool interpreterValue);
+		Int(const std::string &value, TextRange range, bool interpreterValue);
 		Int(int64_t value, TextRange range, bool interpreterValue);
 
 		bool isCastableTo(ValueType type) const override;
@@ -29,7 +29,7 @@ class Int : public Value {
 			return new Int(0, TextRange(), true);
 		}
 
-		std::string getStringValue() const;
+		inline std::string getStringValue() const;
 
 		int64_t getValue() const { return value; };
 

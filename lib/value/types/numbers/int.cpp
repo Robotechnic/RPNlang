@@ -1,6 +1,6 @@
 #include "value/types/numbers/int.hpp"
 
-Int::Int(std::string value, TextRange range, bool interpreterValue) : 
+Int::Int(const std::string &value, TextRange range, bool interpreterValue) : 
 	Value(INT, range, interpreterValue),
 	value(std::stoll(value)) {}
 
@@ -35,7 +35,7 @@ Value *Int::to(ValueType type, bool interpreterValue) {
 	return new Int(value, range, interpreterValue);
 }
 
-std::string Int::getStringValue() const {
+inline std::string Int::getStringValue() const {
 	return std::to_string(value);
 }
 

@@ -1,7 +1,7 @@
 #include "rpnfunctions/rpnfunction.hpp"
 
 RPNFunction::RPNFunction(
-	const std::string &name,
+	std::string_view name,
 	const std::vector<std::string> &argsName,
 	const std::vector<ValueType> &argsTypes,
 	const ValueType &returnType
@@ -33,7 +33,7 @@ RPNFunctionResult RPNFunction::call(
 			errorRange.merge(args.back()->getRange());
 		}
 	}
-	ContextPtr functionContext = std::make_shared<Context>(new Context(this->name, "", context, CONTEXT_TYPE_FUNCTION));
+	ContextPtr functionContext = std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
 	return std::make_tuple(ExpressionResult(
 			"Function is not callable", 
 			range,
@@ -86,7 +86,7 @@ ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const Cont
 		if (!args[i]->isCastableTo(this->argsTypes[i])) {
 			return ExpressionResult(
 				"Function call argument type mismatch, expected " + 
-				Value::stringType(this->argsTypes[i]) + 
+				std::string(Value::stringType(this->argsTypes[i])) + 
 				" but got " + args[i]->getStringType(),
 				args[i]->getRange(),
 				context

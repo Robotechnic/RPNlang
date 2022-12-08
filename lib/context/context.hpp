@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <ostream>
+#include <string_view>
 #include "tokens/token.hpp"
 #include "context/contexttypes.hpp"
 #include "context/typedef.hpp"
@@ -17,16 +18,16 @@ class Context : public std::enable_shared_from_this<Context> {
 	public:
 		Context(const Context &other);
 		Context(const Context *other);
-		Context(std::string name, std::string filePath, ContextType type = CONTEXT_TYPE_DEFAULT);
-		Context(std::string name, std::string filePath, ContextPtr parent, ContextType type = CONTEXT_TYPE_DEFAULT, bool root = false);
-		Context(std::string name, std::string filePath, symbolTable symbols, ContextType type = CONTEXT_TYPE_DEFAULT);
-		Context(std::string name, std::string filePath, symbolTable symbols, ContextPtr parent, ContextType type = CONTEXT_TYPE_DEFAULT, bool root = false);
+		Context(std::string_view name, std::string_view filePath, ContextType type = CONTEXT_TYPE_DEFAULT);
+		Context(std::string_view name, std::string_view filePath, ContextPtr parent, ContextType type = CONTEXT_TYPE_DEFAULT, bool root = false);
+		Context(std::string_view name, std::string_view filePath, symbolTable symbols, ContextType type = CONTEXT_TYPE_DEFAULT);
+		Context(std::string_view name, std::string_view filePath, symbolTable symbols, ContextPtr parent, ContextType type = CONTEXT_TYPE_DEFAULT, bool root = false);
 		~Context();
 
-		void setName(std::string name);
+		inline void setName(std::string_view name);
 		std::string getName() const;
 
-		void setFilePath(std::string filePath);
+		inline void setFilePath(std::string_view filePath);
 		std::string getFilePath() const;
 
 		void setParent(ContextPtr parent);
@@ -35,7 +36,7 @@ class Context : public std::enable_shared_from_this<Context> {
 		ContextPtr getParent() const;
 		ContextType getType() const;
 
-		void setValue(std::string name, Value *value, Value **hold = nullptr);
+		void setValue(const std::string &name, Value *value, Value **hold = nullptr);
 		void setValue(const Token *name, Value *value, Value **hold = nullptr);
 		void setValue(const Value *name, Value *value, Value **hold = nullptr);
 		
@@ -45,9 +46,8 @@ class Context : public std::enable_shared_from_this<Context> {
 		Value *getValue(const Value *name);
 		Value *getValue(const std::string &name);
 
-		bool hasValue(const std::string name) const;
+		bool hasValue(std::string_view name) const;
 		
-
 	private:
 		std::string name, filePath;
 		symbolTable symbols;

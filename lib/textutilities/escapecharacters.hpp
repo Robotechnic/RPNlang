@@ -3,17 +3,9 @@
 #include <string>
 #include <regex>
 #include <tuple>
+#include <array>
 #include <iostream>
+#include <string_view>
 
-#define ESCAPE_CHARACTERS 5
-const std::pair<std::regex, std::string> escapes[] = {
-	std::make_pair(std::regex("\\\\\\\\"), "\\"),
-	std::make_pair(std::regex("\\\\n"), "\n"),
-	std::make_pair(std::regex("\\\\t"), "\t"),
-	std::make_pair(std::regex("\\\\r"), "\r"),
-	// ANSI color escape codes
-	std::make_pair(std::regex("\\\\x1b\\[([0-9A-Za-z;]*)"), "\x1b[$1")
-};
-
-std::string escapeCharacters(std::string str);
-std::string removeEscapeCharacters(std::string const &str);
+std::string escapeCharacters(std::string_view str);
+std::string removeEscapeCharacters(std::string_view str);

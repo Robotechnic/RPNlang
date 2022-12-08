@@ -10,7 +10,7 @@ class None : public Value {
 	public:
 		None(TextRange range, bool interpreterValue);
 
-		std::string getStringValue() const;
+		inline std::string getStringValue() const;
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };

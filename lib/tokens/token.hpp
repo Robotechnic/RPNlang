@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <vector>
 #include <regex>
@@ -11,12 +12,11 @@
 #include "textutilities/textrange.hpp"
 #include "textutilities/escapecharacters.hpp"
 
-#define TOKEN_TYPES 19
 /* order matter because some tokens can be substrings of others
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
  */
-const std::tuple<std::regex, TokenType> tokenRegexes[TOKEN_TYPES] = {
+const std::array<std::tuple<std::regex, TokenType>, 19> tokenRegexes = {
 	std::make_tuple(commentRegex, TOKEN_TYPE_COMMENT),
 	std::make_tuple(binNumRegex, TOKEN_TYPE_BIN),
 	std::make_tuple(hexNumRegex, TOKEN_TYPE_HEX),
@@ -53,7 +53,7 @@ class Token {
 
 		bool isNumber() const;
 		TextRange getRange() const;
-		static std::string stringType(TokenType type);
+		inline static std::string stringType(TokenType type);
 
 	protected:
 		TextRange range;

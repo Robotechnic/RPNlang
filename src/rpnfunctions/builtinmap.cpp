@@ -38,7 +38,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::STRING, ValueType::INT, ValueType::INT},
 		ValueType::STRING,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::string value = args[0]->getStringValue();
+			const std::string value = args[0]->getStringValue();
 			int start = static_cast<Int *>(args[1])->getValue();
 			int length = static_cast<Int *>(args[2])->getValue();
 			return std::make_tuple(ExpressionResult(), new String(value.substr(start, length), range, true));
@@ -50,11 +50,11 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::STRING},
 		ValueType::BOOL,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::string value = args[0]->getStringValue();
-			bool isNumber = value == "true";
-			isNumber |= value == "false";
-			isNumber |= std::regex_match(value, floatRegex);
-			isNumber |= std::regex_match(value, intRegex);
+			const std::string value = args[0]->getStringValue();
+			bool isNumber = value == "true" ||
+							value == "false" ||
+							std::regex_match(value.data(), floatRegex) ||
+							std::regex_match(value.data(), intRegex);
 			return std::make_tuple(ExpressionResult(), new Bool(isNumber, range, true));
 		}
 	)},
@@ -65,8 +65,8 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		ValueType::INT,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
-			if (std::regex_match(args[0]->getStringValue(), intRegex)) {
-				std::get<1>(result) = new Int(std::stoi(args[0]->getStringValue()), range, true);
+			if (std::regex_match(args[0]->getStringValue().data(), intRegex)) {
+				std::get<1>(result) = new Int(std::stoi(args[0]->getStringValue().data()), range, true);
 			} else {
 				std::get<0>(result) = ExpressionResult(
 					"Cannot convert '" + args[0]->getStringValue() + "' to int",
@@ -85,10 +85,10 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		ValueType::FLOAT,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
-			if (std::regex_match(args[0]->getStringValue(), floatRegex) || 
-				std::regex_match(args[0]->getStringValue(), intRegex)
+			if (std::regex_match(args[0]->getStringValue().data(), floatRegex) || 
+				std::regex_match(args[0]->getStringValue().data(), intRegex)
 			) {
-				std::get<1>(result) = new Float(std::stof(args[0]->getStringValue()), range, true);
+				std::get<1>(result) = new Float(std::stof(args[0]->getStringValue().data()), range, true);
 			} else {
 				std::get<0>(result) = ExpressionResult(
 					"Cannot convert '" + args[0]->getStringValue() + "' to float",
@@ -228,7 +228,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::STRING},
 		ValueType::NONE,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::string path = args[0]->getStringValue();
+			const std::string path = args[0]->getStringValue();
 			if (path.size() == 0) {
 				return std::make_tuple(
 					ExpressionResult(
@@ -251,8 +251,8 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::STRING, ValueType::STRING},
 		ValueType::NONE,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::string path = args[0]->getStringValue();
-			std::string name = args[1]->getStringValue();
+			const std::string path = args[0]->getStringValue();
+			const std::string name = args[1]->getStringValue();
 			if (path.size() == 0) {
 				return std::make_tuple(
 					ExpressionResult(
@@ -263,7 +263,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 					None::empty()
 				);
 			}
-			if (!std::regex_match(name, literalRegex)) {
+			if (!std::regex_match(name.data(), literalRegex)) {
 				return std::make_tuple(
 					ExpressionResult(
 						"Module name must be a valid identifier",

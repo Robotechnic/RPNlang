@@ -8,7 +8,7 @@
 
 class Path : public Value {
 	public:
-		Path(std::string name, TextRange range);
+		Path(std::string_view name, TextRange range);
 		Path(std::vector<std::string> path, TextRange range);
 		
 		bool isCastableTo(ValueType type) const override;
@@ -17,7 +17,7 @@ class Path : public Value {
 		Value *to(ValueType type, bool interpreterValue = true) override;
 		inline Value* copy(bool interpreterValue = true) const override;
 
-		std::string getStringValue() const;
+		inline std::string getStringValue() const;
 		std::vector<std::string> getPath() const;
 
 		operatorResult opadd(const Value *other, const ContextPtr &context) const override;

@@ -2,10 +2,21 @@
 
 ExpressionResult loader(CppModule *module){
 	module->addFunction("sqrt", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+		float value = static_cast<Float *>(args[0])->getValue();
+		if (value <= 0) {
+			return std::make_tuple(
+				ExpressionResult(
+					"Cannot take square root of negative number",
+					range,
+					context
+				),
+				Float::empty()
+			);
+		}
 		return std::make_tuple(
 			ExpressionResult(), 
 			new Float(
-				std::sqrt(static_cast<Float *>(args[0])->getValue()), 
+				std::sqrt(value), 
 				range,
 				true
 			)

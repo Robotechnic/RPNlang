@@ -1,6 +1,6 @@
 #include "value/types/numbers/bool.hpp"
 
-Bool::Bool(std::string value, TextRange range, bool interpreterValue) : 
+Bool::Bool(const std::string &value, TextRange range, bool interpreterValue) : 
 	Value(BOOL, range, interpreterValue),
 	value(value != "false"){}
 
@@ -35,7 +35,7 @@ Value *Bool::copy(bool interpreterValue) const {
 	return new Bool(value, range, interpreterValue);
 }
 
-std::string Bool::getStringValue() const {
+inline std::string Bool::getStringValue() const {
 	return  value ? "true" : "false";
 }
 

@@ -38,7 +38,7 @@ Value*& Memory::top() {
 	return this->stack.top();
 }
 
-void Memory::clear(unsigned long int offset) {
+void Memory::clear(size_t offset) {
 	while (this->stack.size() > offset) {
 		Value::deleteValue(&this->stack.top());
 		this->stack.pop();
@@ -49,7 +49,7 @@ bool Memory::empty() {
 	return this->stack.empty();
 }
 
-unsigned long int Memory::size() {
+size_t Memory::size() {
 	return this->stack.size();
 }
 
@@ -62,7 +62,7 @@ unsigned long int Memory::size() {
  * @param ctx the current context
  * @return ExpressionResult if the stack size is correct or not
  */
-ExpressionResult Memory::sizeExpected(unsigned long int size, std::string message, TextRange range, const ContextPtr &ctx) {
+ExpressionResult Memory::sizeExpected(size_t size, const std::string &message, TextRange range, const ContextPtr &ctx) {
 	if (this->stack.size() == 0 && size != 0) 
 		return ExpressionResult(message + " (Memory is empty)", range, ctx);
 	if (this->stack.size() < size) {

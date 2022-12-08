@@ -27,9 +27,9 @@ TextRange Token::getRange() const {
  * @brief convert a TokenType to its string representation
  * 
  * @param type the TokenType to convert
- * @return std::string the string representation of the TokenType
+ * @return std::string_view the string representation of the TokenType
  */
-std::string Token::stringType(TokenType type) {
+inline std::string Token::stringType(TokenType type) {
 	switch (type) {
 		case TOKEN_TYPE_INT:
 			return "int";
@@ -79,6 +79,7 @@ std::string Token::stringType(TokenType type) {
 std::string Token::getStringType() const {
 	return Token::stringType(this->type);
 }
+
 
 std::ostream &operator<<(std::ostream &os, const Token *token) {
 	os << "Token(" << token->getStringValue() << ", " << token->getStringType() << ")";

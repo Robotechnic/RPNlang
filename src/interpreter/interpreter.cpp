@@ -15,7 +15,7 @@ Interpreter::~Interpreter() {
 	this->memory.clear();
 }
 
-bool Interpreter::interpretFile(std::string fileName, std::string &errorString) {
+bool Interpreter::interpretFile(std::string_view fileName, std::string &errorString) {
 	std::ifstream file;
 	if (!openFile(file, fileName, errorString)) {
 		return false;
@@ -77,9 +77,9 @@ bool Interpreter::interpretFile(std::string fileName, std::string &errorString) 
  * @param lineNumber the line number of the line
  * @return ExpressionResult status of the interpretation
  */
-ExpressionResult Interpreter::interpretLine(std::string line, int lineNumber) {
+ExpressionResult Interpreter::interpretLine(std::string_view line, int lineNumber) {
 	std::queue<Token*> tokens;
-	ExpressionResult result = Lexer::tokenize(lineNumber, line, tokens, this->context);
+	ExpressionResult result = Lexer::tokenize(lineNumber, std::string(line), tokens, this->context);
 	if (result.error()) return result;
 
 	Lexer lexer(tokens, this->context);
@@ -279,10 +279,9 @@ ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
 	std::string str;
 	Value *value;
 	for (size_t i = token->getParts().size() - 1; i > 0; i--) {
-		str = token->getParts().at(i) + str;
 		ExpressionResult result = this->memory.popVariableValue(value, this->context);
 		if (result.error()) return result;
-		str = value->getStringValue() + str;
+		str = value->getStringValue() + token->getParts().at(i) + str;
 		if (i == 1) range.merge(value->getRange());
 		Value::deleteValue(&value);
 	}
@@ -359,7 +358,7 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 		);
 	}
 	Value *hold;
-	this->context->setValue(this->memory.top()->getStringValue(), left->copy(false), &hold);
+	this->context->setValue(this->memory.top(), left->copy(false), &hold);
 	if (hold != nullptr) {
 		if (this->lastValue == hold) 
 			this->lastValue = nullptr;

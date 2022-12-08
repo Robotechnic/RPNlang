@@ -94,7 +94,7 @@ RPNFunctionResult UserRPNFunction::call(
 
 
 std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(
-			std::string name,
+			const std::string &name,
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argsTypes,
 			ValueType returnType, 
@@ -105,7 +105,7 @@ std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(
 	return userFunctions.at(name);
 }
 
-std::shared_ptr<UserRPNFunction> UserRPNFunction::getFunction(std::string name) {
+std::shared_ptr<UserRPNFunction> UserRPNFunction::getFunction(const std::string &name) {
 	if (userFunctions.find(name) == userFunctions.end())
 		return nullptr;
 	return userFunctions[name];

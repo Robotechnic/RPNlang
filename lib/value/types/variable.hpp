@@ -9,9 +9,9 @@ class Bool;
 
 class Variable : public Value {
 	public:
-		Variable(std::string value, TextRange range);
+		Variable(std::string_view value, TextRange range);
 
-		std::string getStringValue() const;
+		inline std::string getStringValue() const;
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };

@@ -4,6 +4,7 @@ class ExpressionResult;
 class Value;
 
 #include <string>
+#include <string_view>
 #include <stdexcept>
 #include <tuple>
 #include "tokens/token.hpp"
@@ -25,12 +26,12 @@ class Value {
 		virtual Value *to(ValueType type, bool interpreterValue = true);
 		inline virtual Value *copy(bool interpreterValue = true) const = 0;
 		
-		virtual std::string getStringValue() const = 0;
+		inline virtual std::string getStringValue() const = 0;
 
 		static Value *empty();
 
-		static std::string stringType(const ValueType type);
-		static ValueType valueType(const std::string type); 
+		static std::string stringType(const ValueType &type);
+		static ValueType valueType(std::string_view type); 
 
 		TextRange getRange() const;
 		ValueType getType() const;

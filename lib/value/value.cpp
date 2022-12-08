@@ -11,7 +11,7 @@ ValueType Value::getType() const {
 }
 
 std::string Value::getStringType() const {
-	return Value::stringType(this->type);
+	return std::string(Value::stringType(this->type));
 }
 
 TextRange Value::getRange() const {
@@ -28,7 +28,7 @@ Value *Value::to(ValueType type, bool interpreterValue) {
  * @param type the type to convert to a string
  * @return std::string the string representation of the type
  */
-std::string Value::stringType(const ValueType type) {
+std::string Value::stringType(const ValueType &type) {
 	switch(type) {
 		case INT:
 			return "int";
@@ -47,7 +47,7 @@ std::string Value::stringType(const ValueType type) {
 		case PATH:
 			return "path";
 		default:
-			return "<Invalid value type>";
+			throw std::runtime_error("This type doesn't exist");
 	}
 }
 
@@ -57,7 +57,7 @@ std::string Value::stringType(const ValueType type) {
  * @param type the string representation of the type
  * @return ValueType the type
  */
-ValueType Value::valueType(const std::string type) {
+ValueType Value::valueType(std::string_view type) {
 	if (type == "int")
 		return INT;
 	if (type == "float")

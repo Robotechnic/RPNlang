@@ -3,6 +3,7 @@
 #include <string>
 #include <functional>
 #include <unordered_map>
+#include <string_view>
 #include <dlfcn.h>
 
 #include "expressionresult/expressionresult.hpp"
@@ -29,23 +30,23 @@ struct ModuleAPI {
 class CppModule {
 	public:
 		CppModule();
-		CppModule(std::string name);
+		CppModule(std::string_view name);
 		~CppModule();
 
 		ExpressionResult load(TextRange imortRange);
 
 		void addFunction(
-			std::string name,
+			const std::string &name,
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argumentsTypes,
 			ValueType returnType,
 			BuiltinRPNFunctionType function
 		);
-		void addVariable(std::string name, Value *value);
+		void addVariable(const std::string &name, Value *value);
 
 		ContextPtr getModuleContext();
-		static bool isBuiltin(std::string name);
-		static void setBuiltinModulesPath(std::string path);
+		static bool isBuiltin(const std::string &name);
+		static void setBuiltinModulesPath(const std::string &path);
 
 	private:
 		std::string name;

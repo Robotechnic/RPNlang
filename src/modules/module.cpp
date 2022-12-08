@@ -6,7 +6,7 @@ Module::Module() :
 	importRange(TextRange(0, 0, 0)),
 	context(nullptr) {}
 
-Module::Module(std::string path, std::string name, ContextPtr  parentContext, TextRange importRange) : 
+Module::Module(std::string_view path, std::string_view name, ContextPtr  parentContext, TextRange importRange) : 
 	path(path), 
 	name(name),
 	importRange(importRange),
@@ -69,7 +69,7 @@ std::string Module::getPath() const {
  * @param moduleName the name to check
  * @return bool true if the name is a module name
  */
-bool Module::isModule(std::string moduleName) {
+bool Module::isModule(const std::string &moduleName) {
 	return (
 		Module::modules.find(moduleName) != Module::modules.end() || 
 		Module::builtinModules.find(moduleName) != Module::builtinModules.end()
@@ -174,7 +174,7 @@ ExpressionResult Module::getModuleContext(const Token *tokenPath, const ContextP
  * @param modulePath the path to check
  * @return bool true if the file is already loaded
  */
-bool Module::isImported(std::string modulePath, std::string &moduleName) {
+bool Module::isImported(std::string_view modulePath, std::string &moduleName) {
 	auto it = std::find_if(Module::modules.begin(), Module::modules.end(), [modulePath](auto module) -> bool {
 		return std::filesystem::equivalent(std::get<1>(module)->getPath(), modulePath);
 	});
@@ -194,7 +194,7 @@ bool Module::isImported(std::string modulePath, std::string &moduleName) {
  * @param parentContext the parent context of the module import
  * @return ExpressionResult if the module is loaded correctly
  */
-ExpressionResult Module::addModule(std::string modulePath, std::string name, TextRange importRange, const ContextPtr &parentContext) {	
+ExpressionResult Module::addModule(std::string_view modulePath, const std::string &name, TextRange importRange, const ContextPtr &parentContext) {	
 	std::string importedName;
 	// check if the module is user defined
 	if (modulePath != name) {

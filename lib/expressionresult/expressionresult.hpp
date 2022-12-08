@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include "textutilities/textrange.hpp"
 #include "context/context.hpp"
 
@@ -19,9 +20,13 @@ class ExpressionResult {
 		};
 	public:
 		ExpressionResult();
-		ExpressionResult(std::string errorMessage, TextRange errorRange, ContextPtr parentContext);
+		ExpressionResult(std::string_view errorMessage, TextRange errorRange, ContextPtr parentContext);
+		ExpressionResult(std::string_view errorMessage, TextRange &&errorRange, ContextPtr parentContext);
 		ExpressionResult(Status status);
-		~ExpressionResult();
+		ExpressionResult(const ExpressionResult &other) noexcept;
+		ExpressionResult(ExpressionResult &&other) noexcept;
+		void operator=(const ExpressionResult &other) noexcept;
+		void operator=(ExpressionResult &&other) noexcept;
 
 		bool error() const;
 		bool success() const;
@@ -29,7 +34,7 @@ class ExpressionResult {
 		TextRange getRange() const;
 		ContextPtr getContext() const;
 
-		void displayLineError(std::string line) const;
+		void displayLineError(std::string_view line) const;
 		void display() const;
 
 		bool breakingLoop() const;
@@ -38,10 +43,8 @@ class ExpressionResult {
 
 		bool stopInterpret() const;
 
-		void operator=(const ExpressionResult &other);
-
 	private:
-		void displayArrow(TextRange range, std::string lineString) const;
+		void displayArrow(TextRange range, std::string_view lineString) const;
 		Status resultStatus;
 		std::string errorMessage;
 		TextRange errorRange;

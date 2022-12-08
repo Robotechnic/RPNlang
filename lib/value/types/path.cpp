@@ -1,6 +1,6 @@
 #include "value/types/path.hpp"
 
-Path::Path(std::string name, TextRange range) : Value(PATH, range, false), path(split(name, '.')) {}
+Path::Path(std::string_view name, TextRange range) : Value(PATH, range, false), path(split(name, '.')) {}
 Path::Path(std::vector<std::string> path, TextRange range) : Value(PATH, range, false), path(path) {}
 Path::Path(std::vector<std::string> path, std::string name, TextRange range) : Value(PATH, range, false), name(name), path(path) {}
 
@@ -19,7 +19,7 @@ Value *Path::to(ValueType type, bool interpreterValue) {
 	throw std::runtime_error("Cannot cast path to anything");
 }
 
-std::string Path::getStringValue() const {
+inline std::string Path::getStringValue() const {
 	return this->name;
 }
 

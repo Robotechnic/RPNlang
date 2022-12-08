@@ -1,12 +1,13 @@
 #pragma once
 
+#include <sys/ioctl.h>
+#include <termios.h>
+#include <string_view>
+
 #include "expressionresult/expressionresult.hpp"
 #include "cppmodule/cppmodule.hpp"
 #include "value/types/numbers/int.hpp"
 #include "value/types/string.hpp"
-
-#include <sys/ioctl.h>
-#include <termios.h>
 
 enum TEXT_COLORS {
 	BLACK   = 30,

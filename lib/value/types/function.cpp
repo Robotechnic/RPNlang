@@ -23,7 +23,7 @@ Value *Function::copy(bool interpreterValue) const {
 	return new Function(function, range, interpreterValue);
 }
 
-std::string Function::getStringValue() const {
+inline std::string Function::getStringValue() const {
 	if (function->getName() == "") {
 		return "<anonymous function>";
 	}

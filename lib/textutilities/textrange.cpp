@@ -1,16 +1,16 @@
 #include "textutilities/textrange.hpp"
 
 TextRange::TextRange() : line(0), columnStart(0), columnEnd(0) {}
-TextRange::TextRange(int line, int column, int length) : line(line), columnStart(column), columnEnd(column + length) {}
+TextRange::TextRange(unsigned int line, unsigned int column, unsigned int length) : line(line), columnStart(column), columnEnd(column + length) {}
 TextRange::TextRange(const TextRange &other) : line(other.line), columnStart(other.columnStart), columnEnd(other.columnEnd) {}
-
+TextRange::TextRange(TextRange &&other) : line(other.line), columnStart(other.columnStart), columnEnd(other.columnEnd) {}
 /**
  * @brief split the text in lines and get the line which the range points to
  * 
  * @param code the text to split
  * @return std::string the line
  */
-std::string TextRange::getLine(std::string code) {
+std::string TextRange::getLine(std::string_view code) {
 	std::vector<std::string> lines = split(code, '\n');
 	if (line >= lines.size())
 		return "";
@@ -60,6 +60,12 @@ std::ostream &operator<<(std::ostream &os, const TextRange &range) {
 }
 
 void TextRange::operator=(const TextRange &other) {
+	this->line = other.line;
+	this->columnStart = other.columnStart;
+	this->columnEnd = other.columnEnd;
+}
+
+void TextRange::operator=(TextRange &&other) {
 	this->line = other.line;
 	this->columnStart = other.columnStart;
 	this->columnEnd = other.columnEnd;

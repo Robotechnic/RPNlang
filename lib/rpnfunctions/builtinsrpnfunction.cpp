@@ -3,7 +3,7 @@
 BuiltinRPNFunction::BuiltinRPNFunction() : RPNFunction("",{},{},NONE), function(nullptr) {}
 
 BuiltinRPNFunction::BuiltinRPNFunction(
-			std::string name,
+			std::string_view name,
 			std::vector<std::string> argsName,
 			std::vector<ValueType> argumentsTypes,
 			ValueType returnType,

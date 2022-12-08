@@ -2,7 +2,7 @@
 
 None::None(TextRange range, bool interpreterValue) : Value(NONE, range, interpreterValue) {}
 
-std::string None::getStringValue() const {
+inline std::string None::getStringValue() const {
 	return "NONE";
 }
 
