@@ -4,7 +4,7 @@ ExpressionResult loader(CppModule *module){
 	module->addFunction("sqrt", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		float value = static_cast<Float *>(args[0])->getValue();
 		if (value <= 0) {
-			return std::make_tuple(
+			return std::make_pair(
 				ExpressionResult(
 					"Cannot take square root of negative number",
 					range,
@@ -13,253 +13,263 @@ ExpressionResult loader(CppModule *module){
 				Float::empty()
 			);
 		}
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(), 
 			new Float(
 				std::sqrt(value), 
 				range,
-				true
+				Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("pow", {"base", "exponent"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::pow(static_cast<Float *>(args[0])->getValue(), static_cast<Float *>(args[1])->getValue()), range, true
+				std::pow(
+					static_cast<Float *>(args[0])->getValue(), 
+					static_cast<Float *>(args[1])->getValue()
+				), 
+				range, 
+				Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("sin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::sin(static_cast<Float *>(args[0])->getValue()), range, true
+				std::sin(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("cos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::cos(static_cast<Float *>(args[0])->getValue()), range, true
+				std::cos(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("tan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::tan(static_cast<Float *>(args[0])->getValue()), range, true
+				std::tan(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("asin", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::asin(static_cast<Float *>(args[0])->getValue()), range, true
+				std::asin(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("acos", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::acos(static_cast<Float *>(args[0])->getValue()), range, true
+				std::acos(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("atan", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::atan(static_cast<Float *>(args[0])->getValue()), range, true
+				std::atan(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("atan2", {"y", "x"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::atan2(static_cast<Float *>(args[0])->getValue(), static_cast<Float *>(args[1])->getValue()), range, true
+				std::atan2(
+					static_cast<Float *>(args[0])->getValue(), 
+					static_cast<Float *>(args[1])->getValue()
+				),
+				range, 
+				Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("sinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::sinh(static_cast<Float *>(args[0])->getValue()), range, true
+				std::sinh(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("cosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::cosh(static_cast<Float *>(args[0])->getValue()), range, true
+				std::cosh(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("tanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::tanh(static_cast<Float *>(args[0])->getValue()), range, true
+				std::tanh(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("asinh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::asinh(static_cast<Float *>(args[0])->getValue()), range, true
+				std::asinh(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("acosh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::acosh(static_cast<Float *>(args[0])->getValue()), range, true
+				std::acosh(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("atanh", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::atanh(static_cast<Float *>(args[0])->getValue()), range, true
+				std::atanh(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("exp", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::exp(static_cast<Float *>(args[0])->getValue()), range, true
+				std::exp(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("log", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::log(static_cast<Float *>(args[0])->getValue()), range, true
+				std::log(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("log10", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::log10(static_cast<Float *>(args[0])->getValue()), range, true
+				std::log10(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("log2", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::log2(static_cast<Float *>(args[0])->getValue()), range, true
+				std::log2(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("log", {"base", "value"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
 				std::log(static_cast<Float *>(args[1])->getValue()) / 
 				std::log(static_cast<Float *>(args[0])->getValue()), 
 				range,
-				true
+				Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("floor", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::floor(static_cast<Float *>(args[0])->getValue()), range, true
+				std::floor(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("ceil", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::ceil(static_cast<Float *>(args[0])->getValue()), range, true
+				std::ceil(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("round", {"value"}, {FLOAT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				std::round(static_cast<Float *>(args[0])->getValue()), range, true
+				std::round(static_cast<Float *>(args[0])->getValue()), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("abs", {"value"}, {INT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(), 
 			new Int(
 				std::abs(static_cast<Int *>(args[0])->getValue()), 
 				range,
-				true
+				Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("fabs", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
 				std::abs(static_cast<Float *>(args[0])->getValue()), 
 				range,
-				true
+				Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("deg", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				static_cast<float>(static_cast<Float *>(args[0])->getValue() * 180.0 / M_PI), range, true
+				static_cast<float>(static_cast<Float *>(args[0])->getValue() * 180.0 / M_PI), range, Value::INTERPRETER
 			)
 		);
 	});
 
 	module->addFunction("rad", {"value"}, {FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
-				static_cast<float>(static_cast<Float *>(args[0])->getValue() * M_PI / 180.0), range, true
+				static_cast<float>(static_cast<Float *>(args[0])->getValue() * M_PI / 180.0), range, Value::INTERPRETER
 			)
 		);
 	});
@@ -267,7 +277,7 @@ ExpressionResult loader(CppModule *module){
 	module->addFunction("map", {"value", "min", "max", "newMin", "newMax"}, {FLOAT, FLOAT, FLOAT, FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		// simple linear mapping
 		// (value - min) * (newMax - newMin) / (max - min) + newMin
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Float(
 				(static_cast<Float *>(args[0])->getValue() - static_cast<Float *>(args[1])->getValue()) *
@@ -275,7 +285,7 @@ ExpressionResult loader(CppModule *module){
 				(static_cast<Float *>(args[2])->getValue() - static_cast<Float *>(args[1])->getValue()) +
 				static_cast<Float *>(args[3])->getValue(),
 				range,
-				true
+				Value::INTERPRETER
 			)
 		);
 	});
@@ -284,7 +294,7 @@ ExpressionResult loader(CppModule *module){
 		new Float(
 			(float)M_PI,
 			TextRange(),
-			false
+			Value::CONTEXT_VARIABLE
 		)
 	);
 
@@ -292,7 +302,7 @@ ExpressionResult loader(CppModule *module){
 		new Float(
 			(float)M_E,
 			TextRange(),
-			false
+			Value::CONTEXT_VARIABLE
 		)
 	);
 
@@ -300,7 +310,7 @@ ExpressionResult loader(CppModule *module){
 		new Float(
 			1.618033988749f,
 			TextRange(),
-			false
+			Value::CONTEXT_VARIABLE
 		)
 	);
 
@@ -308,7 +318,7 @@ ExpressionResult loader(CppModule *module){
 		new Float(
 			(float)M_PI_2,
 			TextRange(),
-			false
+			Value::CONTEXT_VARIABLE
 		)
 	);
 

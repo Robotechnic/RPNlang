@@ -8,7 +8,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		ValueType::NONE,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::cout << args[0]->getStringValue();
-			return std::make_tuple(ExpressionResult(), None::empty());
+			return std::make_pair(ExpressionResult(), None::empty());
 		}
 	)},
 	{"input", BuiltinRPNFunction(
@@ -20,7 +20,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			std::cout<<args[0]->getStringValue();
 			std::string input;
 			std::getline(std::cin, input);
-			return std::make_tuple(ExpressionResult(), new String(input, range, true));
+			return std::make_pair(ExpressionResult(), new String(input, range, Value::INTERPRETER));
 		}
 	)},
 	{"len", BuiltinRPNFunction(
@@ -29,7 +29,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::STRING},
 		ValueType::INT,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			return std::make_tuple(ExpressionResult(), new Int(args[0]->getStringValue().size(), range, true));
+			return std::make_pair(ExpressionResult(), new Int(args[0]->getStringValue().size(), range, Value::INTERPRETER));
 		}
 	)},
 	{"substr", BuiltinRPNFunction(
@@ -41,7 +41,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			const std::string value = args[0]->getStringValue();
 			int start = static_cast<Int *>(args[1])->getValue();
 			int length = static_cast<Int *>(args[2])->getValue();
-			return std::make_tuple(ExpressionResult(), new String(value.substr(start, length), range, true));
+			return std::make_pair(ExpressionResult(), new String(value.substr(start, length), range, Value::INTERPRETER));
 		}
 	)},
 	{"isNumber", BuiltinRPNFunction(
@@ -55,7 +55,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 							value == "false" ||
 							std::regex_match(value.data(), floatRegex) ||
 							std::regex_match(value.data(), intRegex);
-			return std::make_tuple(ExpressionResult(), new Bool(isNumber, range, true));
+			return std::make_pair(ExpressionResult(), new Bool(isNumber, range, Value::INTERPRETER));
 		}
 	)},
 	{"toInt", BuiltinRPNFunction(
@@ -66,14 +66,14 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
 			if (std::regex_match(args[0]->getStringValue().data(), intRegex)) {
-				std::get<1>(result) = new Int(std::stoi(args[0]->getStringValue().data()), range, true);
+				result.second = new Int(std::stoi(args[0]->getStringValue().data()), range, Value::INTERPRETER);
 			} else {
-				std::get<0>(result) = ExpressionResult(
+				result.first = ExpressionResult(
 					"Cannot convert '" + args[0]->getStringValue() + "' to int",
 					args[0]->getRange(),
 					context
 				);
-				std::get<1>(result) = Int::empty();
+				result.second = Int::empty();
 			}
 			return result;
 		}
@@ -88,14 +88,14 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			if (std::regex_match(args[0]->getStringValue().data(), floatRegex) || 
 				std::regex_match(args[0]->getStringValue().data(), intRegex)
 			) {
-				std::get<1>(result) = new Float(std::stof(args[0]->getStringValue().data()), range, true);
+				result.second = new Float(std::stof(args[0]->getStringValue().data()), range, Value::INTERPRETER);
 			} else {
-				std::get<0>(result) = ExpressionResult(
+				result.first = ExpressionResult(
 					"Cannot convert '" + args[0]->getStringValue() + "' to float",
 					args[0]->getRange(),
 					context
 				);
-				std::get<1>(result) = Float::empty();
+				result.second = Float::empty();
 			}
 			return result;
 		}
@@ -106,7 +106,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::FLOAT},
 		ValueType::STRING,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			return std::make_tuple(ExpressionResult(), new String(args[0]->getStringValue(), range, true));
+			return std::make_pair(ExpressionResult(), new String(args[0]->getStringValue(), range, Value::INTERPRETER));
 		}
 	)},
 	{"and", BuiltinRPNFunction(
@@ -115,12 +115,12 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::BOOL, ValueType::BOOL},
 		ValueType::BOOL,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			return std::make_tuple(
+			return std::make_pair(
 				ExpressionResult(), 
 				new Bool(
 					static_cast<Bool*>(args[0])->getValue() && static_cast<Bool*>(args[1])->getValue(),
 					range,
-					true
+					Value::INTERPRETER
 				)
 			);
 		}
@@ -131,12 +131,12 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::BOOL, ValueType::BOOL},
 		ValueType::BOOL,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			return std::make_tuple(
+			return std::make_pair(
 				ExpressionResult(),
 				new Bool(
 					static_cast<Bool*>(args[0])->getValue() || static_cast<Bool*>(args[1])->getValue(), 
 					range,
-					true
+					Value::INTERPRETER
 				)
 			);
 		}
@@ -147,12 +147,12 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::BOOL},
 		ValueType::BOOL,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			return std::make_tuple(
+			return std::make_pair(
 				ExpressionResult(), 
 				new Bool(
 					!static_cast<Bool*>(args[0])->getValue(),
 					range,
-					true
+					Value::INTERPRETER
 				)
 			);
 		}
@@ -163,15 +163,15 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::STRING},
 		ValueType::INT,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			std::tuple<ExpressionResult, Value*> result = std::make_pair(ExpressionResult(), nullptr);
+			std::pair<ExpressionResult, Value*> result = std::make_pair(ExpressionResult(), nullptr);
 			if (args[0]->getStringValue().size() != 1) {
-				std::get<0>(result) = ExpressionResult(
+				result.first = ExpressionResult(
 					"string must have length of 1", args[0]->getRange(),
 					context
 				);
-				std::get<1>(result) = Int::empty();
+				result.second = Int::empty();
 			} else
-				std::get<1>(result) = new Int(static_cast<int64_t>(args[0]->getStringValue()[0]), range, true);
+				result.second = new Int(static_cast<int64_t>(args[0]->getStringValue()[0]), range, Value::INTERPRETER);
 
 			return result;
 		}
@@ -182,12 +182,12 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::INT},
 		ValueType::STRING,
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			return std::make_tuple(
+			return std::make_pair(
 				ExpressionResult(), 
 				new String(
 					std::string(1, static_cast<char>(static_cast<Int*>(args[0])->getValue())), 
 					range,
-					true
+					Value::INTERPRETER
 				)
 			);
 		}
@@ -200,7 +200,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			exit(static_cast<Int*>(args[0])->getValue());
 			// Should never reach this point
-			return std::make_tuple(ExpressionResult(), None::empty());
+			return std::make_pair(ExpressionResult(), None::empty());
 		}
 	)},
 	{"assert",BuiltinRPNFunction(
@@ -214,12 +214,12 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			if (!static_cast<Bool *>(args[0])->getValue()) {
 				result = ExpressionResult(
 					"Assertion failed",
-					args[0]->getRange(),
+					range,
 					context->getParent()
 				);
 			}
 
-			return std::make_tuple(result, None::empty());
+			return std::make_pair(result, None::empty());
 		}
 	)},
 	{"import", BuiltinRPNFunction(
@@ -230,7 +230,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			const std::string path = args[0]->getStringValue();
 			if (path.size() == 0) {
-				return std::make_tuple(
+				return std::make_pair(
 					ExpressionResult(
 						"import path cannot be empty",
 						args[0]->getRange(), 
@@ -239,7 +239,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 					None::empty()
 				);
 			}
-			return std::make_tuple(
+			return std::make_pair(
 				Module::addModule(path, extractFileName(path), args[0]->getRange(), context->getParent()),
 				None::empty()
 			);
@@ -254,7 +254,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			const std::string path = args[0]->getStringValue();
 			const std::string name = args[1]->getStringValue();
 			if (path.size() == 0) {
-				return std::make_tuple(
+				return std::make_pair(
 					ExpressionResult(
 						"import path cannot be empty",
 						args[0]->getRange(), 
@@ -264,7 +264,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 				);
 			}
 			if (!std::regex_match(name.data(), literalRegex)) {
-				return std::make_tuple(
+				return std::make_pair(
 					ExpressionResult(
 						"Module name must be a valid identifier",
 						args[1]->getRange(), 
@@ -273,7 +273,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 					None::empty()
 				);
 			}
-			return std::make_tuple(
+			return std::make_pair(
 				Module::addModule(path, name, args[0]->getRange(), context->getParent()),
 				None::empty()
 			);

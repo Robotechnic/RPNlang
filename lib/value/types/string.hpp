@@ -8,7 +8,7 @@
 
 class String : public Value {
 	public:
-		String(std::string_view value, TextRange range, bool interpreterValue);
+		String(std::string_view value, TextRange range, ValueOwner owner);
 
 		inline std::string getStringValue() const;
 
@@ -16,11 +16,11 @@ class String : public Value {
 		bool isNumber() const { return false; };
 
 		static String *empty() {
-			return new String("", TextRange(), true);
+			return String::emptyString.get();
 		}
 
-		Value *to(ValueType type, bool interpreterValue = true);
-		inline Value *copy(bool interpreterValue = true) const override;
+		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
+		inline Value *copy(ValueOwner owner = INTERPRETER) const override;
 
 		operatorResult opadd(const Value *other, const ContextPtr &context) const override;
 		operatorResult opsub(const Value *other, const ContextPtr &context) const override;
@@ -37,4 +37,5 @@ class String : public Value {
 
 	private:
 		std::string value;
+		static std::unique_ptr<String> emptyString;
 };

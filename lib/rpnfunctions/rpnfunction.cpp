@@ -34,43 +34,13 @@ RPNFunctionResult RPNFunction::call(
 		}
 	}
 	ContextPtr functionContext = std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
-	return std::make_tuple(ExpressionResult(
+	return std::make_pair(ExpressionResult(
 			"Function is not callable", 
 			range,
 			functionContext
 		),
 		None::empty()
 	);
-}
-
-/**
- * @brief check if there is enough arguments and if the provided arguments have the correct types
- * 
- * @param args arguments provided by the user
- * @return ExpressionResult if the arguments are correct
- */
-ExpressionResult RPNFunction::checkArgs(const RPNFunctionArgs &args, const ContextPtr &context) const {
-	if (args.size() != this->argsName.size()) {
-		TextRange range(0, 0, 0);
-		if (args.size() != 0) {
-			range = args[0]->getRange();
-			if (args.size() > 1) {
-				range.merge(args[args.size() - 1]->getRange());
-			}
-		}
-
-		return ExpressionResult(
-			"Function call arguments count mismatch," + std::to_string(this->argsName.size()) + 
-			" arguents expected but got " + std::to_string(args.size()) + " arguments",
-			range,
-			context
-		);
-	}
-
-	ExpressionResult result = this->checkTypes(args, context);
-	if (result.error()) return result;
-
-	return ExpressionResult();
 }
 
 /**

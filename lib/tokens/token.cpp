@@ -71,6 +71,10 @@ inline std::string Token::stringType(TokenType type) {
 			return "path";
 		case TOKEN_TYPE_VALUE:
 			return "value";
+		case TOKEN_TYPE_FUNCTION_CALL:
+			return "function call";
+		case TOKEN_TYPE_MODULE_FUNCTION_CALL:
+			return "module function call";
 		default:
 			return "unknown";
 	}

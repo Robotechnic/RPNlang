@@ -12,6 +12,7 @@
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
 
+// #define TEST_FILE "/home/robotechnic/Documents/c++ projet/RPN language/tests/9 modules.rpn"
 
 /**
  * @brief allow shell to be destroyed when ctrl+c is pressed, this allow to save the history

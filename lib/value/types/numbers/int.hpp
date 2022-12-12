@@ -16,17 +16,18 @@ class String;
 
 class Int : public Value {
 	public:
-		Int(const std::string &value, TextRange range, bool interpreterValue);
-		Int(int64_t value, TextRange range, bool interpreterValue);
+		Int(const std::string &value, TextRange range, ValueOwner owner);
+		Int(int64_t value, TextRange range, ValueOwner owner);
+		Int(const Value *other);
 
 		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const { return true; };
 
-		Value *to(ValueType type, bool interpreterValue = true);
-		inline Value *copy(bool interpreterValue = true) const override;
+		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
+		inline Value *copy(ValueOwner owner = INTERPRETER) const override;
 
 		static Int *empty() {
-			return new Int(0, TextRange(), true);
+			return Int::emptyInt.get();
 		}
 
 		inline std::string getStringValue() const;
@@ -48,4 +49,5 @@ class Int : public Value {
 
 	private:
 		int64_t value;
+		static std::unique_ptr<Int> emptyInt;
 };

@@ -64,7 +64,13 @@ Context::Context(std::string_view name, std::string_view filePath, symbolTable s
 	}
 
 Context::~Context() {
+	this->clear();
+}
+
+void Context::clear() {
 	for (auto it = this->symbols.begin(); it != this->symbols.end(); it++) {
+		if (it->second->getOwner() != Value::CONTEXT_VARIABLE) 
+			continue;
 		delete it->second;
 		it->second = nullptr;
 	}
@@ -82,7 +88,7 @@ inline void Context::setFilePath(std::string_view filePath) {
 	this->filePath = filePath;
 }
 
-std::string Context::getFilePath() const {
+std::string Context::getFilePath() {
 	if ((
 		this->type == CONTEXT_TYPE_FILE || 
 		this->type == CONTEXT_TYPE_MODULE || 
@@ -116,8 +122,13 @@ ContextPtr Context::getParent() const {
  * @param name the name of the value
  * @param value the value to set
  */
-void Context::setValue(const std::string &name, Value *value, Value **hold) {
-	if (this->symbols.contains(name) && this->symbols[name] != nullptr) {
+void Context::setValue(const std::string &name, Value *value, Value **hold, bool takeOwnership) {
+	value->setOwner(Value::CONTEXT_VARIABLE, takeOwnership);
+	if (
+		this->symbols.contains(name) && 
+		this->symbols[name] != nullptr && 
+		this->symbols[name]->getOwner() == Value::CONTEXT_VARIABLE
+	) {
 		if (hold)
 			(*hold) = this->symbols[name];
 		delete this->symbols[name];
@@ -125,9 +136,14 @@ void Context::setValue(const std::string &name, Value *value, Value **hold) {
 	this->symbols[name] = value;
 }
 
-void Context::setValue(const Token *name, Value *value, Value **hold) {
+void Context::setValue(const Token *name, Value *value, Value **hold, bool takeOwnership) {
+	value->setOwner(Value::CONTEXT_VARIABLE, takeOwnership);
 	std::string nameStr = name->getStringValue();
-	if (this->symbols.contains(nameStr) && this->symbols[nameStr] != nullptr) {
+	if (
+		this->symbols.contains(nameStr) && 
+		this->symbols[nameStr] != nullptr && 
+		this->symbols[nameStr]->getOwner() == Value::CONTEXT_VARIABLE
+	) {
 		if (hold)
 			(*hold) = this->symbols[nameStr];
 		delete this->symbols[nameStr];
@@ -135,11 +151,17 @@ void Context::setValue(const Token *name, Value *value, Value **hold) {
 	this->symbols[nameStr] = value;
 }
 
-void Context::setValue(const Value *name, Value *value, Value **hold) {
+void Context::setValue(const Value *name, Value *value, Value **hold, bool takeOwnership) {
 	if (name->getType() != VARIABLE)
 		throw std::runtime_error("Context::setValue() - name is not a variable");
+	value->setOwner(Value::CONTEXT_VARIABLE, takeOwnership);
+
 	std::string nameStr = name->getStringValue();
-	if (this->symbols.contains(nameStr) && this->symbols[nameStr] != nullptr) {
+	if (
+		this->symbols.contains(nameStr) && 
+		this->symbols[nameStr] != nullptr && 
+		this->symbols[nameStr]->getOwner() == Value::CONTEXT_VARIABLE
+	) {
 		if (hold)
 			(*hold) = this->symbols[nameStr];
 		delete this->symbols[nameStr];
@@ -232,6 +254,12 @@ Value *Context::getValue(const Value *name) {
 
 Value *Context::getValue(const std::string &name) {
 	return this->symbols.at(name);
+}
+
+void Context::takeOwnership() {
+	for (auto &symbol : this->symbols) {
+		symbol.second->setOwner(Value::CONTEXT_VARIABLE, true);
+	}
 }
 
 std::ostream& operator<<(std::ostream& os, const ContextPtr &context) {

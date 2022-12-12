@@ -88,7 +88,7 @@ void CppModule::addFunction(
 		new Function(
 			static_cast<RPNFunction*>(&this->moduleFunctions[name]),
 			TextRange(),
-			false
+			Value::CONTEXT_VARIABLE
 		)
 	);
 }

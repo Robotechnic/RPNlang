@@ -14,8 +14,8 @@ class Path : public Value {
 		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const override;
 
-		Value *to(ValueType type, bool interpreterValue = true) override;
-		inline Value* copy(bool interpreterValue = true) const override;
+		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
+		inline Value* copy(ValueOwner owner = INTERPRETER) const override;
 
 		inline std::string getStringValue() const;
 		std::vector<std::string> getPath() const;

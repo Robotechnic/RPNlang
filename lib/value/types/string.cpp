@@ -1,9 +1,10 @@
 #include "value/types/string.hpp"
 
-String::String(std::string_view value, TextRange range, bool interpreterValue) :
-	Value(STRING, range, interpreterValue),
+String::String(std::string_view value, TextRange range, ValueOwner owner) :
+	Value(STRING, range, owner),
 	value(value) {}
 
+std::unique_ptr<String> String::emptyString = std::make_unique<String>("", TextRange(), Value::EMPTY_VALUE);
 
 bool String::isCastableTo(ValueType type) const {
 	return 
@@ -15,34 +16,34 @@ inline std::string String::getStringValue() const {
 	return value;
 }
 
-Value *String::to(ValueType type, bool interpreterValue) {
+Value *String::to(ValueType type, ValueOwner owner) const {
 	switch (type) {
 		case STRING:
-			return new String(this->value, this->range, interpreterValue);
+			return new String(this->value, this->range, owner);
 		case BOOL:
-			return new Bool(this->value == "true", this->range, interpreterValue);
+			return new Bool(this->value == "true", this->range, owner);
 		default:
 			throw std::runtime_error("Invalid value type");
 	};
 }
 
-Value *String::copy(bool interpreterValue) const {
-	return new String(this->value, this->range, interpreterValue);
+Value *String::copy(ValueOwner owner) const {
+	return new String(this->value, this->range, owner);
 }
 
 operatorResult String::opadd(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(),
 		new String(
 			value + std::string(other->getStringValue()),
 			TextRange::merge(this->range, other->getRange()),
-			true
+			Value::INTERPRETER
 		)
 	);
 }
 
 operatorResult String::opsub(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Cannot substract value of type " + other->getStringType() + " from value of type string",
 			other->getRange(),
@@ -54,7 +55,7 @@ operatorResult String::opsub(const Value *other, const ContextPtr &context) cons
 
 operatorResult String::opmul(const Value *other, const ContextPtr &context) const {
 	if (other->getType() != INT) 
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(
 				"Cannot multiply value of type " + other->getStringType() + " with value of type string",
 				other->getRange(),
@@ -68,18 +69,18 @@ operatorResult String::opmul(const Value *other, const ContextPtr &context) cons
 		result += value;
 	}
 
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(),
 		new String(
 			result, 
 			TextRange::merge(range, other->getRange()), 
-			true
+			Value::INTERPRETER
 		)
 	);
 }
 
 operatorResult String::opdiv(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Cannot divide string value by value of type " + other->getStringType(),
 			other->getRange(),
@@ -90,7 +91,7 @@ operatorResult String::opdiv(const Value *other, const ContextPtr &context) cons
 }
 
 operatorResult String::opmod(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Cannot modulo string value by value of type " + other->getStringType(),
 			other->getRange(),
@@ -101,7 +102,7 @@ operatorResult String::opmod(const Value *other, const ContextPtr &context) cons
 }
 
 operatorResult String::oppow(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Cannot power value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
@@ -112,7 +113,7 @@ operatorResult String::oppow(const Value *other, const ContextPtr &context) cons
 }
 
 operatorResult String::opgt(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Cannot compare value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
@@ -123,7 +124,7 @@ operatorResult String::opgt(const Value *other, const ContextPtr &context) const
 }
 
 operatorResult String::opge(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Cannot compare value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
@@ -134,7 +135,7 @@ operatorResult String::opge(const Value *other, const ContextPtr &context) const
 }
 
 operatorResult String::oplt(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Cannot compare value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
@@ -145,7 +146,7 @@ operatorResult String::oplt(const Value *other, const ContextPtr &context) const
 }
 
 operatorResult String::ople(const Value *other, const ContextPtr &context) const {
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Cannot compare value of type " + other->getStringType() + " with value of type string",
 			other->getRange(),
@@ -157,42 +158,42 @@ operatorResult String::ople(const Value *other, const ContextPtr &context) const
 
 operatorResult String::opne(const Value *other, const ContextPtr &context) const {
 	if (other->getType() != STRING) 
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Bool(
 				true, 
 				TextRange::merge(this->range, other->getRange()), 
-				true
+				Value::INTERPRETER
 			)
 		);
 	
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(),
 		new Bool(
 			value != other->getStringValue(), 
 			TextRange::merge(this->range, other->getRange()), 
-			true
+			Value::INTERPRETER
 		)
 	);
 }
 
 operatorResult String::opeq(const Value *other, const ContextPtr &context) const {
 	if (other->getType() != STRING) 
-		return std::make_tuple(
+		return std::make_pair(
 			ExpressionResult(),
 			new Bool(
 				false,
 				TextRange::merge(range, other->getRange()), 
-				true
+				Value::INTERPRETER
 			)
 		);
 	
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(),
 		new Bool(
 			value == other->getStringValue(), 
 			TextRange::merge(this->range, other->getRange()), 
-			true
+			Value::INTERPRETER
 		)
 	);
 }

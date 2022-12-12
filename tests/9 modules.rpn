@@ -6,15 +6,6 @@ test.testValue f"Test value : {}\n" :print
 test.testValue "testValueOk" == :assert
 "coucou" :test.testFunction
 
-"modules ok\n" :print
-
-# user defined modules
-"./9Import.rpn" "testUser" :importAs
-"Import done\n" :print
-
-testUser.test f"{}\n" :print
-:testUser.bidule
-
 # math functions
 "test math module\n" :print
 "math" :import
@@ -23,3 +14,15 @@ x 0 10 1 for
 	x 0.0 10.0 0.0 1.0 :math.map f"{} " :print
 rof
 "\n" :print
+
+"Builtin modules ok\n" :print
+
+# user defined modules
+"test user defined module\n" :print
+"./9Import.rpn" "testUser" :importAs
+"Import done\n" :print
+
+testUser.test f"{}\n" :print
+:testUser.bidule
+
+"User defined modules ok\n" :print

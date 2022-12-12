@@ -3,11 +3,11 @@
 ValueToken::ValueToken(Value *value, TokenType type) : 
 	Token(value->getRange(), type),
 	value(value) {
-		value->interpreterValue = false;
+		value->setOwner(Value::VALUE_TOKEN, true);
 	}
 
 ValueToken::~ValueToken() {
-	delete this->value;
+	Value::deleteValue(&this->value, Value::VALUE_TOKEN);
 }
 
 Value *&ValueToken::getValue() {

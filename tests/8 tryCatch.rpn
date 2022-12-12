@@ -10,10 +10,14 @@ finally
 	"finnaly fired correctly\n" :print
 yrt
 
+errorCatch false =
 e try
 	1 0 /
 catch
 	e f"Error: {}\n" :print
+	errorCatch true =
 finally
 	"finnaly fired correctly\n" :print
 yrt
+
+errorCatch :assert

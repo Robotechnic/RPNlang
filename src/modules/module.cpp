@@ -176,7 +176,7 @@ ExpressionResult Module::getModuleContext(const Token *tokenPath, const ContextP
  */
 bool Module::isImported(std::string_view modulePath, std::string &moduleName) {
 	auto it = std::find_if(Module::modules.begin(), Module::modules.end(), [modulePath](auto module) -> bool {
-		return std::filesystem::equivalent(std::get<1>(module)->getPath(), modulePath);
+		return std::filesystem::equivalent(module.second->getPath(), modulePath);
 	});
 	if (it == Module::modules.end()) 
 		return false;

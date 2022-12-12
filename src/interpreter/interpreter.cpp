@@ -11,7 +11,7 @@ Interpreter::Interpreter(ContextPtr ctx) :
 {}
 
 Interpreter::~Interpreter() {
-	Value::deleteValue(&this->lastValue);
+	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 	this->memory.clear();
 }
 
@@ -47,7 +47,7 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 		return false;
 	}
 
-	Value::deleteValue(&this->lastValue);
+	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 	result = this->interpret(lexer.getBlocks());
 	if (result.error()) {
 		result.display();
@@ -59,13 +59,15 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 		if (val->getType() == FUNCTION) {
 			const RPNFunction* func = val->getValue();
 			RPNFunctionResult mainResult = func->call({}, mainRange, this->context);
-			delete std::get<1>(mainResult);
+			Value::deleteValue(&mainResult.second, Value::INTERPRETER);
 			if (std::get<0>(mainResult).error()) {
 				std::get<0>(mainResult).display();
 				return false;
 			}
 		}
 	}
+
+	this->context->takeOwnership();
 
 	return true;
 }
@@ -86,7 +88,7 @@ ExpressionResult Interpreter::interpretLine(std::string_view line, int lineNumbe
 	result = lexer.lex();
 	if (result.error()) return result;
 
-	Value::deleteValue(&this->lastValue);
+	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 	result = this->interpret(lexer.getBlocks());
 	if (result.error()) return result;
 
@@ -126,7 +128,7 @@ TextRange Interpreter::mergeRanges(const std::vector<Value*> &values) {
  */
 ExpressionResult Interpreter::checkMemory() {	
 	if (this->memory.empty()) {
-		Value::deleteValue(&this->lastValue);
+		Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 		this->lastValue = None::empty();
 		return ExpressionResult();
 	}
@@ -140,13 +142,13 @@ ExpressionResult Interpreter::checkMemory() {
 			last->getRange().merge(this->memory.top()->getRange()),
 			this->context
 		);
-		Value::deleteValue(&last);
-		Value::deleteValue(&this->memory.pop());
+		Value::deleteValue(&last, Value::INTERPRETER);
+		Value::deleteValue(&this->memory.pop(), Value::INTERPRETER);
 
 		return result;
 	}
 
-	Value::deleteValue(&this->lastValue);
+	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 	return this->memory.popVariableValue(this->lastValue, this->context);
 }
 
@@ -174,7 +176,7 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 			this->context->setValue(f->getName(), new Function(
 				f->getFunction(),
 				f->lastRange(),
-				false
+				Value::CONTEXT_VARIABLE
 			));
 		} else {
 			result = ExpressionResult(
@@ -283,42 +285,42 @@ ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
 		if (result.error()) return result;
 		str = value->getStringValue() + token->getParts().at(i) + str;
 		if (i == 1) range.merge(value->getRange());
-		Value::deleteValue(&value);
+		Value::deleteValue(&value, Value::INTERPRETER);
 	}
 	str = token->getParts().at(0) + str;
 	this->memory.push(new String(
 		str,
 		range,
-		true
+		Value::INTERPRETER
 	));
 	return ExpressionResult();
 }
 
 ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
-	ExpressionResult sizeOk = this->memory.sizeExpected(
+	ExpressionResult result = this->memory.sizeExpected(
 		2,
 		"Not enough values for operator " + operatorToken->getStringValue(), 
 		operatorToken->getRange(),
 		this->context
 	);
-	if (sizeOk.error()) return sizeOk;
+	if (result.error()) return result;
 	Value *right, *left;
-	ExpressionResult popOk = this->memory.popVariableValue(right, this->context);
-	if (popOk.error()) return popOk;
-	popOk = this->memory.popVariableValue(left, this->context);
-	if (popOk.error()) {
-		Value::deleteValue(&right);
-		return popOk;
+	result = this->memory.popVariableValue(right, this->context);
+	if (result.error()) return result;
+	result = this->memory.popVariableValue(left, this->context);
+	if (result.error()) {
+		Value::deleteValue(&right, Value::INTERPRETER);
+		return result;
 	}
-	operatorResult result = left->applyOperator(right, operatorToken, this->context);
-	Value::deleteValue(&right);
-	Value::deleteValue(&left);
-	if (std::get<0>(result).error()) {
-		delete std::get<1>(result);
-		return std::get<0>(result);
+	operatorResult opResult = left->applyOperator(right, operatorToken, this->context);
+	Value::deleteValue(&right, Value::INTERPRETER);
+	if (right != left)
+		Value::deleteValue(&left, Value::INTERPRETER);
+	if (std::get<0>(opResult).error()) {
+		return std::get<0>(opResult);
 	}
 	
-	this->memory.push(std::get<1>(result));
+	this->memory.push(opResult.second);
 	return ExpressionResult();
 }
 
@@ -346,6 +348,7 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 		operatorToken->getRange(),
 		this->context
 	);
+	bool copy = this->memory.top()->getType() == VARIABLE || this->memory.top()->getType() == PATH;
 	if (result.error()) return result;
 	Value *left;
 	result = this->memory.popVariableValue(left, this->context);
@@ -358,24 +361,19 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 		);
 	}
 	Value *hold;
-	this->context->setValue(this->memory.top(), left->copy(false), &hold);
-	if (hold != nullptr) {
-		if (this->lastValue == hold) 
-			this->lastValue = nullptr;
-		if (left != hold) 
-			Value::deleteValue(&left);
-	}
+	this->context->setValue(this->memory.top(), copy ? left->copy() : left, &hold);
+	if (this->lastValue == hold)
+		this->lastValue = nullptr;
 	
 	return result;
 }
 
-ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) {
-	const RPNFunction *function;
-	ExpressionResult result;
+ExpressionResult Interpreter::getFunction(const Token *functionToken, const RPNFunction *&function) {
 	if (builtins::builtinFunctions.contains(functionToken->getStringValue())) {
 		function = &builtins::builtinFunctions.at(functionToken->getStringValue());
 	} else {
 		Value *value;
+		ExpressionResult result;
 		if (functionToken->getType() == TOKEN_TYPE_FUNCTION_CALL) {
 			result = this->context->getValue(functionToken, value);
 		} else {
@@ -388,9 +386,14 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 				functionToken->getRange(),
 				this->context
 			);
-		function = static_cast<Function*>(value)->getValue();
+		function = static_cast<const Function*>(value)->getValue();
 	}
+	return ExpressionResult();
+}
 
+ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) {
+	const RPNFunction *function;
+	ExpressionResult result = this->getFunction(functionToken, function);
 	result = this->memory.sizeExpected(
 		function->getArgumentsCount(),
 		"Invalid number of arguments for function, got " + functionToken->getStringValue() +
@@ -401,8 +404,8 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 	if (result.error()) return result;
 
 	std::vector<Value*> arguments;
+	Value *value;
 	for (size_t i = 0; i < function->getArgumentsCount(); i++) {
-		Value *value;
 		result = this->memory.popVariableValue(value, this->context);
 		if (result.error()) return result;
 		arguments.insert(arguments.begin(), value);
@@ -414,14 +417,16 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 	} else {
 		ContextPtr ctx;
 		ExpressionResult result = Module::getModuleContext(functionToken, this->context, ctx);
+		if (result.error()) return result;
 		callResult = function->call(arguments, functionToken->getRange(), ctx);
 	}
-	for (Value *value : arguments) Value::deleteValue(&value);
+	for (Value *value : arguments) 
+		Value::deleteValue(&value, Value::INTERPRETER);
 	if (std::get<0>(callResult).error()) {
-		Value::deleteValue(&std::get<1>(callResult));
+		Value::deleteValue(&callResult.second, Value::INTERPRETER);
 		return std::get<0>(callResult);
 	}
-	this->memory.push(std::get<1>(callResult));
+	this->memory.push(callResult.second);
 	return ExpressionResult();
 }
 
@@ -430,10 +435,10 @@ ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
 	if (result.error()) return result;
 	Value *condition = this->lastValue->to(BOOL);
 	if (static_cast<Bool*>(condition)->getValue()) {
-		Value::deleteValue(&condition);
+		Value::deleteValue(&condition, Value::INTERPRETER);
 		return this->interpret(block.getBlocks());
 	}
-	Value::deleteValue(&condition);
+	Value::deleteValue(&condition, Value::INTERPRETER);
 	if (block.getNext() != nullptr)
 		return this->interpret(block.getNext()->getBlocks());
 	
@@ -445,16 +450,16 @@ ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
 	if (result.error()) return result;
 	Value *condition = this->lastValue->to(BOOL);
 	while (static_cast<Bool*>(condition)->getValue()) {
-		Value::deleteValue(&condition);
+		Value::deleteValue(&condition, Value::INTERPRETER);
 		block.reset();
 		result = this->interpret(block.getBlocks());
 		if (result.error()) return result;
 		if (result.breakingLoop()) return ExpressionResult();
 		result = this->interpretLine(line);
 		if (result.error()) return result;
-		condition = static_cast<Bool*>(this->lastValue->to(BOOL));
+		condition = this->lastValue->to(BOOL);
 	}
-	Value::deleteValue(&condition);
+	Value::deleteValue(&condition, Value::INTERPRETER);
 	return ExpressionResult();
 }
 
@@ -468,59 +473,54 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		this->context
 	);
 	if (result.error()) return result;
-	std::vector<Int> forParams;
+	std::vector<std::unique_ptr<Int>> forParams;
 	Value *param;
-	Value *intParam;
 	for (int i = 0; i < 3; i++) {
 		result = this->memory.popVariableValue(param, this->context);
 		if (result.error()) return result;
-		if (!param->isCastableTo(INT)) {
+		if (param->getType() != INT) {
 			return ExpressionResult(
 				"Invalid type for for loop parameter, expected int but got " + param->getStringType(),
 				block.getRange(),
 				this->context
 			);
 		}
-		intParam = param->to(INT);
-		intParam->interpreterValue = false;
-		forParams.emplace(forParams.begin(), *static_cast<Int*>(intParam));
-		delete intParam;
-		Value::deleteValue(&param);
+		forParams.emplace(forParams.begin(), std::make_unique<Int>(static_cast<const Int*>(param)));
 	}
 
 	Value *variable = this->memory.pop();
 	if (variable->getType() != VARIABLE) {
 		TextRange range = variable->getRange();
-		Value::deleteValue(&variable);
+		Value::deleteValue(&variable, Value::INTERPRETER);
 		return ExpressionResult(
 			"Can't assign value to a non variable",
 			range,
 			this->context
 		);
 	}
-	Int zero {0, TextRange(), false};
-	CPPInterface step {&forParams.at(2)};
+	Int zero {0, TextRange(), Value::PARENT_FUNCTION};
+	CPPInterface step {forParams.at(2).get()};
 	if (step == &zero) {
-		Value::deleteValue(&variable);
+		Value::deleteValue(&variable, Value::INTERPRETER);
 		return ExpressionResult(
 			"Step can't be 0",
-			forParams.at(2).getRange(),
+			forParams.at(2)->getRange(),
 			this->context
 		);
 	}
 
-	CPPInterface i {&forParams.at(0)};
-	while (!result.breakingLoop() && ((step > &zero && i < &forParams.at(1)) || (step < &zero && i > &forParams.at(1)))) {
+	CPPInterface i {forParams.at(0).get()};
+	while (!result.breakingLoop() && ((step > &zero && i < forParams.at(1).get()) || (step < &zero && i > forParams.at(1).get()))) {
 		this->context->setValue(
 			variable->getStringValue(),
-			i.getValue()->copy(false)
+			i.getValue()
 		);
 		result = this->interpret(block.getBlocks());
 		if (result.error()) return result;
 		i += step;
 	}
-	Value::deleteValue(&i.getValue());
-	Value::deleteValue(&variable);
+	Value::deleteValue(&i.getValue(), Value::INTERPRETER);
+	Value::deleteValue(&variable, Value::INTERPRETER);
 	return ExpressionResult();
 }
 
@@ -539,28 +539,32 @@ ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
 			this->context
 		);
 	}
+
 	// try
 	ExpressionResult result = this->interpret(block.getBlocks());
 	if (block.getNext() == nullptr)
 		return result;
-	if (result.error()) {
-		// catch
-		if (block.getNext()->getKeyword()->getStringValue() == "catch") {
-			this->context->setValue(
-				line.top()->getStringValue(),
-				new String(result.getErrorMessage(), line.top()->getRange(), false)
-			);
-		
-			result = this->interpret(block.getNext()->getBlocks());
-			if (result.error()) return result;
-
-			// finally
-			if (block.getNext()->getNext() != nullptr)
-				return this->interpret(block.getNext()->getNext()->getBlocks());
-		}
-	}
+	
 	// finally
-	if (block.getNext()->getKeyword()->getStringValue() == "finally")
+	if (!result.error() || block.getNext()->getKeyword()->getStringValue() == "finally")
 		return this->interpret(block.getNext()->getBlocks());
+	
+	// catch
+	if (block.getNext()->getKeyword()->getStringValue() != "catch")
+		return result;
+	
+	this->context->setValue(
+		line.top()->getStringValue(),
+		new String(result.getErrorMessage(), line.top()->getRange(), Value::CONTEXT_VARIABLE)
+	);
+
+	result = this->interpret(block.getNext()->getBlocks());
+	if (result.error()) return result;
+
+	// finally
+	if (block.getNext()->getNext() != nullptr)
+		return this->interpret(block.getNext()->getNext()->getBlocks());
+	
+
 	return result;
 }

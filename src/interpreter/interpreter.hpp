@@ -48,16 +48,15 @@ class Interpreter {
 		ExpressionResult interpretOperator(const Token *operatorToken);
 		ExpressionResult interpretKeyword(const Token *keywordToken);
 		ExpressionResult interpretAssignment(const Token *operatorToken);
+		ExpressionResult getFunction(const Token *functionToken, const RPNFunction *&function);
 		ExpressionResult interpretFunctionCall(const Token *functionToken);
 		ExpressionResult interpretIf(Line &line, CodeBlock &block);
 		ExpressionResult interpretWhile(Line &line, CodeBlock &block);
 		ExpressionResult interpretFor(Line &line, CodeBlock &block);
 		ExpressionResult interpretTry(Line &line, CodeBlock &block);
-		
-		Value *lastValue;
-		
 		TextRange mergeRanges(const std::vector<Value*> &values);
 
+		Value *lastValue;
 		Memory memory;
 		ContextPtr context;
 };

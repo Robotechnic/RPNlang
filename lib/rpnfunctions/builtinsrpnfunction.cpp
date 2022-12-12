@@ -26,9 +26,8 @@ RPNFunctionResult BuiltinRPNFunction::call(
 ) const {
 	ContextPtr functionContext = std::make_shared<Context>(this->name, "<builtin>", context, CONTEXT_TYPE_FUNCTION);
 
-	RPNFunctionResult result = std::make_tuple(this->checkArgs(args, context), None::empty());
-	if (std::get<0>(result).error()) return result;
-	delete std::get<1>(result);
+	RPNFunctionResult result = std::make_pair(this->checkTypes(args, context), None::empty());
+	if (result.first.error()) return result;
 	TextRange functionRange = range;
 	if (args.size() > 0) {
 		functionRange.merge(args[0]->getRange());
@@ -42,7 +41,7 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	for (Value *val : converted)
 		delete val;
 	assert(
-		std::get<1>(result) != nullptr &&
+		result.second != nullptr &&
 		"BuiltinRPNFunction::call: result.second is nullptr"
 	);
 

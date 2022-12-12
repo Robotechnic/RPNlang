@@ -1,7 +1,7 @@
 #!/bin/sh
 
 cd build
-for example in ../tests/*
+for example in ../tests/*.rpn
 do
 	echo "============================================================"
 	echo "Testing $example"
@@ -10,6 +10,7 @@ do
 	if [ $? -ne 0 ]
 	then
 		echo "Test $example failed"
+		exit 1
 	fi
 	echo
 done

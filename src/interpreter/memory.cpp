@@ -28,7 +28,7 @@ ExpressionResult Memory::popVariableValue(Value *&value, const ContextPtr &conte
 		result = context->getValue(this->stack.top(), value);
 	else
 		result = Module::getModuleValue(this->stack.top(), value, context);
-	Value::deleteValue(&this->stack.top());
+	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);
 	this->stack.pop();
 	if (result.error()) return result;
 	return result;
@@ -40,7 +40,7 @@ Value*& Memory::top() {
 
 void Memory::clear(size_t offset) {
 	while (this->stack.size() > offset) {
-		Value::deleteValue(&this->stack.top());
+		Value::deleteValue(&this->stack.top(), Value::INTERPRETER);
 		this->stack.pop();
 	}
 }
@@ -96,7 +96,7 @@ ExpressionResult Memory::topVariableToValue(const ContextPtr &context) {
 	else
 		result = Module::getModuleValue(this->stack.top(), value, context);
 	
-	Value::deleteValue(&this->stack.top());
+	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);
 	this->stack.pop();
 	if (result.error()) return result;
 	this->stack.push(value);

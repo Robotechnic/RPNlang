@@ -22,7 +22,10 @@ TextRange CodeBlock::getRange() const {
 }
 
 void CodeBlock::setNext(CodeBlock *next) {
-	this->next = next;
+	if (this->next != nullptr)
+		this->next->setNext(next);
+	else
+		this->next = next;
 }
 
 CodeBlock *CodeBlock::getNext() const {
@@ -53,6 +56,8 @@ void CodeBlock::display() const {
 	const std::string name = this->keyword->getStringValue();
 	std::cout << "CodeBlock: " << name << std::endl;
 	this->blocks.display();
+	if (this->next != nullptr)
+		this->next->display();
 	std::cout<< "End CodeBlock: " << name << std::endl;
 }
 

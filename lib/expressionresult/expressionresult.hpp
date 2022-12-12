@@ -21,7 +21,6 @@ class ExpressionResult {
 	public:
 		ExpressionResult();
 		ExpressionResult(std::string_view errorMessage, TextRange errorRange, ContextPtr parentContext);
-		ExpressionResult(std::string_view errorMessage, TextRange &&errorRange, ContextPtr parentContext);
 		ExpressionResult(Status status);
 		ExpressionResult(const ExpressionResult &other) noexcept;
 		ExpressionResult(ExpressionResult &&other) noexcept;

@@ -8,18 +8,18 @@
 
 class None : public Value {
 	public:
-		None(TextRange range, bool interpreterValue);
+		None(TextRange range, ValueOwner owner);
 
 		inline std::string getStringValue() const;
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };
 
-		Value *to(ValueType type, bool interpreterValue = true);
-		inline Value *copy(bool interpreterValue = true) const override;
+		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
+		inline Value *copy(ValueOwner owner = INTERPRETER) const override;
 
 		static None *empty() {
-			return new None(TextRange(), true);
+			return None::emptyNone.get();
 		}
 
 		operatorResult opadd(const Value *other, const ContextPtr &context) const override;
@@ -34,4 +34,7 @@ class None : public Value {
 		operatorResult ople(const Value *other, const ContextPtr &context) const override;
 		operatorResult opne(const Value *other, const ContextPtr &context) const override;
 		operatorResult opeq(const Value *other, const ContextPtr &context) const override;
+	
+	private:
+		static std::unique_ptr<None> emptyNone;
 };

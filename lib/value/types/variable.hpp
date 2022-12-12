@@ -16,8 +16,8 @@ class Variable : public Value {
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };
 
-		Value *to(ValueType type, bool interpreterValue = true);
-		inline Value *copy(bool interpreterValue = true) const override;
+		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
+		inline Value *copy(ValueOwner owner = INTERPRETER) const override;
 
 		operatorResult opadd(const Value *other, const ContextPtr &context) const override;
 		operatorResult opsub(const Value *other, const ContextPtr &context) const override;

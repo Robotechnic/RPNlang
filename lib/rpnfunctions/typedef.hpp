@@ -12,5 +12,5 @@ class Context;
 class TextRange;
 
 typedef std::vector<Value*> RPNFunctionArgs;
-typedef std::tuple<ExpressionResult, Value*> RPNFunctionResult;
+typedef std::pair<ExpressionResult, Value*> RPNFunctionResult;
 typedef std::function<RPNFunctionResult(const RPNFunctionArgs&, TextRange&, ContextPtr)> BuiltinRPNFunctionType;

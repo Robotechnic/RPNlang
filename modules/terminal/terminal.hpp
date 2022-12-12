@@ -37,7 +37,7 @@ enum BACKGROUND_COLORS {
 ExpressionResult loader(CppModule *module);
 
 ModuleAPI moduleAPI {
-	"terminalMatrix",
+	"terminal",
 	"Allow to draw what you whant on the terminal and manage user input",
 	"1.0",
 	"robotechnic",

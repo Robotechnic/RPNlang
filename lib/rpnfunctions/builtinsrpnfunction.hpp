@@ -29,7 +29,7 @@ class BuiltinRPNFunction : public RPNFunction {
 			const RPNFunctionArgs &args,
 			const TextRange &range,
 			ContextPtr context
-		) const;
+		) const override;
 
 		static const std::unordered_map<std::string, BuiltinRPNFunction> builtinFunctions;
 

@@ -14,13 +14,6 @@ ExpressionResult::ExpressionResult(std::string_view errorMessage, TextRange erro
 	context(parentContext)
 {}
 
-ExpressionResult::ExpressionResult(std::string_view errorMessage, TextRange &&errorRange, ContextPtr parentContext) :
-	resultStatus(ERROR),
-	errorMessage(errorMessage),
-	errorRange(errorRange),
-	context(parentContext)
-{}
-
 ExpressionResult::ExpressionResult(Status status) :
 	resultStatus(status)
 {}
@@ -128,7 +121,7 @@ void ExpressionResult::display() const {
 	TextRange range = this->getRange();
 	std::cout << "Error : " << this->errorMessage<<std::endl;
 
-	if (this->context->getType() == CONTEXT_TYPE_MODULE || this->context->getType() == CONTEXT_TYPE_BUILTIN_MODULE) {
+	if (this->context->getType() == CONTEXT_TYPE_BUILTIN_MODULE) {
 		return;
 	}
 

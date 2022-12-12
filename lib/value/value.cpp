@@ -1,9 +1,9 @@
 #include "value/value.hpp"
 
-Value::Value(ValueType type, const TextRange range, bool interpreterValue) :
-	interpreterValue(interpreterValue),
+Value::Value(ValueType type, const TextRange range, ValueOwner owner) :
 	range(range),
-	type(type) {}
+	type(type),
+	owner(owner) {}
 
 
 ValueType Value::getType() const {
@@ -16,10 +16,6 @@ std::string Value::getStringType() const {
 
 TextRange Value::getRange() const {
 	return this->range;
-}
-
-Value *Value::to(ValueType type, bool interpreterValue) {
-	throw std::runtime_error("Cannot convert " + this->stringType(this->getType()) + " to " + this->stringType(type));
 }
 
 /**
@@ -121,7 +117,7 @@ operatorResult Value::applyOperator(const Value *other, const Token *operatorTok
 	if (op == ">=")
 		return this->opge(other, context);
 
-	return std::make_tuple(
+	return std::make_pair(
 		ExpressionResult(
 			"Invalid operator " + op,
 			this->getRange(),
@@ -129,6 +125,28 @@ operatorResult Value::applyOperator(const Value *other, const Token *operatorTok
 		),
 		nullptr
 	);
+}
+
+Value::ValueOwner Value::getOwner() const {
+	return this->owner;
+}
+
+void Value::setOwner(ValueOwner owner, bool overwrite) {
+	if (overwrite || owner > this->owner) {
+		this->owner = owner;
+	}
+}
+
+/**
+ * @brief delete tthe value in parameters if it is an INterpreter generated value
+ * 
+ * @param val the value to delete
+ */
+void Value::deleteValue(Value **val, ValueOwner deleter) {
+	if ((*val) == nullptr || (*val)->owner != deleter) 
+		return;
+	delete (*val);
+	(*val) = nullptr;
 }
 
 std::ostream &operator<<(std::ostream &os, const Value *value) {
@@ -140,15 +158,4 @@ std::string std::to_string(const Value *value) {
 	std::stringstream ss;
 	ss << value;
 	return ss.str();
-}
-
-/**
- * @brief delete tthe value in parameters if it is an INterpreter generated value
- * 
- * @param val the value to delete
- */
-void Value::deleteValue(Value **val) {
-	if ((*val) == nullptr || !(*val)->interpreterValue) return;
-	delete (*val);
-	(*val) = nullptr;
 }

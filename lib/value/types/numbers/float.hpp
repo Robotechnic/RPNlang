@@ -16,17 +16,17 @@ class String;
 
 class Float : public Value {
 	public:
-		Float(const std::string &value, TextRange range, bool interpreterValue);
-		Float(float value, TextRange range, bool interpreterValue);
+		Float(const std::string &value, TextRange range, ValueOwner owner);
+		Float(float value, TextRange range, ValueOwner owner);
 
 		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const { return true; };
 
-		Value *to(ValueType type, bool interpreterValue = true);
-		inline Value *copy(bool interpreterValue = true) const override;
+		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
+		inline Value *copy(ValueOwner owner = INTERPRETER) const override;
 
 		static Float *empty() {
-			return new Float(0, TextRange(), true);
+			return Float::emptyFloat.get();
 		}
 
 		inline std::string getStringValue() const;
@@ -48,4 +48,5 @@ class Float : public Value {
 
 	private:
 		float value;
+		static std::unique_ptr<Float> emptyFloat;
 };

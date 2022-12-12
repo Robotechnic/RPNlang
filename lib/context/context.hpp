@@ -24,21 +24,22 @@ class Context : public std::enable_shared_from_this<Context> {
 		Context(std::string_view name, std::string_view filePath, symbolTable symbols, ContextPtr parent, ContextType type = CONTEXT_TYPE_DEFAULT, bool root = false);
 		~Context();
 
+		void clear();
+
 		inline void setName(std::string_view name);
 		std::string getName() const;
 
 		inline void setFilePath(std::string_view filePath);
-		std::string getFilePath() const;
+		std::string getFilePath();
 
 		void setParent(ContextPtr parent);
-		void clearChild();
 
 		ContextPtr getParent() const;
 		ContextType getType() const;
 
-		void setValue(const std::string &name, Value *value, Value **hold = nullptr);
-		void setValue(const Token *name, Value *value, Value **hold = nullptr);
-		void setValue(const Value *name, Value *value, Value **hold = nullptr);
+		void setValue(const std::string &name, Value *value, Value **hold = nullptr, bool takeOwnership = false);
+		void setValue(const Token *name, Value *value, Value **hold = nullptr, bool takeOwnership = false);
+		void setValue(const Value *name, Value *value, Value **hold = nullptr, bool takeOwnership = false);
 		
 		ExpressionResult getValue(const Value *name, Value *&value);
 		ExpressionResult getValue(const Token *name, Value *&value);
@@ -47,7 +48,8 @@ class Context : public std::enable_shared_from_this<Context> {
 		Value *getValue(const std::string &name);
 
 		bool hasValue(std::string_view name) const;
-		
+		void takeOwnership();
+
 	private:
 		std::string name, filePath;
 		symbolTable symbols;
