@@ -473,7 +473,7 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		this->context
 	);
 	if (result.error()) return result;
-	std::vector<std::unique_ptr<Int>> forParams;
+	std::vector<Int*> forParams;
 	Value *param;
 	for (int i = 0; i < 3; i++) {
 		result = this->memory.popVariableValue(param, this->context);
@@ -485,7 +485,7 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 				this->context
 			);
 		}
-		forParams.emplace(forParams.begin(), std::make_unique<Int>(static_cast<const Int*>(param)));
+		forParams.emplace(forParams.begin(), static_cast<Int*>(param));
 	}
 
 	Value *variable = this->memory.pop();
@@ -499,7 +499,7 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		);
 	}
 	Int zero {0, TextRange(), Value::PARENT_FUNCTION};
-	CPPInterface step {forParams.at(2).get()};
+	CPPInterface step {forParams.at(2)};
 	if (step == &zero) {
 		Value::deleteValue(&variable, Value::INTERPRETER);
 		return ExpressionResult(
@@ -509,8 +509,8 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		);
 	}
 
-	CPPInterface i {forParams.at(0).get()};
-	while (!result.breakingLoop() && ((step > &zero && i < forParams.at(1).get()) || (step < &zero && i > forParams.at(1).get()))) {
+	CPPInterface i {forParams.at(0)};
+	while (!result.breakingLoop() && ((step > &zero && i < forParams.at(1)) || (step < &zero && i > forParams.at(1)))) {
 		this->context->setValue(
 			variable->getStringValue(),
 			i.getValue()
