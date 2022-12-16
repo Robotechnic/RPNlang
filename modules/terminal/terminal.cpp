@@ -37,8 +37,9 @@ ExpressionResult loader(CppModule *module) {
 
 	module->addFunction(
 		"home", {}, {}, NONE, [](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			// set cursor to top left of screen
+			// set cursor to top left of screen and reset colors
 			std::cout << "\033[0;0H";
+			std::cout << "\033[0m";
 			return std::make_pair(ExpressionResult(), None::empty());
 		}
 	);

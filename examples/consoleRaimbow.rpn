@@ -52,5 +52,7 @@ main -> none fun
 	3000 :time.sleep
 	:randomTerminalColor
 	3000 :time.sleep
+	:terminal.clear
+	:terminal.home
 	"Finished\n" :print
 nuf
