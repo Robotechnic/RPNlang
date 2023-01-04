@@ -46,6 +46,7 @@ randomRGBTerminalColors -> none fun
 nuf
 
 main -> none fun
+	:random.rseed
 	:randomRGBTerminalColors
 	3000 :time.sleep
 	:rgbTerminalColors
