@@ -22,9 +22,10 @@ class Value {
 			INTERPRETER      = 0,
 			PARENT_FUNCTION  = 1,
 			CONTEXT_VARIABLE = 2,
-			VALUE_TOKEN      = 3,
-			MODULE           = 4,
-			EMPTY_VALUE      = 5
+			LIST_VALUE	     = 3,
+			VALUE_TOKEN      = 4,
+			MODULE           = 5,
+			EMPTY_VALUE      = 6
 		};
 		Value(ValueType type, const TextRange range, ValueOwner owner);
 		virtual ~Value() = default;

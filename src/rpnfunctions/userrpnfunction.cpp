@@ -23,7 +23,7 @@ UserRPNFunction::~UserRPNFunction() {
 }
 
 RPNFunctionResult UserRPNFunction::call(
-	const RPNFunctionArgs &args,
+	RPNFunctionArgs &args,
 	const TextRange &range,
 	ContextPtr context
 ) const {

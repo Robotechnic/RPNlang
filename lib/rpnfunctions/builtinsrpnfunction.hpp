@@ -26,7 +26,7 @@ class BuiltinRPNFunction : public RPNFunction {
 		~BuiltinRPNFunction();
 
 		RPNFunctionResult call(
-			const RPNFunctionArgs &args,
+			RPNFunctionArgs &args,
 			const TextRange &range,
 			ContextPtr context
 		) const override;

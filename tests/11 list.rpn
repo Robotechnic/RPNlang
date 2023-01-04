@@ -1,0 +1,72 @@
+"random" :import
+"math" :import
+"Create lists of elements\n" :print
+
+test 1 2 3 4 5 7 8 9 8 list =
+test f"List {} \n" :print
+test :len f"Length of list {} \n" :print
+
+test1 3 1 4 1 5 5 list =
+test1 f"List {} \n" :print
+test1 :len f"Length of list {} \n" :print
+
+test test test1 + =
+test f"List {} \n" :print
+test :len f"Length of list {} \n" :print
+
+test test1 3 * =
+test f"List {} \n" :print
+test :len f"Length of list {} \n" :print
+
+# 2d list
+matrix 1 2 3 3 list 4 5 6 3 list 7 8 9 3 list 3 list =
+matrix f"Matrix {} \n" :print
+matrix :len f"Length of matrix {} \n" :print
+
+i 0 test :len 1 for
+	i test i :at f"{} -> {} \n" :print
+rof
+
+# insert and push
+:random.rseed
+"random push\n" :print
+test 0 list =
+i 0 10 1 for
+	test 0 5 :random.randRange :push
+	test test :len 1 - :at f"Inseted value : {} \n" :print
+rof
+test f"List {} \n" :print
+test :len f"Length of list {} \n" :print
+
+"random insert\n" :print
+test 0 list =
+i 0 10 1 for
+	test 0 test :len 1 - 0 :math.max :random.randRange i :insert
+rof
+test f"Final list {} \n" :print
+test :len f"Length of list {} \n" :print
+
+"pop values from list\n" :print
+test 1 2 3 4 5 7 8 9 8 list =
+test f"List {} \n" :print
+i 0 test :len 1 for
+	test :pop f"{} \n" :print
+rof
+test f"List {} \n" :print
+
+"random remove\n" :print
+test 1 2 3 4 5 7 8 9 8 list =
+test f"List {} \n" :print
+i 0 test :len 1 for
+	test 0 test :len 1 - 0 :math.max :random.randRange :remove
+	test f"{} \n" :print
+rof
+test f"List {} \n" :print
+
+"clear list\n" :print
+test 1 2 3 4 5 7 8 9 8 list =
+test f"List {} \n" :print
+test :clear
+test f"List {} \n" :print
+
+"done\n" :print

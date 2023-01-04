@@ -274,6 +274,42 @@ ExpressionResult loader(CppModule *module){
 		);
 	});
 
+	module->addFunction("min", {"value1", "value2"}, {INT, INT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+		return std::make_pair(
+			ExpressionResult(),
+			new Int(
+				std::min(static_cast<Int *>(args[0])->getValue(), static_cast<Int *>(args[1])->getValue()), range, Value::INTERPRETER
+			)
+		);
+	});
+
+	module->addFunction("minf", {"value1", "value2"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+		return std::make_pair(
+			ExpressionResult(),
+			new Float(
+				std::min(static_cast<Float *>(args[0])->getValue(), static_cast<Float *>(args[1])->getValue()), range, Value::INTERPRETER
+			)
+		);
+	});
+
+	module->addFunction("max", {"value1", "value2"}, {INT, INT}, INT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+		return std::make_pair(
+			ExpressionResult(),
+			new Int(
+				std::max(static_cast<Int *>(args[0])->getValue(), static_cast<Int *>(args[1])->getValue()), range, Value::INTERPRETER
+			)
+		);
+	});
+
+	module->addFunction("maxf", {"value1", "value2"}, {FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
+		return std::make_pair(
+			ExpressionResult(),
+			new Float(
+				std::max(static_cast<Float *>(args[0])->getValue(), static_cast<Float *>(args[1])->getValue()), range, Value::INTERPRETER
+			)
+		);
+	});
+
 	module->addFunction("map", {"value", "min", "max", "newMin", "newMax"}, {FLOAT, FLOAT, FLOAT, FLOAT, FLOAT}, FLOAT, [](RPNFunctionArgs args, const TextRange &range, ContextPtr context) {
 		// simple linear mapping
 		// (value - min) * (newMax - newMin) / (max - min) + newMin

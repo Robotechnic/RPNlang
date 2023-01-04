@@ -13,6 +13,7 @@ std::unique_ptr<Float> Float::emptyFloat = std::make_unique<Float>(0.0f, TextRan
 bool Float::isCastableTo(ValueType type) const {
 	return 
 		type == STRING ||
+		type == ANY ||
 		type == INT ||
 		type == FLOAT ||
 		type == BOOL;
@@ -25,6 +26,7 @@ Value *Float::to(ValueType type, ValueOwner owner) const {
 		case INT:
 			return new Int(static_cast<int64_t>(value), range, owner);
 		case FLOAT:
+		case ANY:
 			return new Float(this->value, this->range, owner);
 		case BOOL:
 			return new Bool(value != 0, range, owner);

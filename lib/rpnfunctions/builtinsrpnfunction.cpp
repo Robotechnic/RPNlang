@@ -20,7 +20,7 @@ BuiltinRPNFunction::BuiltinRPNFunction(
 BuiltinRPNFunction::~BuiltinRPNFunction() {}
 
 RPNFunctionResult BuiltinRPNFunction::call(
-	const RPNFunctionArgs &args,
+	RPNFunctionArgs &args,
 	const TextRange &range,
 	ContextPtr context
 ) const {
@@ -35,11 +35,16 @@ RPNFunctionResult BuiltinRPNFunction::call(
 
 	RPNFunctionArgs converted;
 	for (size_t i = 0; i < args.size(); i++) {
-		converted.push_back(args.at(i)->to(this->argsTypes.at(i)));
+		if (this->argsTypes.at(i) == ANY || args.at(i)->getType() == this->argsTypes.at(i))
+			converted.push_back(args.at(i));
+		else
+			converted.push_back(args.at(i)->to(this->argsTypes.at(i)));
 	}
 	result = this->function(converted, functionRange, functionContext);
-	for (Value *val : converted)
-		delete val;
+	for (size_t i = 0; i < args.size(); i++)
+		if (this->argsTypes.at(i) != ANY && args.at(i)->getType() != this->argsTypes.at(i)) 
+			delete converted.at(i);
+	
 	assert(
 		result.second != nullptr &&
 		"BuiltinRPNFunction::call: result.second is nullptr"

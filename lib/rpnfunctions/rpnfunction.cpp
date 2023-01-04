@@ -22,7 +22,7 @@ RPNFunction::~RPNFunction() {}
  * @return RPNFunctionResult If the function was executed successfully and value if it is the case
  */
 RPNFunctionResult RPNFunction::call(
-	const RPNFunctionArgs &args,
+	RPNFunctionArgs &args,
 	const TextRange &range,
 	ContextPtr context
 ) const {
@@ -49,9 +49,9 @@ RPNFunctionResult RPNFunction::call(
  * @param args the arguments provided by the user
  * @return ExpressionResult if the arguments are correct
  */
-ExpressionResult RPNFunction::checkTypes(const RPNFunctionArgs &args, const ContextPtr &context) const {
+ExpressionResult RPNFunction::checkTypes(RPNFunctionArgs &args, const ContextPtr &context) const {
 	for (size_t i = 0; i < args.size(); i++) {
-		if (args[i]->getType() == this->argsTypes[i]) continue;
+		if (args[i]->getType() == this->argsTypes[i] || this->argsTypes[i] == ANY) continue;
 		
 		if (!args[i]->isCastableTo(this->argsTypes[i])) {
 			return ExpressionResult(

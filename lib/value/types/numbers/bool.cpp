@@ -13,6 +13,7 @@ std::unique_ptr<Bool> Bool::emptyBool = std::make_unique<Bool>(false, TextRange(
 bool Bool::isCastableTo(ValueType type) const {
 	return 
 		type == STRING ||
+		type == ANY ||
 		type == INT ||
 		type == FLOAT ||
 		type == BOOL;
@@ -27,6 +28,7 @@ Value *Bool::to(ValueType type, ValueOwner owner) const {
 		case FLOAT:
 			return new Float(static_cast<float>(value), range, owner);
 		case BOOL:
+		case ANY:
 			return new Bool(this->value, this->range, owner);
 		default:
 			throw std::runtime_error("Invalid value type");

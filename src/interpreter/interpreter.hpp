@@ -39,7 +39,6 @@ class Interpreter {
 
 		Value *getLastValue() const;
 
-
 	private:
 		ExpressionResult checkMemory();
 		ExpressionResult interpretLine(Line &line, bool clearMemory = true);
@@ -54,6 +53,7 @@ class Interpreter {
 		ExpressionResult interpretWhile(Line &line, CodeBlock &block);
 		ExpressionResult interpretFor(Line &line, CodeBlock &block);
 		ExpressionResult interpretTry(Line &line, CodeBlock &block);
+		ExpressionResult interpretList(const Token *keywordToken);
 		TextRange mergeRanges(const std::vector<Value*> &values);
 
 		Value *lastValue;

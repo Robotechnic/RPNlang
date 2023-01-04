@@ -3,7 +3,11 @@
 Value::Value(ValueType type, const TextRange range, ValueOwner owner) :
 	range(range),
 	type(type),
-	owner(owner) {}
+	owner(owner) {
+		if (type == ANY) {
+			throw std::runtime_error("ANY type is not allowed in value type");
+		}
+	}
 
 
 ValueType Value::getType() const {
@@ -42,8 +46,13 @@ std::string Value::stringType(const ValueType &type) {
 			return "variable";
 		case PATH:
 			return "path";
+		case LIST:
+			return "list";
+		case ANY:
+			return "any";
+		
 		default:
-			throw std::runtime_error("This type doesn't exist");
+			throw std::runtime_error("This type doesn't exist " + std::to_string(type));
 	}
 }
 
@@ -66,8 +75,10 @@ ValueType Value::valueType(std::string_view type) {
 		return BOOL;
 	if (type == "none")
 		return NONE;
+	if (type == "list")
+		return LIST;
 	
-	throw std::runtime_error("This type doesn't exist");
+	throw std::runtime_error("This string type doesn't exist");
 }
 
 void Value::concatValueRange(const Value *other) {

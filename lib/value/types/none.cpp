@@ -9,11 +9,11 @@ inline std::string None::getStringValue() const {
 }
 
 bool None::isCastableTo(ValueType type) const {
-	return type == NONE;
+	return type == NONE || type == ANY || type == BOOL;
 }
 
 Value *None::to(ValueType type, ValueOwner owner) const {
-	if (type == NONE)
+	if (type == NONE || type == ANY)
 		return new None(this->range, owner);
 	if (type == BOOL)
 		return new Bool(false, this->range, owner);

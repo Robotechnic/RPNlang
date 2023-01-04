@@ -7,5 +7,6 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/variable.cpp
 	${CMAKE_CURRENT_LIST_DIR}/path.cpp
 	${CMAKE_CURRENT_LIST_DIR}/function.cpp
+	${CMAKE_CURRENT_LIST_DIR}/list.cpp
 	${CMAKE_CURRENT_LIST_DIR}/numbers/cppinterface.cpp
 )

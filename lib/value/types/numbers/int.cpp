@@ -19,6 +19,7 @@ bool Int::isCastableTo(ValueType type) const {
 		type == STRING ||
 		type == INT ||
 		type == FLOAT ||
+		type == ANY ||
 		type == BOOL;
 }
 
@@ -27,6 +28,7 @@ Value *Int::to(ValueType type, ValueOwner owner) const {
 		case STRING:
 			return new String(std::to_string(value), range, owner);
 		case INT:
+		case ANY:
 			return new Int(value, range, owner);
 		case FLOAT:
 			return new Float(static_cast<float>(value), range, owner);

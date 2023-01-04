@@ -69,7 +69,7 @@ Context::~Context() {
 
 void Context::clear() {
 	for (auto it = this->symbols.begin(); it != this->symbols.end(); it++) {
-		if (it->second->getOwner() != Value::CONTEXT_VARIABLE) 
+		if (it->second == nullptr || it->second->getOwner() != Value::CONTEXT_VARIABLE) 
 			continue;
 		delete it->second;
 		it->second = nullptr;

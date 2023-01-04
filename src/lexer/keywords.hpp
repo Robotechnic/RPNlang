@@ -21,6 +21,7 @@ const std::regex keywordsRegex("^("
 	"catch|"
 	"finally|"
 	"yrt|"
+	"list|"
 ")$");
 
 const std::unordered_map<std::string, std::vector<std::string>> blockOpeners = {
@@ -48,5 +49,6 @@ const std::unordered_map<std::string, std::string> blockClosers = {
 const std::unordered_map<std::string, std::vector<std::string>> parentDependency = {
 	{"return"  , {"fun"}},
 	{"continue", {"while", "for"}},
-	{"break"   , {"while", "for"}}
+	{"break"   , {"while", "for"}},
+	{"list"    , {}}
 };

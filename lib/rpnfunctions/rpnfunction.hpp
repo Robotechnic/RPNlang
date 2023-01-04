@@ -20,7 +20,7 @@ class RPNFunction {
 		virtual ~RPNFunction();
 
 		virtual RPNFunctionResult call(
-			const RPNFunctionArgs &args,
+			RPNFunctionArgs &args,
 			const TextRange &range,
 			ContextPtr context
 		) const;
@@ -30,7 +30,7 @@ class RPNFunction {
 		TextRange getRange() const;
 
 	protected:
-		ExpressionResult checkTypes(const RPNFunctionArgs &args, const ContextPtr &context) const;		
+		ExpressionResult checkTypes(RPNFunctionArgs &args, const ContextPtr &context) const;		
 
 		std::string name;
 		std::vector<std::string> argsName;

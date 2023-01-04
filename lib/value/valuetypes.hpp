@@ -8,5 +8,7 @@ enum ValueType {
 	FUNCTION,
 	BOOL,
 	PATH,
+	LIST,
+	ANY,
 	NONE
 };

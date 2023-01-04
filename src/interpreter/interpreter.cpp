@@ -58,7 +58,8 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 		TextRange mainRange = val->getRange();
 		if (val->getType() == FUNCTION) {
 			const RPNFunction* func = val->getValue();
-			RPNFunctionResult mainResult = func->call({}, mainRange, this->context);
+			RPNFunctionArgs args;
+			RPNFunctionResult mainResult = func->call(args, mainRange, this->context);
 			Value::deleteValue(&mainResult.second, Value::INTERPRETER);
 			if (std::get<0>(mainResult).error()) {
 				std::get<0>(mainResult).display();
@@ -68,6 +69,7 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 	}
 
 	this->context->takeOwnership();
+	this->context->clear();
 
 	return true;
 }
@@ -257,7 +259,7 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 	} else if (type == "for") {
 		return this->interpretFor(line, block);
 	} else if (type == "try") {
-		return this->interpretTry(line, block);	
+		return this->interpretTry(line, block);
 	} else {
 		return ExpressionResult(
 			"Unknow block type",
@@ -332,6 +334,8 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 		return ExpressionResult(ExpressionResult::CONTINUE);
 	}  else if (keyword == "return") {
 		return ExpressionResult(ExpressionResult::RETURN);
+	}  else if (keyword == "list") {
+		return this->interpretList(keywordToken);
 	} else {
 		return ExpressionResult(
 			"Unknow keyword " + keyword,
@@ -394,9 +398,11 @@ ExpressionResult Interpreter::getFunction(const Token *functionToken, const RPNF
 ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) {
 	const RPNFunction *function;
 	ExpressionResult result = this->getFunction(functionToken, function);
+	if (result.error()) return result;
 	result = this->memory.sizeExpected(
 		function->getArgumentsCount(),
-		"Invalid number of arguments for function, got " + functionToken->getStringValue() +
+		"Invalid number of arguments for function " + functionToken->getStringValue() +
+		" got " + std::to_string(this->memory.size()) +
 		" but expected " + std::to_string(function->getArgumentsCount()) + " arguments",
 		functionToken->getRange(),
 		this->context
@@ -420,7 +426,7 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 		if (result.error()) return result;
 		callResult = function->call(arguments, functionToken->getRange(), ctx);
 	}
-	for (Value *value : arguments) 
+	for (Value *value : arguments)
 		Value::deleteValue(&value, Value::INTERPRETER);
 	if (std::get<0>(callResult).error()) {
 		Value::deleteValue(&callResult.second, Value::INTERPRETER);
@@ -521,6 +527,8 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 	}
 	Value::deleteValue(&i.getValue(), Value::INTERPRETER);
 	Value::deleteValue(&variable, Value::INTERPRETER);
+	for (Value *param : forParams)
+		Value::deleteValue(&param, Value::INTERPRETER);
 	return ExpressionResult();
 }
 
@@ -567,4 +575,41 @@ ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
 	
 
 	return result;
+}
+
+ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
+	ExpressionResult result = this->memory.sizeExpected(
+		1,
+		"Expected list size before list keyword",
+		keywordToken->getRange(),
+		this->context
+	);
+	if (result.error()) return result;
+	Int *size = static_cast<Int*>(this->memory.pop());
+	if (size->getValue() < 0) {
+		return ExpressionResult(
+			"List size must be positive",
+			size->getRange(),
+			this->context
+		);
+	}
+	result = this->memory.sizeExpected(
+		size->getValue(),
+		"Not enough values to create list, expected " + std::to_string(size->getValue()) + " but got " + std::to_string(this->memory.size()),
+		keywordToken->getRange().merge(size->getRange()),
+		this->context
+	);
+	if (result.error()) return result;
+	TextRange range = keywordToken->getRange().merge(size->getRange());
+	std::vector<Value*> values;
+	Value *value;
+	for (int i = 0; i < size->getValue(); i++) {
+		result = this->memory.popVariableValue(value, this->context);
+		if (result.error()) return result;
+		value->setOwner(Value::LIST_VALUE);
+		values.emplace(values.begin(), value);
+		range.merge(values.at(0)->getRange());
+	}
+	this->memory.push(new List(values, range, Value::INTERPRETER));
+	return ExpressionResult();
 }

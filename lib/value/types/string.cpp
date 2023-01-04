@@ -9,6 +9,7 @@ std::unique_ptr<String> String::emptyString = std::make_unique<String>("", TextR
 bool String::isCastableTo(ValueType type) const {
 	return 
 		type == STRING ||
+		type == ANY ||
 		type == BOOL;
 }
 
@@ -19,6 +20,7 @@ inline std::string String::getStringValue() const {
 Value *String::to(ValueType type, ValueOwner owner) const {
 	switch (type) {
 		case STRING:
+		case ANY:
 			return new String(this->value, this->range, owner);
 		case BOOL:
 			return new Bool(this->value == "true", this->range, owner);

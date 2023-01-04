@@ -13,4 +13,4 @@ class TextRange;
 
 typedef std::vector<Value*> RPNFunctionArgs;
 typedef std::pair<ExpressionResult, Value*> RPNFunctionResult;
-typedef std::function<RPNFunctionResult(const RPNFunctionArgs&, TextRange&, ContextPtr)> BuiltinRPNFunctionType;
+typedef std::function<RPNFunctionResult(RPNFunctionArgs&, TextRange&, ContextPtr)> BuiltinRPNFunctionType;

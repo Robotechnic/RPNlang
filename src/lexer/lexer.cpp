@@ -23,6 +23,7 @@ void Lexer::pushLine() {
 }
 
 bool Lexer::hasParentKeywordBlock(const std::vector<std::string> &keywords) const {
+	if (keywords.empty()) return true;
 	std::stack<CodeBlock*> stack = this->keywordBlockStack;
 	while (!stack.empty()) {
 		CodeBlock *block = stack.top();
@@ -234,7 +235,7 @@ ExpressionResult Lexer::parseString(Token *token) {
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
 ExpressionResult Lexer::parseLiteral(Token *token) {
-	if (std::regex_match(token->getStringValue().data(), keywordsRegex)) {
+	if (std::regex_match(token->getStringValue(), keywordsRegex)) {
 		token->setType(TOKEN_TYPE_KEYWORD);
 		return this->parseKeyword(token);
 	}

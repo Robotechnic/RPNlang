@@ -6,7 +6,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::cout << args[0]->getStringValue();
 			return std::make_pair(ExpressionResult(), None::empty());
 		}
@@ -16,7 +16,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::STRING,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::cout<<args[0]->getStringValue();
 			std::string input;
 			std::getline(std::cin, input);
@@ -26,10 +26,23 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 	{"len", BuiltinRPNFunction(
 		"len",
 		{"value"},
-		{ValueType::STRING},
+		{ValueType::ANY},
 		ValueType::INT,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			return std::make_pair(ExpressionResult(), new Int(args[0]->getStringValue().size(), range, Value::INTERPRETER));
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			if (args[0]->getType() == LIST)
+				return std::make_pair(
+					ExpressionResult(),
+					new Int(
+						static_cast<List*>(args[0])->size(),
+						range,
+						Value::INTERPRETER
+					)
+				);
+			
+			return std::make_pair(
+				ExpressionResult(), 
+				new Int(args[0]->getStringValue().size(), range, Value::INTERPRETER)
+			);
 		}
 	)},
 	{"substr", BuiltinRPNFunction(
@@ -37,7 +50,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value", "start", "length"},
 		{ValueType::STRING, ValueType::INT, ValueType::INT},
 		ValueType::STRING,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			const std::string value = args[0]->getStringValue();
 			int start = static_cast<Int *>(args[1])->getValue();
 			int length = static_cast<Int *>(args[2])->getValue();
@@ -49,7 +62,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::BOOL,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			const std::string value = args[0]->getStringValue();
 			bool isNumber = value == "true" ||
 							value == "false" ||
@@ -63,7 +76,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::INT,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
 			if (std::regex_match(args[0]->getStringValue().data(), intRegex)) {
 				result.second = new Int(std::stoi(args[0]->getStringValue().data()), range, Value::INTERPRETER);
@@ -83,7 +96,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::FLOAT,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
 			if (std::regex_match(args[0]->getStringValue().data(), floatRegex) || 
 				std::regex_match(args[0]->getStringValue().data(), intRegex)
@@ -105,7 +118,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::FLOAT},
 		ValueType::STRING,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_pair(ExpressionResult(), new String(args[0]->getStringValue(), range, Value::INTERPRETER));
 		}
 	)},
@@ -114,7 +127,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value1", "value2"},
 		{ValueType::BOOL, ValueType::BOOL},
 		ValueType::BOOL,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_pair(
 				ExpressionResult(), 
 				new Bool(
@@ -130,7 +143,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value1", "value2"},
 		{ValueType::BOOL, ValueType::BOOL},
 		ValueType::BOOL,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_pair(
 				ExpressionResult(),
 				new Bool(
@@ -146,7 +159,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::BOOL},
 		ValueType::BOOL,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_pair(
 				ExpressionResult(), 
 				new Bool(
@@ -162,7 +175,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::STRING},
 		ValueType::INT,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			std::pair<ExpressionResult, Value*> result = std::make_pair(ExpressionResult(), nullptr);
 			if (args[0]->getStringValue().size() != 1) {
 				result.first = ExpressionResult(
@@ -181,7 +194,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::INT},
 		ValueType::STRING,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			return std::make_pair(
 				ExpressionResult(), 
 				new String(
@@ -197,7 +210,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::INT},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			exit(static_cast<Int*>(args[0])->getValue());
 			// Should never reach this point
 			return std::make_pair(ExpressionResult(), None::empty());
@@ -208,7 +221,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"value"},
 		{ValueType::BOOL},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			ExpressionResult result;
 
 			if (!static_cast<Bool *>(args[0])->getValue()) {
@@ -227,7 +240,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"path"},
 		{ValueType::STRING},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			const std::string path = args[0]->getStringValue();
 			if (path.size() == 0) {
 				return std::make_pair(
@@ -250,7 +263,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{"path", "name"},
 		{ValueType::STRING, ValueType::STRING},
 		ValueType::NONE,
-		[](const RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			const std::string path = args[0]->getStringValue();
 			const std::string name = args[1]->getStringValue();
 			if (path.size() == 0) {
@@ -277,6 +290,115 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 				Module::addModule(path, name, args[0]->getRange(), context->getParent()),
 				None::empty()
 			);
+		}
+	)},
+	{"at", BuiltinRPNFunction(
+		"at",
+		{"value", "index"},
+		{ValueType::LIST, ValueType::INT},
+		ValueType::ANY,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			List *list = static_cast<List *>(args[0]);
+			Int *index = static_cast<Int *>(args[1]);
+			if (index->getValue() < 0 || index->getValue() >= list->size()) {
+				return std::make_pair(
+					ExpressionResult(
+						"Index out of range",
+						args[1]->getRange(),
+						context
+					),
+					static_cast<Value*>(None::empty())
+				);
+			}
+			return std::make_pair(
+				ExpressionResult(),
+				list->at(index->getValue())
+			);
+		}
+	)},
+	{"push", BuiltinRPNFunction(
+		"push",
+		{"list", "value"},
+		{ValueType::LIST, ValueType::ANY},
+		ValueType::NONE,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			static_cast<List *>(args[0])->push(args[1]);
+			return std::make_pair(ExpressionResult(), None::empty());
+		}
+	)},
+	{"pop", BuiltinRPNFunction(
+		"pop",
+		{"list"},
+		{ValueType::LIST},
+		ValueType::ANY,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			List *list = static_cast<List *>(args[0]);
+			if (list->size() == 0) {
+				return std::make_pair(
+					ExpressionResult(
+						"Cannot pop from empty list",
+						args[0]->getRange(),
+						context
+					),
+					static_cast<Value*>(None::empty())
+				);
+			}
+			Value *result = list->pop();
+			return std::make_pair(ExpressionResult(), result);
+		}
+	)},
+	{"insert", BuiltinRPNFunction(
+		"insert",
+		{"list", "index", "value"},
+		{ValueType::LIST, ValueType::INT, ValueType::ANY},
+		ValueType::NONE,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			List *list = static_cast<List *>(args[0]);
+			Int *index = static_cast<Int *>(args[1]);
+			if (index->getValue() < 0 || index->getValue() > list->size()) {
+				return std::make_pair(
+					ExpressionResult(
+						"Index out of range",
+						args[1]->getRange(),
+						context
+					),
+					None::empty()
+				);
+			}
+			list->insert(index->getValue(), args[2]);
+			return std::make_pair(ExpressionResult(), None::empty());
+		}
+	)},
+	{"remove", BuiltinRPNFunction(
+		"remove",
+		{"list", "index"},
+		{ValueType::LIST, ValueType::INT},
+		ValueType::ANY,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			List *list = static_cast<List *>(args[0]);
+			Int *index = static_cast<Int *>(args[1]);
+			if (index->getValue() < 0 || index->getValue() >= list->size()) {
+				return std::make_pair(
+					ExpressionResult(
+						"Index out of range",
+						args[1]->getRange(),
+						context
+					),
+					None::empty()
+				);
+			}
+			list->remove(index->getValue());
+			return std::make_pair(ExpressionResult(), None::empty());
+		}
+	)},
+	{"clear", BuiltinRPNFunction(
+		"clear",
+		{"list"},
+		{ValueType::LIST},
+		ValueType::NONE,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			static_cast<List *>(args[0])->clear();
+			return std::make_pair(ExpressionResult(), None::empty());
 		}
 	)}
 };
