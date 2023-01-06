@@ -5,7 +5,6 @@
 #include <string_view>
 #include <vector>
 #include <tuple>
-#include <regex>
 #include <cassert>
 #include <unordered_map>
 #include "rpnfunctions/rpnfunction.hpp"

@@ -35,7 +35,7 @@ class Lexer {
 
 		static ExpressionResult tokenize(
 			int lineNumber, 
-			std::string lineString, 
+			std::string_view lineString, 
 			std::queue<Token*> &tokens,
 			const ContextPtr &context
 		);

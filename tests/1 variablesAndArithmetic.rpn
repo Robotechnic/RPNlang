@@ -1,6 +1,9 @@
 "check hex and decimal values\n" :print
+0b010111101 189 == :assert
 0b010111101 189 == f"{}\n" :print
+0xff727a 16740986 == :assert
 0xff727a 16740986 == f"{}\n" :print
+0xff 255 <= :assert
 0xff 255 <= f"{}\n" :print
 	
 "check basic math\n" :print
@@ -15,66 +18,65 @@ a 8 =
 b 7.5 =
 a b + f"{}\n" :print
 a b / f"{}\n" :print
-# 
-# "check string concatenation\n" :print
-# a "cou" =
-# a a a + =
-# a f"{}\n" :print
-# a "NaN" 10 * =
-# a f"{} Batman !\n" :print
-# 
-# "check boolean expressions\n" :print
-# a 2 =
-# b 3 =
-# a b == :not :assert
-# a b != :assert
-# a b < :assert
-# a b > :not :assert
-# a b <= :assert
-# a b >= :not :assert
-# 
-# "test random boolean expressions\n" :print
-# a b * 7 - 4 == a b + 5 == :and :not :assert
-# a b * 7 - 4 != a b + 5 == :and :assert
-# a b * 7 - 4 == a b + 5 == :or :assert
-# a b * 7 - 4 != a b + 5 == :or :assert
-# 
-# "test ord and chr\n" :print
-# a "a" =
-# a :ord f"{}\n" :print
-# a :ord 97 == :assert
-# 97 :chr f"{}\n" :print
-# 97 :chr "a" == :assert
-# 
-# "test string length\n" :print
-# a "coucou" =
-# a :len f"{}\n" :print
-# a :len 6 == :assert
-# 
-# "test to string\n" :print
-# 12.5 :toString f"{}\n" :print
-# 12.5 :toString "12.5" == :assert
-# 27879 :toString f"{}\n" :print
-# 27879 :toString "27879" == :assert
-# 
-# "test isNumber\n" :print
-# "12.5" :isNumber :assert
-# "a7" :isNumber :not :assert
-# "12.5a" :isNumber :not :assert
-# 
-# "test toInt\n" :print
-# "127" :toInt f"{}\n" :print
-# "127" :toInt 127 == :assert
-# "0" :toInt f"{}\n" :print
-# "0" :toInt 0 == :assert
-# 
-# "test toFloat\n" :print
-# "127" :toFloat f"{}\n" :print
-# "127" :toFloat 127 == :assert
-# "127.5" :toFloat f"{}\n" :print
-# "127.5" :toFloat 127.5 == :assert
-# 
-# "test fstring\n" :print
-# 1 2 1 2 + f"{} + {} = {}" "1 + 2 = 3" == :assert
-# 1 2 1 2 + f"{} + {} = {}\n" :print
-# 
+
+"check string concatenation\n" :print
+a "cou" =
+a a a + =
+a f"{}\n" :print
+a "NaN" 10 * =
+a f"{} Batman !\n" :print
+
+"check boolean expressions\n" :print
+a 2 =
+b 3 =
+a b == :not :assert
+a b != :assert
+a b < :assert
+a b > :not :assert
+a b <= :assert
+a b >= :not :assert
+
+"test random boolean expressions\n" :print
+a b * 7 - 4 == a b + 5 == :and :not :assert
+a b * 7 - 4 != a b + 5 == :and :assert
+a b * 7 - 4 == a b + 5 == :or :assert
+a b * 7 - 4 != a b + 5 == :or :assert
+
+"test ord and chr\n" :print
+a "a" =
+a :ord f"{}\n" :print
+a :ord 97 == :assert
+97 :chr f"{}\n" :print
+97 :chr "a" == :assert
+
+"test string length\n" :print
+a "coucou" =
+a :len f"{}\n" :print
+a :len 6 == :assert
+
+"test to string\n" :print
+12.5 :toString f"{}\n" :print
+12.5 :toString "12.5" == :assert
+27879 :toString f"{}\n" :print
+27879 :toString "27879" == :assert
+
+"test isNumber\n" :print
+"12.5" :isNumber :assert
+"a7" :isNumber :not :assert
+"12.5a" :isNumber :not :assert
+
+"test toInt\n" :print
+"127" :toInt f"{}\n" :print
+"127" :toInt 127 == :assert
+"0" :toInt f"{}\n" :print
+"0" :toInt 0 == :assert
+
+"test toFloat\n" :print
+"127" :toFloat f"{}\n" :print
+"127" :toFloat 127 == :assert
+"127.5" :toFloat f"{}\n" :print
+"127.5" :toFloat 127.5 == :assert
+
+"test fstring\n" :print
+1 2 1 2 + f"{} + {} = {}" "1 + 2 = 3" == :assert
+1 2 1 2 + f"{} + {} = {}\n" :print

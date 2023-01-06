@@ -235,7 +235,7 @@ ExpressionResult Lexer::parseString(Token *token) {
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
 ExpressionResult Lexer::parseLiteral(Token *token) {
-	if (std::regex_match(token->getStringValue(), keywordsRegex)) {
+	if (keywordsRegex(token->getStringValue())) {
 		token->setType(TOKEN_TYPE_KEYWORD);
 		return this->parseKeyword(token);
 	}
@@ -455,18 +455,23 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
  * @param tokens the vector of tokens to fill
  * @return ExpressionResult if the line is a valid expression
  */
-ExpressionResult Lexer::tokenize(int lineNumber, std::string lineString, std::queue<Token*> &tokens, const ContextPtr &context) {
+ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString, std::queue<Token*> &tokens, const ContextPtr &context) {
 	unsigned int column = 0;
-	std::smatch match;
-	std::string value;
+	std::string_view value;
+	matchResult result;
+	size_t i, matchSize;
+	bool match;
 	while (lineString.size() > 0) {
-		size_t i = 0;
-		match = std::smatch();
-		while (match.size() == 0 && i < tokenRegexes.size()) {
-			std::regex regex = std::get<0>(tokenRegexes[i]);
-			if (std::regex_search(lineString, match, regex)) {
+		i = 0;
+		match = false;
+		while (!match && i < tokenRegexes.size()) {
+			Matcher regex = std::get<0>(tokenRegexes[i]);
+			if ((result = regex(lineString.data())).has_value()) {
+				match = true;
+				value = result.value().first;
+				matchSize = result.value().second;
+				
 				TokenType type = std::get<1>(tokenRegexes[i]);
-				value = match.str(1);
 				if (type == TOKEN_TYPE_COMMENT)
 					return ExpressionResult();
 				if (type != TOKEN_TYPE_INDENT)
@@ -477,18 +482,19 @@ ExpressionResult Lexer::tokenize(int lineNumber, std::string lineString, std::qu
 			i++;
 		}
 		
-		if (match.size() == 0) {
+		if (!match) {
 			return ExpressionResult(
-				"Unexpected char",
+				"Unexpected char : '" + std::string(1, lineString[0]) + "'",
 				TextRange(lineNumber, column, 1),
 				context
 			);
 		}
 
-		column += match.str().size();
-		lineString = lineString.substr(match.str().size(), lineString.size() - 1);
+		column += matchSize;
+		lineString = lineString.substr(matchSize, lineString.size() - 1);
 		
-		while (lineString[0] == ' ') {
+		// remove spaces
+		while (lineString.size() > 0 && lineString[0] == ' ') {
 			lineString = lineString.substr(1, lineString.size() - 1);
 			column++;
 		}

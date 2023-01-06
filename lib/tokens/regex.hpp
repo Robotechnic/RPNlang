@@ -1,37 +1,61 @@
 #pragma once
 
 #include <string>
-#include <regex>
+#include <array>
+#include <functional>
+#include <optional>
+#include <tuple>
+#include "ctre/ctre.hpp"
+#include "tokens/tokentypes.hpp"
 
-// values types
-const std::regex floatRegex("^((?:[-])?(?:[0-9]+)?\\.(?:[0-9]+)?)");
-const std::regex intRegex("^((?:[-])?[0-9]+)");
-const std::regex binNumRegex("^(?:0b)([01]+)");
-const std::regex hexNumRegex("^(0x[0-9a-fA-F]+)");
-const std::regex boolRegex("^(true|false)");
-const std::regex stringRegex("^(?:\")([^\"]*)(?:\")");
-const std::regex fStringRegex("^f(?:\")([^\"]*)(?:\")");
-const std::regex typeRegex("^(int|float|bool|string|function|none)(?:[^a-zA-Z0-9])");
+typedef std::optional<std::pair<std::string_view, size_t>> matchResult;
+typedef std::function<matchResult(std::string_view)> Matcher;
 
-// control structures
-const std::regex indentBlockRegex("^(\t)");
-const std::regex colonRegex("^([:])");
-const std::regex arrowRegex("^(->)");
-const std::regex expressionSeparatorRegex("^(\\|)");
 
-// variables
-const std::regex affectTokenRegex("^(=)");
+matchResult floatMatch(std::string_view str);
+matchResult intMatch(std::string_view str);
+matchResult binNumMatch(std::string_view str);
+matchResult hexNumMatch(std::string_view str);
+matchResult boolMatch(std::string_view str);
+matchResult stringMatch(std::string_view str);
+matchResult fStringMatch(std::string_view str);
+matchResult typeMatch(std::string_view str);
+matchResult indentBlockMatch(std::string_view str);
+matchResult colonMatch(std::string_view str);
+matchResult arrowMatch(std::string_view str);
+matchResult expressionSeparatorMatch(std::string_view str);
+matchResult affectTokenMatch(std::string_view str);
+matchResult pathMatch(std::string_view str);
+matchResult literalMatch(std::string_view str);
+matchResult operatorMatch(std::string_view str);
+matchResult booleanOperatorMatch(std::string_view str);
+matchResult lineSeparatorMatch(std::string_view str);
+matchResult commentMatch(std::string_view str);
 
-const std::string literal = "([a-z][a-zA-Z0-9]*|[A-Z0-9][A-Z0-9_]*)";
-const std::regex path("^("+literal+"(?:\\."+literal+")+)");
-const std::regex literalRegex("^" + literal);
 
-// math operators
-const std::regex operatorRegex("^([+-/*^%])");
-const std::regex booleanOperatorRegex("^([<>]=?|==|!=)");
 
-// multi lines statements
-const std::regex lineSeparatorRegex("^(\\n)");
-
-//comments
-const std::regex commentRegex("^(#)");
+/* order matter because some tokens can be substrings of others
+ * exemple: an int can be a substring of a float
+ * true, false and types can be keywords or literals
+ */
+const std::array<std::pair<Matcher, TokenType>, 19> tokenRegexes = {
+	std::make_pair(binNumMatch,              TOKEN_TYPE_BIN),
+	std::make_pair(hexNumMatch,              TOKEN_TYPE_HEX),
+	std::make_pair(floatMatch,               TOKEN_TYPE_FLOAT),
+	std::make_pair(intMatch,                 TOKEN_TYPE_INT),
+	std::make_pair(arrowMatch,               TOKEN_TYPE_ARROW),
+	std::make_pair(boolMatch,                TOKEN_TYPE_BOOL),
+	std::make_pair(stringMatch,              TOKEN_TYPE_STRING),
+	std::make_pair(fStringMatch,             TOKEN_TYPE_FSTRING),
+	std::make_pair(typeMatch,                TOKEN_TYPE_VALUE_TYPE),
+	std::make_pair(indentBlockMatch,         TOKEN_TYPE_INDENT),
+	std::make_pair(colonMatch,               TOKEN_TYPE_COLON),
+	std::make_pair(booleanOperatorMatch,     TOKEN_TYPE_BOOLEAN_OPERATOR),
+	std::make_pair(affectTokenMatch,         TOKEN_TYPE_ASSIGNMENT),
+	std::make_pair(operatorMatch,            TOKEN_TYPE_OPERATOR),
+	std::make_pair(expressionSeparatorMatch, TOKEN_TYPE_EXPRESSION_SEPARATOR),
+	std::make_pair(lineSeparatorMatch,       TOKEN_TYPE_END_OF_LINE),
+	std::make_pair(pathMatch,                TOKEN_TYPE_PATH),
+	std::make_pair(literalMatch,             TOKEN_TYPE_LITERAL),
+	std::make_pair(commentMatch,             TOKEN_TYPE_COMMENT)
+};

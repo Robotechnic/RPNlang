@@ -8,6 +8,7 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/textutilities/escapecharacters.cpp
 	
 	# base types
+	${CMAKE_CURRENT_LIST_DIR}/tokens/regex.cpp
 	${CMAKE_CURRENT_LIST_DIR}/tokens/token.cpp
 	${CMAKE_CURRENT_LIST_DIR}/context/context.cpp
 	${CMAKE_CURRENT_LIST_DIR}/expressionresult/expressionresult.cpp

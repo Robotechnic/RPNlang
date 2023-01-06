@@ -2,27 +2,9 @@
 
 #include <unordered_map>
 #include <string>
-#include <regex>
+#include "ctre/ctre.hpp"
 
-const std::regex keywordsRegex("^("
-	"fun|"
-	"nuf|"
-	"if|"
-	"fi|"
-	"else|"
-	"while|"
-	"elihw|"
-	"for|"
-	"rof|"
-	"return|"
-	"continue|"
-	"break|"
-	"try|"
-	"catch|"
-	"finally|"
-	"yrt|"
-	"list|"
-")$");
+constexpr auto keywordsRegex = ctre::match<"^(fun|nuf|if|fi|else|while|elihw|for|rof|return|continue|break|try|catch|finally|yrt|list)$">;
 
 const std::unordered_map<std::string, std::vector<std::string>> blockOpeners = {
 	{"fun"    , {"nuf"}},

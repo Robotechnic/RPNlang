@@ -1,9 +1,9 @@
 #pragma once
 
 #include <string>
-#include <regex>
 #include <tuple>
 #include <array>
+#include <regex>
 #include <iostream>
 #include <string_view>
 

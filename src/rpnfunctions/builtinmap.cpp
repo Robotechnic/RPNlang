@@ -64,10 +64,11 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		ValueType::BOOL,
 		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			const std::string value = args[0]->getStringValue();
+			matchResult result;
 			bool isNumber = value == "true" ||
 							value == "false" ||
-							std::regex_match(value.data(), floatRegex) ||
-							std::regex_match(value.data(), intRegex);
+							((result = floatMatch(value)) && result.value().second == value.size()) ||
+							((result = intMatch(value)) && result.value().second == value.size());
 			return std::make_pair(ExpressionResult(), new Bool(isNumber, range, Value::INTERPRETER));
 		}
 	)},
@@ -78,7 +79,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		ValueType::INT,
 		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
-			if (std::regex_match(args[0]->getStringValue().data(), intRegex)) {
+			if (intMatch(args[0]->getStringValue().data())) {
 				result.second = new Int(std::stoi(args[0]->getStringValue().data()), range, Value::INTERPRETER);
 			} else {
 				result.first = ExpressionResult(
@@ -98,8 +99,8 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		ValueType::FLOAT,
 		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			RPNFunctionResult result = std::make_pair(ExpressionResult(), nullptr);
-			if (std::regex_match(args[0]->getStringValue().data(), floatRegex) || 
-				std::regex_match(args[0]->getStringValue().data(), intRegex)
+			if (floatMatch(args[0]->getStringValue().data()) || 
+				intMatch(args[0]->getStringValue().data())
 			) {
 				result.second = new Float(std::stof(args[0]->getStringValue().data()), range, Value::INTERPRETER);
 			} else {
@@ -276,7 +277,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 					None::empty()
 				);
 			}
-			if (!std::regex_match(name.data(), literalRegex)) {
+			if (!literalMatch(name.data())) {
 				return std::make_pair(
 					ExpressionResult(
 						"Module name must be a valid identifier",
