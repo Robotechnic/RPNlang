@@ -107,6 +107,13 @@ mymath.pi :print
 mymath.pi 2 / mymath.cos :print
 ```
 
+**Lists**:
+```
+a 1 2 3 4 5 6 7 8 9 10 list =
+a 0 :at f"{}\n" :print
+a 9 :at f"{}\n" :print
+```
+
 More exemples [here](https://github.com/Robotechnic/RPNlang/tree/master/examples)
 
 

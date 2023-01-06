@@ -114,7 +114,8 @@ void ExpressionResult::displayLineError(std::string_view code) const {
 
  */
 void ExpressionResult::display() const {
-	std::cout<<std::endl;
+	// reset ANSI color
+	std::cout << "\033[0m" << std::endl;
 
 	std::cout<<this->context;
 

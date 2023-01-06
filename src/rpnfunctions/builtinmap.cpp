@@ -317,6 +317,29 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			);
 		}
 	)},
+	{"top", BuiltinRPNFunction(
+		"top",
+		{"value"},
+		{ValueType::LIST},
+		ValueType::ANY,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			List *list = static_cast<List *>(args[0]);
+			if (list->size() == 0) {
+				return std::make_pair(
+					ExpressionResult(
+						"Cannot get top of empty list",
+						args[0]->getRange(),
+						context
+					),
+					static_cast<Value*>(None::empty())
+				);
+			}
+			return std::make_pair(
+				ExpressionResult(),
+				list->at(list->size() - 1)
+			);
+		}
+	)},
 	{"push", BuiltinRPNFunction(
 		"push",
 		{"list", "value"},
