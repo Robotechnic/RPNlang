@@ -8,7 +8,7 @@ List::List(std::vector<Value *> values, TextRange range, ValueOwner owner) :
 
 List::~List() {
 	for (auto &value : values) {
-		Value::deleteValue(&value, Value::LIST_VALUE);
+		Value::deleteValue(&value, Value::OBJECT_VALUE);
 	}
 }
 
@@ -39,13 +39,13 @@ void List::set(unsigned int index, Value *value) {
 	if (index >= values.size() || index < 0) {
 		throw std::runtime_error("Index out of bounds");
 	}
-	Value::deleteValue(&values[index], Value::LIST_VALUE);
-	value->setOwner(Value::LIST_VALUE);
+	Value::deleteValue(&values[index], Value::OBJECT_VALUE);
+	value->setOwner(Value::OBJECT_VALUE);
 	this->values[index] = value;
 }
 
 void List::push(Value *value) {
-	value->setOwner(Value::LIST_VALUE);
+	value->setOwner(Value::OBJECT_VALUE);
 	this->values.push_back(value);
 }
 
@@ -62,20 +62,20 @@ void List::insert(unsigned int index, Value *value) {
 	if (index > values.size() || index < 0) {
 		throw std::runtime_error("Index out of bounds");
 	}
-	value->setOwner(Value::LIST_VALUE);
+	value->setOwner(Value::OBJECT_VALUE);
 	this->values.insert(values.begin() + index, value);
 }
 void List::remove(unsigned int index) {
 	if (index >= values.size() || index < 0) {
 		throw std::runtime_error("Index out of bounds");
 	}
-	Value::deleteValue(&values[index], Value::LIST_VALUE);
+	Value::deleteValue(&values[index], Value::OBJECT_VALUE);
 	values.erase(values.begin() + index);
 }
 
 void List::clear() {
 	for (auto &value : values) {
-		Value::deleteValue(&value, Value::LIST_VALUE);
+		Value::deleteValue(&value, Value::OBJECT_VALUE);
 	}
 	values.clear();
 }
@@ -92,7 +92,7 @@ Value *List::to(ValueType type, ValueOwner owner) const {
 inline Value *List::copy(ValueOwner owner) const {
 	std::vector<Value *> newValues;
 	for (auto &value : values) {
-		newValues.push_back(value->copy(Value::LIST_VALUE));
+		newValues.push_back(value->copy(Value::OBJECT_VALUE));
 	}
 	return new List(newValues, range, owner);
 }
@@ -114,7 +114,7 @@ operatorResult List::opadd(const Value *other, const ContextPtr &context) const 
 	if (other->getType() == ValueType::LIST) {
 		std::vector<Value *> newValues = values;
 		for (auto &value : static_cast<const List*>(other)->values) {
-			newValues.push_back(value->copy(Value::LIST_VALUE));
+			newValues.push_back(value->copy(Value::OBJECT_VALUE));
 		}
 		return std::make_pair<ExpressionResult, Value*>(
 			ExpressionResult(),
@@ -158,7 +158,7 @@ operatorResult List::opmul(const Value *other, const ContextPtr &context) const 
 		}
 		for (int i = 0; i < valueCount; i++) {
 			for (auto &value : values) {
-				newValues.push_back(value->copy(Value::LIST_VALUE));
+				newValues.push_back(value->copy(Value::OBJECT_VALUE));
 			}
 		}
 		return std::make_pair<ExpressionResult, Value*>(

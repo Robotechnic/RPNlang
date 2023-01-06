@@ -607,7 +607,7 @@ ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
 	for (int i = 0; i < size->getValue(); i++) {
 		result = this->memory.popVariableValue(value, this->context);
 		if (result.error()) return result;
-		value->setOwner(Value::LIST_VALUE);
+		value->setOwner(Value::OBJECT_VALUE);
 		values.emplace(values.begin(), value);
 		range.merge(values.at(0)->getRange());
 	}
