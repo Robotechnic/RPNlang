@@ -44,7 +44,7 @@ matchResult fStringMatch(std::string_view str) {
 	return std::nullopt;
 }
 matchResult typeMatch(std::string_view str) {
-	if (auto m = ctre::starts_with<"^(int|float|bool|string|function|none)(?:[^a-zA-Z0-9])">(str)) {
+	if (auto m = ctre::starts_with<"^(int|float|bool|string|function|none|list)(?:[^a-zA-Z0-9])">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;

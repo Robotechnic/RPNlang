@@ -80,3 +80,22 @@ a :len 6 == :assert
 "test fstring\n" :print
 1 2 1 2 + f"{} + {} = {}" "1 + 2 = 3" == :assert
 1 2 1 2 + f"{} + {} = {}\n" :print
+
+"Type cast\n" :print
+a 1 =
+a float 1.0 == :assert
+a string "1" == :assert
+a bool true == :assert
+a int 1 == :assert
+
+a true =
+a float 1.0 == :assert
+a string "true" == :assert
+a bool true == :assert
+a int 1 == :assert
+
+a false =
+a float 0.0 == :assert
+a string "false" == :assert
+a bool false == :assert
+a int 0 == :assert

@@ -108,6 +108,9 @@ ExpressionResult Lexer::lex() {
 					)
 				));
 				break;
+			case TOKEN_TYPE_VALUE_TYPE:
+				this->currentLine->push(new TypeToken(token->getRange(), token->getStringValue()));
+				break;
 			default:
 				this->integrated = true;
 				this->currentLine->push(token);
@@ -404,7 +407,7 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
 					current->getRange(),
 					this->context
 				), nullptr);
-			types.push_back(Value::valueType(current->getStringValue()));
+			types.push_back(static_cast<TypeToken*>(current)->getValueType());
 		} else {
 			if (current->getType() != TOKEN_TYPE_LITERAL)
 				return std::make_pair(ExpressionResult(

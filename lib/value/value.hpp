@@ -22,7 +22,7 @@ class Value {
 			INTERPRETER      = 0,
 			PARENT_FUNCTION  = 1,
 			CONTEXT_VARIABLE = 2,
-			LIST_VALUE	     = 3,
+			OBJECT_VALUE     = 3,
 			VALUE_TOKEN      = 4,
 			MODULE           = 5,
 			EMPTY_VALUE      = 6

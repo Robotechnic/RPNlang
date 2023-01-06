@@ -10,6 +10,7 @@
 #include "textutilities/textutilities.hpp"
 
 #include "tokens/token.hpp"
+#include "tokens/tokens/typetoken.hpp"
 #include "codeblocks/blockqueue.hpp"
 #include "codeblocks/line.hpp"
 #include "codeblocks/codeblock.hpp"
@@ -46,6 +47,7 @@ class Interpreter {
 		ExpressionResult interpretFString(const FStringToken *token);
 		ExpressionResult interpretOperator(const Token *operatorToken);
 		ExpressionResult interpretKeyword(const Token *keywordToken);
+		ExpressionResult interpretValueType(const Token *typeToken);
 		ExpressionResult interpretAssignment(const Token *operatorToken);
 		ExpressionResult getFunction(const Token *functionToken, const RPNFunction *&function);
 		ExpressionResult interpretFunctionCall(const Token *functionToken);

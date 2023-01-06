@@ -68,8 +68,10 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 		}
 	}
 
-	this->context->takeOwnership();
-	if (!isModule)
+	
+	if (isModule)
+		this->context->takeOwnership();
+	else
 		this->context->clear();
 
 	return true;
@@ -224,6 +226,9 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 			case TOKEN_TYPE_KEYWORD:
 				result = this->interpretKeyword(*it);
 				break;
+			case TOKEN_TYPE_VALUE_TYPE:
+				result = this->interpretValueType(*it);
+				break;
 			default:
 				result = ExpressionResult(
 					"Unknow token (TODO)",
@@ -335,8 +340,6 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 		return ExpressionResult(ExpressionResult::CONTINUE);
 	}  else if (keyword == "return") {
 		return ExpressionResult(ExpressionResult::RETURN);
-	}  else if (keyword == "list") {
-		return this->interpretList(keywordToken);
 	} else {
 		return ExpressionResult(
 			"Unknow keyword " + keyword,
@@ -344,6 +347,37 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 			this->context
 		);
 	}
+}
+
+ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
+	ValueType type = static_cast<const TypeToken *>(typeToken)->getValueType();
+	ExpressionResult result = this->memory.sizeExpected(
+		1,
+		"Not enough values for type conversion",
+		typeToken->getRange(),
+		this->context
+	);
+	if (result.error()) return result;
+	if (type == LIST && !this->memory.top()->isCastableTo(LIST)) {
+		return this->interpretList(typeToken);
+	}
+
+	Value *top;
+	result = this->memory.popVariableValue(top, this->context);
+	if (result.error()) return result;
+
+	if (!top->isCastableTo(type)) {
+		return ExpressionResult(
+			"Can't cast " + top->getStringType() + " to " + Value::stringType(type),
+			typeToken->getRange(),
+			this->context
+		);
+	}
+	
+	Value *value = top->to(type, Value::INTERPRETER);
+	Value::deleteValue(&top, Value::INTERPRETER);
+	this->memory.push(value);
+	return ExpressionResult();
 }
 
 ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
