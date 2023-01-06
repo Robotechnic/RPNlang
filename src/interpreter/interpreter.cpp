@@ -15,7 +15,7 @@ Interpreter::~Interpreter() {
 	this->memory.clear();
 }
 
-bool Interpreter::interpretFile(std::string_view fileName, std::string &errorString) {
+bool Interpreter::interpretFile(std::string_view fileName, std::string &errorString, bool isModule) {
 	std::ifstream file;
 	if (!openFile(file, fileName, errorString)) {
 		return false;
@@ -69,7 +69,8 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 	}
 
 	this->context->takeOwnership();
-	this->context->clear();
+	if (!isModule)
+		this->context->clear();
 
 	return true;
 }

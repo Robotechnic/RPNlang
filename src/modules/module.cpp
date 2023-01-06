@@ -37,7 +37,7 @@ ExpressionResult Module::load() {
 
 	Interpreter moduleLoader = Interpreter(this->context);
 	std::string error;
-	if (!moduleLoader.interpretFile(path, error))
+	if (!moduleLoader.interpretFile(path, error, true))
 		return ExpressionResult(
 			"Failed to load module " + name + " at " + path + "(" + error + ")",
 			this->importRange,

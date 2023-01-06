@@ -33,7 +33,7 @@ class Interpreter {
 		Interpreter(ContextPtr ctx);
 		~Interpreter();
 
-		bool interpretFile(std::string_view fileName, std::string &errorString);
+		bool interpretFile(std::string_view fileName, std::string &errorString, bool isModule = false);
 		ExpressionResult interpretLine(std::string_view line, int lineNumber = 0);
 		ExpressionResult interpret(BlockQueue &blocks);
 
