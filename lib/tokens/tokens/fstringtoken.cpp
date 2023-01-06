@@ -11,6 +11,14 @@ const std::vector<std::string>& FStringToken::getParts() const {
 	return this->parts;
 }
 
+std::string FStringToken::at(size_t index) const {
+	return this->parts.at(index);
+}
+
+size_t FStringToken::size() const {
+	return this->parts.size();
+}
+
 std::string FStringToken::getStringValue() const {
 	return this->stringValue;
 }

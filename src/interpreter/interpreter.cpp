@@ -282,10 +282,10 @@ ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
 	if (sizeOk.error()) return sizeOk;
 	std::string str;
 	Value *value;
-	for (size_t i = token->getParts().size() - 1; i > 0; i--) {
+	for (size_t i = token->size() - 1; i > 0; i--) {
 		ExpressionResult result = this->memory.popVariableValue(value, this->context);
 		if (result.error()) return result;
-		str = value->getStringValue() + token->getParts().at(i) + str;
+		str = value->getStringValue() + token->at(i) + str;
 		if (i == 1) range.merge(value->getRange());
 		Value::deleteValue(&value, Value::INTERPRETER);
 	}
