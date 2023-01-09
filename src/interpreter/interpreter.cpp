@@ -387,7 +387,9 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 		operatorToken->getRange(),
 		this->context
 	);
-	bool copy = this->memory.top()->getType() == VARIABLE || this->memory.top()->getType() == PATH;
+	bool copy = this->memory.top()->getType() == VARIABLE || 
+				this->memory.top()->getType() == PATH ||
+				this->memory.top()->getOwner() == Value::OBJECT_VALUE;
 	if (result.error()) return result;
 	Value *left;
 	result = this->memory.popVariableValue(left, this->context);
@@ -551,7 +553,7 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 	}
 
 	CPPInterface i {forParams.at(0)};
-	while (!result.breakingLoop() && ((step > &zero && i < forParams.at(1)) || (step < &zero && i > forParams.at(1)))) {
+	while (!result.breakingLoop() && !result.returnValue() && ((step > &zero && i < forParams.at(1)) || (step < &zero && i > forParams.at(1)))) {
 		this->context->setValue(
 			variable->getStringValue(),
 			i.getValue()
@@ -560,11 +562,12 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		if (result.error()) return result;
 		i += step;
 	}
-	Value::deleteValue(&i.getValue(), Value::INTERPRETER);
 	Value::deleteValue(&variable, Value::INTERPRETER);
-	for (Value *param : forParams)
-		Value::deleteValue(&param, Value::INTERPRETER);
-	return ExpressionResult();
+	for (Value *param : forParams) {
+		if (param != i.getValue())
+			Value::deleteValue(&param, Value::INTERPRETER);
+	}
+	return result;
 }
 
 ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
@@ -607,7 +610,6 @@ ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
 	// finally
 	if (block.getNext()->getNext() != nullptr)
 		return this->interpret(block.getNext()->getNext()->getBlocks());
-	
 
 	return result;
 }
@@ -641,6 +643,8 @@ ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
 	for (int i = 0; i < size->getValue(); i++) {
 		result = this->memory.popVariableValue(value, this->context);
 		if (result.error()) return result;
+		if (value->getOwner() == Value::OBJECT_VALUE)
+			value = value->copy();
 		value->setOwner(Value::OBJECT_VALUE);
 		values.emplace(values.begin(), value);
 		range.merge(values.at(0)->getRange());
