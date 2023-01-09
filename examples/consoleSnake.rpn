@@ -1,0 +1,121 @@
+"terminal" :import
+"time" :import
+"random" :import
+
+drawSnake list rings -> none fun
+	rings :top 0 :at rings :top 1 :at terminal.YELLOW_BACKGROUND :terminal.setPixelColor
+	i 0 rings :len 1 - 1 for
+		rings i :at 0 :at rings i :at 1 :at terminal.GREEN_BACKGROUND :terminal.setPixelColor
+	rof
+	:terminal.flush
+nuf
+
+drawApple list pos -> none fun
+	pos 0 :at pos 1:at terminal.RED_BACKGROUND :terminal.setPixelColor
+	:terminal.flush
+nuf
+
+moveSnake list rings int direction -> list fun
+	direction 0 == if
+		rings rings :top 0 :at rings :top 1 :at 1 - 2 list :push
+	else direction 1 == if
+		rings rings :top 0 :at rings :top 1 :at 1 + 2 list :push
+	else direction 2 == if
+		rings rings :top 0 :at 1 - rings :top 1 :at 2 list :push
+	else direction 3 == if
+		rings rings :top 0 :at 1 + rings :top 1 :at 2 list :push
+	fi fi fi fi
+	rings return
+nuf
+
+appleCollision list rings list pos -> bool fun
+	rings :top 0 :at pos 0 :at == rings :top 1 :at pos 1 :at == :and return
+nuf
+
+spawnApple list rings -> list fun
+	pos 1 :terminal.width :random.randRange 1 :terminal.height :random.randRange 2 list =
+	rings pos :appleCollision if
+		pos rings :spawnApple =
+	fi
+	pos return
+nuf
+
+snakeCollision list rings -> bool fun
+	hx rings :top 0 :at =
+	hy rings :top 1 :at =
+	i 0 rings :len 1 - 1 for
+		rings i :at 0 :at hx == rings i :at 1 :at hy == :and if
+			true return
+		fi
+	rof
+	false return
+nuf
+
+wallCollision list rings int width int height -> bool fun
+	hx rings :top 0 :at =
+	hy rings :top 1 :at =
+	width :terminal.width =
+	height :terminal.height =
+	hx 0 <= hx width > :or hy 0 <= hy height > :or :or return
+nuf
+
+main -> none fun
+	:random.rseed
+	:terminal.clear
+	:terminal.rawMode
+	quit false =
+	gameOver false =
+	direction 0 =
+	rings :terminal.width 2 / :terminal.height 2 / 2 list 1 list =
+	i 0 2 1 for
+		rings :terminal.width 2 / i + :terminal.height 2 / 2 list :push
+	rof
+	apple rings :spawnApple =
+	last :time.time =
+	quit :not gameOver :not :and while
+		# keyboard management
+		key :terminal.getKey =
+		key "a" == if
+			quit true =
+		else key "z" == direction 1 != :and if
+			direction 0 =
+		else key "s" == direction 0 != :and if
+			direction 1 =
+		else key "q" == direction 3 != :and if
+			direction 2 =
+		else key "d" == direction 2 != :and if
+			direction 3 =
+		fi fi fi fi fi
+		
+		# game logic
+		:time.time last - 150 < if
+			continue
+		fi
+		last :time.time =
+		:terminal.clear
+		rings rings direction :moveSnake =
+		:terminal.width 2 / 9 - 1 "Press a key to quit" terminal.YELLOW terminal.DEFAULT_BACKGROUND :terminal.drawText
+		scoreText rings :len 3 - f"Score: {}" =
+		:terminal.width 2 / scoreText :len 2 / - 2 scoreText terminal.DEFAULT terminal.DEFAULT_BACKGROUND :terminal.drawText
+		apple :drawApple 
+		rings :drawSnake
+		rings apple :appleCollision if
+			apple rings :spawnApple =
+		else
+			rings 0 :remove
+		fi
+		
+		gameOver rings :snakeCollision =
+		gameOver gameOver rings :terminal.width :terminal.height :wallCollision  :or =
+	elihw
+	:terminal.normalMode
+	:terminal.clear
+	:terminal.home
+	gameOver if
+		"Game Over\n" :print
+	else
+		"Goodbye\n" :print
+	fi
+	rings :len 3 - f"Your score is {}\n" :print
+nuf
+
