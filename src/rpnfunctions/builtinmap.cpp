@@ -346,7 +346,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 		{ValueType::LIST, ValueType::ANY},
 		ValueType::NONE,
 		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			if (args[1]->getOwner() == Value::CONTEXT_VARIABLE)
+			if (args[1]->getOwner() == Value::CONTEXT_VARIABLE || args[1]->getOwner() == Value::OBJECT_VALUE)
 				static_cast<List *>(args[0])->push(args[1]->copy(Value::OBJECT_VALUE));
 			else
 				static_cast<List *>(args[0])->push(args[1]);
@@ -392,7 +392,7 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 					None::empty()
 				);
 			}
-			if (args[2]->getOwner() == Value::CONTEXT_VARIABLE)
+			if (args[2]->getOwner() == Value::CONTEXT_VARIABLE || args[2]->getOwner() == Value::OBJECT_VALUE)
 				list->insert(index->getValue(), args[2]->copy(Value::OBJECT_VALUE));
 			else
 				list->insert(index->getValue(), args[2]);

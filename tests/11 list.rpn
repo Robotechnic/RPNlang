@@ -69,4 +69,39 @@ test f"List {} \n" :print
 test :clear
 test f"List {} \n" :print
 
+"list copy\n" :print
+test 1 2 3 4 5 7 8 9 8 list =
+test f"List {} \n" :print
+test1 test =
+test1 f"List {} \n" :print
+
+"matrix copy\n" :print
+matrix 1 2 3 3 list 4 5 6 3 list 7 8 9 3 list 3 list =
+matrix f"Matrix {} \n" :print
+matrix1 matrix =
+matrix1 f"Matrix {} \n" :print
+
+"list reverse\n" :print
+test 1 2 3 4 5 7 8 9 8 list =
+test f"List {} \n" :print
+reverse 0 list =
+i test :len 1 - -1 -1 for
+	reverse test i :at :push
+rof
+reverse f"List {} \n" :print
+
+"functions\n" :print
+
+test1 -> list fun
+	1 2 3 4 4 list return
+nuf
+
+test2 list a -> list fun
+	a 1 :push
+	a return
+nuf
+
+:test1 f"{}\n" :print
+1 2 3 4 4 list :test2 f"{}\n" :print
+
 "done\n" :print
