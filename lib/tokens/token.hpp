@@ -23,7 +23,6 @@ class Token {
 
 		virtual std::string getStringValue() const = 0;
 
-		bool isNumber() const;
 		TextRange getRange() const;
 		static std::string stringType(TokenType type);
 
