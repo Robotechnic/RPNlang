@@ -2,6 +2,7 @@
 
 Value::Value(ValueType type, const TextRange range, ValueOwner owner) :
 	range(range),
+	variableRange(range),
 	type(type),
 	owner(owner) {
 		if (type == ANY) {
@@ -19,7 +20,18 @@ std::string Value::getStringType() const {
 }
 
 TextRange Value::getRange() const {
-	return this->range;
+	if (this->variableRange == this->range) {
+		return this->range;
+	}
+	return this->variableRange;
+}
+
+TextRange Value::getVariableRange() const {
+	return this->variableRange;
+}
+
+void Value::setVariableRange(const TextRange &range) {
+	this->variableRange = range;
 }
 
 /**

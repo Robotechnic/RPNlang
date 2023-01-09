@@ -24,4 +24,5 @@ class TextRange {
 		unsigned int line, columnStart, columnEnd;
 };
 
+bool operator==(const TextRange &left, const TextRange &right);
 std::ostream &operator<<(std::ostream &os, const TextRange &range);

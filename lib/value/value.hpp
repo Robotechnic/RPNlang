@@ -44,6 +44,8 @@ class Value {
 		static ValueType valueType(std::string_view type); 
 
 		TextRange getRange() const;
+		TextRange getVariableRange() const;
+		void setVariableRange(const TextRange &range);
 		ValueType getType() const;
 		std::string getStringType() const;
 
@@ -72,7 +74,7 @@ class Value {
 		static void deleteValue(Value **val, ValueOwner deleter);
 
 	protected:
-		TextRange range;
+		TextRange range, variableRange;
 		ValueType type;
 		/**
 		 * @brief this member allow to check if the owner of this value is an interpreter instance

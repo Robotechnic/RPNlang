@@ -53,7 +53,11 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 		result.display();
 		return false;
 	}
-	if (this->context->hasValue("main") && this->context->getType() != CONTEXT_TYPE_MODULE && this->context->getType() != CONTEXT_TYPE_BUILTIN_MODULE) {
+	if (
+		this->context->hasValue("main") && 
+		this->context->getType() != CONTEXT_TYPE_MODULE && 
+		this->context->getType() != CONTEXT_TYPE_BUILTIN_MODULE
+	) {
 		Function* val = static_cast<Function*>(this->context->getValue("main"));
 		TextRange mainRange = val->getRange();
 		if (val->getType() == FUNCTION) {
@@ -555,7 +559,10 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 	}
 
 	CPPInterface i {forParams.at(0)};
-	while (!result.breakingLoop() && !result.returnValue() && ((step > &zero && i < forParams.at(1)) || (step < &zero && i > forParams.at(1)))) {
+	while (!result.breakingLoop() && !result.returnValue() && 
+			((step > &zero && i < forParams.at(1)) || 
+			 (step < &zero && i > forParams.at(1)))
+		  ) {
 		this->context->setValue(
 			variable->getStringValue(),
 			i.getValue()
@@ -637,7 +644,8 @@ ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
 	}
 	result = this->memory.sizeExpected(
 		size->getValue(),
-		"Not enough values to create list, expected " + std::to_string(size->getValue()) + " but got " + std::to_string(this->memory.size()),
+		"Not enough values to create list, expected " + std::to_string(size->getValue()) + 
+		" but got " + std::to_string(this->memory.size()),
 		keywordToken->getRange().merge(size->getRange()),
 		this->context
 	);

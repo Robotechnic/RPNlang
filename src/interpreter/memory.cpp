@@ -29,6 +29,7 @@ ExpressionResult Memory::popVariableValue(Value *&value, const ContextPtr &conte
 	else
 		result = Module::getModuleValue(this->stack.top(), value, context);
 	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);
+	value->setVariableRange(this->stack.top()->getRange());
 	this->stack.pop();
 	if (result.error()) return result;
 	return result;

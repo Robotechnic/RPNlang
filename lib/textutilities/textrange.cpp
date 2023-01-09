@@ -70,3 +70,7 @@ void TextRange::operator=(TextRange &&other) {
 	this->columnStart = other.columnStart;
 	this->columnEnd = other.columnEnd;
 }
+
+bool operator==(const TextRange &left, const TextRange &right) {
+	return left.line == right.line && left.columnStart == right.columnStart && left.columnEnd == right.columnEnd;
+}

@@ -117,6 +117,9 @@ void ExpressionResult::display() const {
 	// reset ANSI color
 	std::cout << "\033[0m" << std::endl;
 
+	// enable cursor
+	std::cout << "\033[?25h";
+
 	std::cout<<this->context;
 
 	TextRange range = this->getRange();
@@ -148,7 +151,7 @@ void ExpressionResult::display() const {
 }
 
 void ExpressionResult::displayArrow(TextRange range, std::string_view lineString) const {
-	for (long unsigned int i = 0; i <= range.columnEnd; i++) {
+	for (long unsigned int i = 0; i < range.columnEnd; i++) {
 		if (i < range.columnStart) {
 			if (lineString[i] == '\t') {
 				std::cout << "\t";
