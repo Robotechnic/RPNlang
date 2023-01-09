@@ -15,6 +15,7 @@ enum TokenType {
 	TOKEN_TYPE_FSTRING,
 	TOKEN_TYPE_LITERAL,
 	TOKEN_TYPE_KEYWORD,
+	TOKEN_TYPE_DOT,
 	TOKEN_TYPE_PATH,
 
 	// this tokens will stay as they are durring lexing

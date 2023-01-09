@@ -18,6 +18,10 @@ Token *Line::top() {
 	return this->tokens[this->currentToken];
 }
 
+Token *Line::back() {
+	return this->tokens[this->tokens.size() - 1];
+}
+
 bool Line::empty() const {
 	return this->currentToken >= this->tokens.size();
 }

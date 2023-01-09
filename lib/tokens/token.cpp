@@ -69,6 +69,8 @@ inline std::string Token::stringType(TokenType type) {
 			return "arrow";
 		case TOKEN_TYPE_PATH:
 			return "path";
+		case TOKEN_TYPE_DOT:
+			return "dot";
 		case TOKEN_TYPE_VALUE:
 			return "value";
 		case TOKEN_TYPE_FUNCTION_CALL:

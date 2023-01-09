@@ -2,7 +2,8 @@
 
 matchResult floatMatch(std::string_view str)  {
 	if (auto m = ctre::starts_with<"^((?:[\\-])?(?:[0-9]+)?\\.(?:[0-9]+)?)">(str)) {
-		return std::make_pair(m.get<1>().to_view(), m.size());
+		if (m.size() > 1)
+			return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;
 }
@@ -79,8 +80,8 @@ matchResult affectTokenMatch(std::string_view str) {
 	}
 	return std::nullopt;
 }
-matchResult pathMatch(std::string_view str) {
-	if (auto m = ctre::starts_with<"^((?:[a-z][a-zA-Z0-9]*|[A-Z0-9][A-Z0-9_]*)(?:\\.(?:[a-z][a-zA-Z0-9]*|[A-Z0-9][A-Z0-9_]*))+)">(str)) {
+matchResult dotMatch(std::string_view str) {
+	if (auto m = ctre::starts_with<"^(\\.)">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;

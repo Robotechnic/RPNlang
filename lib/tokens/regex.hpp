@@ -25,7 +25,7 @@ matchResult colonMatch(std::string_view str);
 matchResult arrowMatch(std::string_view str);
 matchResult expressionSeparatorMatch(std::string_view str);
 matchResult affectTokenMatch(std::string_view str);
-matchResult pathMatch(std::string_view str);
+matchResult dotMatch(std::string_view str);
 matchResult literalMatch(std::string_view str);
 matchResult operatorMatch(std::string_view str);
 matchResult booleanOperatorMatch(std::string_view str);
@@ -55,7 +55,7 @@ const std::array<std::pair<Matcher, TokenType>, 19> tokenRegexes = {
 	std::make_pair(operatorMatch,            TOKEN_TYPE_OPERATOR),
 	std::make_pair(expressionSeparatorMatch, TOKEN_TYPE_EXPRESSION_SEPARATOR),
 	std::make_pair(lineSeparatorMatch,       TOKEN_TYPE_END_OF_LINE),
-	std::make_pair(pathMatch,                TOKEN_TYPE_PATH),
+	std::make_pair(dotMatch,                 TOKEN_TYPE_DOT),
 	std::make_pair(literalMatch,             TOKEN_TYPE_LITERAL),
 	std::make_pair(commentMatch,             TOKEN_TYPE_COMMENT)
 };

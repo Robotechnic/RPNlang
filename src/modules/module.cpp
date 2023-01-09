@@ -121,26 +121,6 @@ ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, c
 		throw std::runtime_error("Module::getModuleValue: module not found");
 }
 
-ExpressionResult Module::getModuleValue(const Token *tokenPath, Value *&value, const ContextPtr &parentContext) {
-	std::vector<std::string> path = split(tokenPath->getStringValue(), '.');
-	std::string error = Module::checkPath(path);
-	if (error != "") {
-		return ExpressionResult(
-			error,
-			tokenPath->getRange(),
-			parentContext
-		);
-	}
-
-	if (Module::modules.find(path[0]) != Module::modules.end())
-		return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, tokenPath->getRange(), value);
-	else if (Module::builtinModules.find(path[0]) != Module::builtinModules.end())
-		return Module::builtinModules.at(path[0]).getModuleContext()->getModuleValue(path, tokenPath->getRange(), value);
-	else
-		throw std::runtime_error("Module::getModuleValue: module not found");
-}
-
-
 /**
  * @brief return the module context
  * 
@@ -149,13 +129,13 @@ ExpressionResult Module::getModuleValue(const Token *tokenPath, Value *&value, c
  * @param moduleContext the module context to put the module context in
  * @return ExpressionResult 
  */
-ExpressionResult Module::getModuleContext(const Token *tokenPath, const ContextPtr &parentContext, ContextPtr &moduleContext) {
-	std::vector<std::string> path = split(tokenPath->getStringValue(), '.');
+ExpressionResult Module::getModuleContext(const Value *valuePath, const ContextPtr &parentContext, ContextPtr &moduleContext) {
+	std::vector<std::string> path = static_cast<const Path*>(valuePath)->getPath();
 	std::string error = Module::checkPath(path);
 	if (error != "") {
 		return ExpressionResult(
 			error,
-			tokenPath->getRange(),
+			valuePath->getRange(),
 			parentContext
 		);
 	}

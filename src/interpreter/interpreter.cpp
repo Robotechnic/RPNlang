@@ -207,6 +207,7 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 		switch ((*it)->getType()) {
 			case TOKEN_TYPE_VALUE:
 			case TOKEN_TYPE_LITERAL:
+			case TOKEN_TYPE_PATH:
 				this->memory.push(static_cast<ValueToken*>(*it)->getValue());
 				break;
 			case TOKEN_TYPE_OPERATOR:
@@ -231,7 +232,7 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 				break;
 			default:
 				result = ExpressionResult(
-					"Unknow token (TODO)",
+					"Unknow token (TODO) : " + Token::stringType((*it)->getType()),
 					(*it)->getRange(),
 					this->context
 				);
@@ -409,22 +410,22 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 	return result;
 }
 
-ExpressionResult Interpreter::getFunction(const Token *functionToken, const RPNFunction *&function) {
-	if (builtins::builtinFunctions.contains(functionToken->getStringValue())) {
-		function = &builtins::builtinFunctions.at(functionToken->getStringValue());
+ExpressionResult Interpreter::getFunction(const Value *functionName, const RPNFunction *&function) {
+	if (functionName->getType() != PATH && builtins::builtinFunctions.contains(functionName->getStringValue())) {
+		function = &builtins::builtinFunctions.at(functionName->getStringValue());
 	} else {
 		Value *value;
 		ExpressionResult result;
-		if (functionToken->getType() == TOKEN_TYPE_FUNCTION_CALL) {
-			result = this->context->getValue(functionToken, value);
+		if (functionName->getType() == VARIABLE) {
+			result = this->context->getValue(functionName, value);
 		} else {
-			result = Module::getModuleValue(functionToken, value, context);
+			result = Module::getModuleValue(functionName, value, context);
 		}
 		if (result.error()) return result;
 		if (value->getType() != FUNCTION)
 			return ExpressionResult(
-				functionToken->getStringValue() + " is not a function",
-				functionToken->getRange(),
+				functionName->getStringValue() + " is not a function",
+				functionName->getRange(),
 				this->context
 			);
 		function = static_cast<const Function*>(value)->getValue();
@@ -432,16 +433,17 @@ ExpressionResult Interpreter::getFunction(const Token *functionToken, const RPNF
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) {
+ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 	const RPNFunction *function;
-	ExpressionResult result = this->getFunction(functionToken, function);
+	Value *functionName = static_cast<ValueToken *>(functionToken)->getValue();
+	ExpressionResult result = this->getFunction(functionName, function);
 	if (result.error()) return result;
 	result = this->memory.sizeExpected(
 		function->getArgumentsCount(),
-		"Invalid number of arguments for function " + functionToken->getStringValue() +
+		"Invalid number of arguments for function " + functionName->getStringValue() +
 		" got " + std::to_string(this->memory.size()) +
 		" but expected " + std::to_string(function->getArgumentsCount()) + " arguments",
-		functionToken->getRange(),
+		functionName->getRange(),
 		this->context
 	);
 	if (result.error()) return result;
@@ -456,12 +458,12 @@ ExpressionResult Interpreter::interpretFunctionCall(const Token *functionToken) 
 	
 	RPNFunctionResult callResult;
 	if (functionToken->getType() == TOKEN_TYPE_FUNCTION_CALL) {
-		callResult = function->call(arguments, functionToken->getRange(), this->context);
+		callResult = function->call(arguments, functionName->getRange(), this->context);
 	} else {
 		ContextPtr ctx;
-		ExpressionResult result = Module::getModuleContext(functionToken, this->context, ctx);
+		ExpressionResult result = Module::getModuleContext(functionName, this->context, ctx);
 		if (result.error()) return result;
-		callResult = function->call(arguments, functionToken->getRange(), ctx);
+		callResult = function->call(arguments, functionName->getRange(), ctx);
 	}
 	for (Value *value : arguments)
 		Value::deleteValue(&value, Value::INTERPRETER);

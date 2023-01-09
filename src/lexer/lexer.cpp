@@ -111,6 +111,13 @@ ExpressionResult Lexer::lex() {
 			case TOKEN_TYPE_VALUE_TYPE:
 				this->currentLine->push(new TypeToken(token->getRange(), token->getStringValue()));
 				break;
+			case TOKEN_TYPE_DOT:
+				return ExpressionResult(
+					"Expected literal before '.' character",
+					token->getRange(),
+					this->context
+				);
+				break;
 			default:
 				this->integrated = true;
 				this->currentLine->push(token);
@@ -127,6 +134,7 @@ ExpressionResult Lexer::lex() {
 			this->context
 		);
 	this->pushLine();
+
 	
 	return ExpressionResult();
 };
@@ -243,12 +251,42 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 		return this->parseKeyword(token);
 	}
 
+	if (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_DOT) {
+		return this->parsePath(token);
+	}
+
 	this->currentLine->push(new ValueToken(
 		new Variable(
 			token->getStringValue(),
 			token->getRange()
 		),
 		TOKEN_TYPE_LITERAL
+	));
+	return ExpressionResult();
+}
+
+/**
+ * @brief check if a given path is correctly formatted and convert it to a path token
+ * 
+ * @param token the first literal of the path
+ * @return ExpressionResult if the conversion was successful, otherwise an error
+ */
+ExpressionResult Lexer::parsePath(Token *token) {
+	std::vector<std::string> path{token->getStringValue()};
+	while (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_DOT) {
+		this->tokens.pop();
+		if (this->tokens.size() == 0 || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
+			return ExpressionResult(
+				"Invalid path: expected literal after dot",
+				token->getRange(),
+				this->context
+			);
+		path.push_back(this->tokens.front()->getStringValue());
+		this->tokens.pop();
+	}
+	this->currentLine->push(new ValueToken(
+		new Path(path, token->getRange()),
+		TOKEN_TYPE_PATH
 	));
 	return ExpressionResult();
 }
@@ -338,11 +376,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
  */
 ExpressionResult Lexer::parseFunctionCall(const Token *token) {
 	if (
-		this->tokens.empty() || 
-		(
-			this->tokens.front()->getType() != TOKEN_TYPE_LITERAL && 
-			this->tokens.front()->getType() != TOKEN_TYPE_PATH
-		)
+		this->tokens.empty() || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL
 	) {
 		return ExpressionResult(
 			"Expected function name after colon token",
@@ -351,15 +385,17 @@ ExpressionResult Lexer::parseFunctionCall(const Token *token) {
 		);
 	}
 	
-	Token *name = this->tokens.front();
+	Token *literal = this->tokens.front();
 	this->tokens.pop();
+	ExpressionResult result = this->parseLiteral(literal);
+	delete literal;
+	if (result.error()) return result;
+	if (this->currentLine->back()->getType() == TOKEN_TYPE_PATH) {
+		this->currentLine->back()->setType(TOKEN_TYPE_MODULE_FUNCTION_CALL);
+	} else {
+		this->currentLine->back()->setType(TOKEN_TYPE_FUNCTION_CALL);
+	}
 
-	this->currentLine->push(new StringToken(
-		token->getRange().merge(name->getRange()),
-		name->getType() == TOKEN_TYPE_LITERAL ? TOKEN_TYPE_FUNCTION_CALL : TOKEN_TYPE_MODULE_FUNCTION_CALL,
-		name->getStringValue()
-	));
-	delete name;
 	return ExpressionResult();
 }
 

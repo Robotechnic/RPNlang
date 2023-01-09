@@ -49,8 +49,8 @@ class Interpreter {
 		ExpressionResult interpretKeyword(const Token *keywordToken);
 		ExpressionResult interpretValueType(const Token *typeToken);
 		ExpressionResult interpretAssignment(const Token *operatorToken);
-		ExpressionResult getFunction(const Token *functionToken, const RPNFunction *&function);
-		ExpressionResult interpretFunctionCall(const Token *functionToken);
+		ExpressionResult getFunction(const Value *functionName, const RPNFunction *&function);
+		ExpressionResult interpretFunctionCall(Token *functionToken);
 		ExpressionResult interpretIf(Line &line, CodeBlock &block);
 		ExpressionResult interpretWhile(Line &line, CodeBlock &block);
 		ExpressionResult interpretFor(Line &line, CodeBlock &block);
