@@ -269,6 +269,8 @@ ExpressionResult loader(CppModule *module) {
 			raw.c_lflag &= ~(ICANON);
 			raw.c_cc[VMIN] = 0;
 			raw.c_cc[VTIME] = 1;
+			//hide the cursor
+			std::cout << "\033[?25l";
 			tcsetattr(STDIN_FILENO, TCSANOW, &raw);
 			return std::make_pair(ExpressionResult(), None::empty());
 		}
@@ -281,6 +283,8 @@ ExpressionResult loader(CppModule *module) {
 	module->addFunction(
 		"normalMode", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			tcsetattr(STDIN_FILENO, TCSANOW , &holdTermios);
+			//show the cursor
+			std::cout << "\033[?25h";
 			return std::make_pair(ExpressionResult(), None::empty());
 		}
 	);
