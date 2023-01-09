@@ -25,7 +25,7 @@ class Token {
 
 		bool isNumber() const;
 		TextRange getRange() const;
-		inline static std::string stringType(TokenType type);
+		static std::string stringType(TokenType type);
 
 	protected:
 		TextRange range;

@@ -11,7 +11,26 @@ i 10 0 -1 for
 rof
 "\n" :print
 
-"Break and Continue : \n" :print
+"Nested : \n" :print
+i 0 10 1 for
+	j 0 10 1 for
+		i j + f"{} " :print
+	rof
+	"\n" :print
+rof
+"\n" :print
+
+"Break : \n" :print
+i 0 10 1 for
+	i 5 >= if
+		break
+	fi
+	i 5 != :assert
+	i f"{} " :print
+rof
+"\n" :print
+
+"Continue : \n" :print
 i 0 10 1 for
 	i 2 % 0 != if
 		continue
@@ -21,23 +40,7 @@ i 0 10 1 for
 rof
 "\n" :print
 
-i 0 10 1 for
-	i 5 >= if
-		break
-	fi
-	i 5 != :assert
-	i :print
-rof
-"\n" :print
 
-"Nested : \n" :print
-i 0 10 1 for
-	j 0 10 1 for
-		i j + f"{} " :print
-	rof
-	"\n" :print
-rof
-"\n" :print
 
 "Inter dependency : \n" :print
 i 0 10 1 for

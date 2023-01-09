@@ -29,7 +29,7 @@ TextRange Token::getRange() const {
  * @param type the TokenType to convert
  * @return std::string_view the string representation of the TokenType
  */
-inline std::string Token::stringType(TokenType type) {
+std::string Token::stringType(TokenType type) {
 	switch (type) {
 		case TOKEN_TYPE_INT:
 			return "int";

@@ -562,14 +562,17 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 		);
 		result = this->interpret(block.getBlocks());
 		if (result.error()) return result;
-		i += step;
+		if (!result.breakingLoop())
+			i += step;
+	}
+	if (i.getValue() != forParams.at(0)) {
+		Value::deleteValue(&i.getValue(), Value::INTERPRETER);
 	}
 	Value::deleteValue(&variable, Value::INTERPRETER);
 	for (Value *param : forParams) {
-		if (param != i.getValue())
-			Value::deleteValue(&param, Value::INTERPRETER);
+		Value::deleteValue(&param, Value::INTERPRETER);
 	}
-	return result;
+	return ExpressionResult();
 }
 
 ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
