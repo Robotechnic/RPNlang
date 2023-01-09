@@ -190,7 +190,7 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 		} else {
 			result = ExpressionResult(
 				"Lexer didn't to its job corectly ;(",
-				static_cast<CodeBlock*>(block)->getKeyword()->getRange(),
+				static_cast<CodeBlock*>(block)->getRange(),
 				this->context
 			);
 		}
@@ -262,21 +262,21 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
  * @return ExpressionResult status of the interpretation
  */
 ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
-	const std::string type = block.getKeyword()->getStringValue();
-	if (type == "if") {
-		return this->interpretIf(line, block);
-	} else if (type == "while") {
-		return this->interpretWhile(line, block);
-	} else if (type == "for") {
-		return this->interpretFor(line, block);
-	} else if (type == "try") {
-		return this->interpretTry(line, block);
-	} else {
-		return ExpressionResult(
-			"Unknow block type",
-			block.getKeyword()->getRange(),
-			this->context
-		);
+	switch (block.getKeyword()) {
+		case KEYWORD_IF:
+			return this->interpretIf(line, block);
+		case KEYWORD_WHILE:
+			return this->interpretWhile(line, block);
+		case KEYWORD_FOR:
+			return this->interpretFor(line, block);
+		case KEYWORD_TRY:
+			return this->interpretTry(line, block);
+		default:
+			return ExpressionResult(
+				"Unknow block type",
+				block.getRange(),
+				this->context
+			);
 	}
 	return ExpressionResult();
 }
@@ -338,19 +338,19 @@ ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
 }
 
 ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
-	const std::string keyword = keywordToken->getStringValue();
-	if (keyword == "break") {
-		return ExpressionResult(ExpressionResult::BREAK);
-	} else if (keyword == "continue") {
-		return ExpressionResult(ExpressionResult::CONTINUE);
-	}  else if (keyword == "return") {
-		return ExpressionResult(ExpressionResult::RETURN);
-	} else {
-		return ExpressionResult(
-			"Unknow keyword " + keyword,
-			keywordToken->getRange(),
-			this->context
-		);
+	switch(static_cast<const KeywordToken *>(keywordToken)->getKeyword()) {
+		case KEYWORD_BREAK:
+			return ExpressionResult(ExpressionResult::BREAK);
+		case KEYWORD_CONTINUE:
+			return ExpressionResult(ExpressionResult::CONTINUE);
+		case KEYWORD_RETURN:
+			return ExpressionResult(ExpressionResult::RETURN);
+		default:
+			return ExpressionResult(
+				"Unknow keyword " + keywordToken->getStringValue(),
+				keywordToken->getRange(),
+				this->context
+			);
 	}
 }
 
@@ -504,6 +504,7 @@ ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
 		result = this->interpret(block.getBlocks());
 		if (result.error()) return result;
 		if (result.breakingLoop()) return ExpressionResult();
+		if (result.returnValue()) return result;
 		result = this->interpretLine(line);
 		if (result.error()) return result;
 		condition = this->lastValue->to(BOOL);
@@ -579,6 +580,7 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 	for (Value *param : forParams) {
 		Value::deleteValue(&param, Value::INTERPRETER);
 	}
+	if (result.returnValue()) return result;
 	return ExpressionResult();
 }
 
@@ -604,11 +606,11 @@ ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
 		return result;
 	
 	// finally
-	if (!result.error() || block.getNext()->getKeyword()->getStringValue() == "finally")
+	if (!result.error() || block.getNext()->getKeyword() == KEYWORD_FINALLY)
 		return this->interpret(block.getNext()->getBlocks());
 	
 	// catch
-	if (block.getNext()->getKeyword()->getStringValue() != "catch")
+	if (block.getNext()->getKeyword() != KEYWORD_CATCH)
 		return result;
 	
 	this->context->setValue(

@@ -7,9 +7,11 @@
 
 #include "tokens/token.hpp"
 #include "tokens/tokentypes.hpp"
+#include "tokens/keywords.hpp"
 #include "tokens/tokens/stringtoken.hpp"
 #include "tokens/tokens/fstringtoken.hpp"
 #include "tokens/tokens/valuetoken.hpp"
+#include "tokens/tokens/operatortoken.hpp"
 
 #include "expressionresult/expressionresult.hpp"
 #include "textutilities/escapecharacters.hpp"
@@ -17,7 +19,7 @@
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/line.hpp"
 #include "codeblocks/functionblock.hpp"
-#include "lexer/keywords.hpp"
+
 
 #include "value/value.hpp"
 #include "value/valuetypes.hpp"
@@ -42,7 +44,7 @@ class Lexer {
 
 	private:
 		void pushLine();
-		bool hasParentKeywordBlock(const std::vector<std::string> &keywords) const;
+		bool hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const;
 		ExpressionResult parseBinNumber(Token *token);
 		ExpressionResult parseHexNumber(Token *token);
 		ExpressionResult parseFString(Token *token);

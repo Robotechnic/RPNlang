@@ -11,6 +11,7 @@
 
 #include "tokens/token.hpp"
 #include "tokens/tokens/typetoken.hpp"
+#include "tokens/tokens/keywordtoken.hpp"
 #include "codeblocks/blockqueue.hpp"
 #include "codeblocks/line.hpp"
 #include "codeblocks/codeblock.hpp"

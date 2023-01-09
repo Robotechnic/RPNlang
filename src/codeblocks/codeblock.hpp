@@ -1,14 +1,14 @@
 #pragma once 
 
 #include <queue>
-#include "tokens/token.hpp"
+#include "tokens/tokens/keywordtoken.hpp"
 #include "codeblocks/baseblock.hpp"
 #include "codeblocks/blockqueue.hpp"
 #include "codeblocks/line.hpp"
 
 class CodeBlock : public BaseBlock {
 	public:
-		CodeBlock(Token *keyword);
+		CodeBlock(KeywordToken *keyword);
 		~CodeBlock();
 		void push(BaseBlock *block);
 		BlockQueue& getBlocks();
@@ -16,7 +16,8 @@ class CodeBlock : public BaseBlock {
 		void setNext(CodeBlock *next);
 		CodeBlock *getNext() const;
 
-		Token* getKeyword();
+		KeywordToken* getKeywordToken();
+		KeywordEnum getKeyword() const;
 		TextRange getRange() const;
 
 		bool empty() const;
@@ -28,7 +29,7 @@ class CodeBlock : public BaseBlock {
 		void display() const;
 
 	private:
-		Token *keyword;
+		KeywordToken *keyword;
 		CodeBlock *next;
 		BlockQueue blocks;
 };

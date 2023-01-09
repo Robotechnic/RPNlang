@@ -8,6 +8,7 @@ class Value;
 #include <stdexcept>
 #include <tuple>
 #include "tokens/token.hpp"
+#include "tokens/tokens/operatortoken.hpp"
 #include "tokens/tokentypes.hpp"
 #include "value/valuetypes.hpp"
 #include "textutilities/textrange.hpp"

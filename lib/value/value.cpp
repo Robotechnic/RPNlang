@@ -110,35 +110,49 @@ void Value::concatValueRange(const Token *other) {
  * @return ExpressionResult if the operation was successful
  */
 operatorResult Value::applyOperator(const Value *other, const Token *operatorToken, const ContextPtr &context) {
-	std::string op = operatorToken->getStringValue();
+	OperatorToken::OperatorTypes op = static_cast<const OperatorToken*>(operatorToken)->getOperatorType();
 
 	this->concatValueRange(other);
 	this->concatValueRange(operatorToken);
 
-	if (op == "/")
-		return this->opdiv(other, context);
-	if (op == "%")
-		return this->opmod(other, context);
-	if (op == "+")
-		return this->opadd(other, context);
-	if (op == "-")
-		return this->opsub(other, context);
-	if (op == "*")
-		return this->opmul(other, context);
-	if (op == "^")
-		return this->oppow(other, context);
-	if (op == "==")
-		return this->opeq(other, context);
-	if (op == "!=")
-		return this->opne(other, context);
-	if (op == "<")
-		return this->oplt(other, context);
-	if (op == "<=")
-		return this->ople(other, context);
-	if (op == ">")
-		return this->opgt(other, context);
-	if (op == ">=")
-		return this->opge(other, context);
+	switch (op) {
+		case OperatorToken::OP_ADD:
+			return this->opadd(other, context);
+			break;
+		case OperatorToken::OP_SUB:
+			return this->opsub(other, context);
+			break;
+		case OperatorToken::OP_MUL:
+			return this->opmul(other, context);
+			break;
+		case OperatorToken::OP_DIV:
+			return this->opdiv(other, context);
+			break;
+		case OperatorToken::OP_MOD:
+			return this->opmod(other, context);
+			break;
+		case OperatorToken::OP_POW:
+			return this->oppow(other, context);
+			break;
+		case OperatorToken::OP_EQ:
+			return this->opeq(other, context);
+			break;
+		case OperatorToken::OP_NE:
+			return this->opne(other, context);
+			break;
+		case OperatorToken::OP_GT:
+			return this->opgt(other, context);
+			break;
+		case OperatorToken::OP_GE:
+			return this->opge(other, context);
+			break;
+		case OperatorToken::OP_LT:
+			return this->oplt(other, context);
+			break;
+		case OperatorToken::OP_LE:
+			return this->ople(other, context);
+			break;
+	}
 
 	return std::make_pair(
 		ExpressionResult(

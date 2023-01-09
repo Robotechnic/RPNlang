@@ -22,13 +22,13 @@ void Lexer::pushLine() {
 	this->currentLine = new Line();
 }
 
-bool Lexer::hasParentKeywordBlock(const std::vector<std::string> &keywords) const {
+bool Lexer::hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const {
 	if (keywords.empty()) return true;
 	std::stack<CodeBlock*> stack = this->keywordBlockStack;
 	while (!stack.empty()) {
 		CodeBlock *block = stack.top();
 		stack.pop();
-		if (std::find(keywords.begin(), keywords.end(), block->getKeyword()->getStringValue()) != keywords.end())
+		if (std::find(keywords.begin(), keywords.end(), block->getKeyword()) != keywords.end())
 			return true;
 	}
 	return false;
@@ -118,6 +118,12 @@ ExpressionResult Lexer::lex() {
 					this->context
 				);
 				break;
+			case TOKEN_TYPE_OPERATOR:
+			case TOKEN_TYPE_BOOLEAN_OPERATOR:
+				this->currentLine->push(
+					new OperatorToken(token->getRange(), token->getType(), token->getStringValue())
+				);
+				break;
 			default:
 				this->integrated = true;
 				this->currentLine->push(token);
@@ -129,7 +135,7 @@ ExpressionResult Lexer::lex() {
 
 	if (this->keywordBlockStack.size() > 0)
 		return ExpressionResult(
-			"Missing closing keyword for block " + this->keywordBlockStack.top()->getKeyword()->getStringValue(),
+			"Missing closing keyword for block " + this->keywordBlockStack.top()->getKeywordToken()->getStringValue(),
 			token->getRange(),
 			this->context
 		);
@@ -247,8 +253,11 @@ ExpressionResult Lexer::parseString(Token *token) {
  */
 ExpressionResult Lexer::parseLiteral(Token *token) {
 	if (keywordsRegex(token->getStringValue())) {
-		token->setType(TOKEN_TYPE_KEYWORD);
-		return this->parseKeyword(token);
+		token = new KeywordToken(token->getRange(), token->getStringValue());
+		ExpressionResult result =  this->parseKeyword(token);
+		if (!this->integrated) delete token;
+		this->integrated = false;
+		return result;
 	}
 
 	if (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_DOT) {
@@ -274,6 +283,7 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 ExpressionResult Lexer::parsePath(Token *token) {
 	std::vector<std::string> path{token->getStringValue()};
 	while (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_DOT) {
+		delete this->tokens.front();
 		this->tokens.pop();
 		if (this->tokens.size() == 0 || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
 			return ExpressionResult(
@@ -282,6 +292,7 @@ ExpressionResult Lexer::parsePath(Token *token) {
 				this->context
 			);
 		path.push_back(this->tokens.front()->getStringValue());
+		delete this->tokens.front();
 		this->tokens.pop();
 	}
 	this->currentLine->push(new ValueToken(
@@ -298,28 +309,28 @@ ExpressionResult Lexer::parsePath(Token *token) {
  * @return ExpressionResult if the token was valid, otherwise an error
  */
 ExpressionResult Lexer::parseKeyword(Token *token) {
+	KeywordEnum tokenKeyword = static_cast<KeywordToken *>(token)->getKeyword();
 	// all checks for validity are made when a closing block is encounter
-	if (blockClosers.contains(token->getStringValue())) {
+	if (blockClosers.contains(tokenKeyword)) {
 		if (this->keywordBlockStack.empty()) 
 			return ExpressionResult(
-				"Expected " + blockClosers.at(token->getStringValue()) + " token before " + token->getStringValue(),
+				"Expected " + KeywordToken::keywordString(blockClosers.at(tokenKeyword)) + " token before " + token->getStringValue(),
 				token->getRange(),
 				this->context
 			);
 
 		BaseBlock *block = this->keywordBlockStack.top();
-		Token *keyword = this->keywordBlockStack.top()->getKeyword();
-		const std::string &name = keyword->getStringValue();
+		const KeywordEnum name = this->keywordBlockStack.top()->getKeyword();
 		this->keywordBlockStack.pop();
-		const std::vector<std::string> &blockCloser = blockOpeners.at(name);
-		if (std::find(blockCloser.begin(), blockCloser.end(), token->getStringValue()) == blockCloser.end())
+		const std::vector<KeywordEnum> &blockCloser = blockOpeners.at(name);
+		if (std::find(blockCloser.begin(), blockCloser.end(), tokenKeyword) == blockCloser.end())
 			return ExpressionResult(
-				"Expected " + blockClosers.at(name) + " token before " + token->getStringValue(),
+				"Expected " + KeywordToken::keywordString(blockClosers.at(tokenKeyword)) + " token before " + token->getStringValue(),
 				token->getRange(),
 				this->context
 			);
 		
-		if (name == "fun") {
+		if (name == KEYWORD_FUN) {
 			auto [result, function] = this->parseFunction(block);
 			if (result.error()) return result;
 			block = function;
@@ -327,7 +338,9 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 
 		if (!this->keywordBlockStack.empty()) {
 			if (blockClosers.contains(name))
-				static_cast<CodeBlock*>(this->keywordBlockStack.top()->getBlocks().back())->setNext(static_cast<CodeBlock*>(block));
+				static_cast<CodeBlock*>(
+					this->keywordBlockStack.top()->getBlocks().back()
+				)->setNext(static_cast<CodeBlock*>(block));
 			else
 				this->keywordBlockStack.top()->push(block);
 		} else if (blockClosers.contains(name)){
@@ -338,20 +351,20 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 	}
 
 	// open a new block when encounter a block keyword like if, fun, while...
-	if (blockOpeners.contains(token->getStringValue())) {
+	if (blockOpeners.contains(tokenKeyword)) {
 		this->pushLine();
-		this->keywordBlockStack.push(new CodeBlock(token));
+		this->keywordBlockStack.push(new CodeBlock(static_cast<KeywordToken*>(token)));
 		this->integrated = true;
 		return ExpressionResult();
 	}
 
 	// parent dependancy is the fact that some tokens need to be in a block to be valid
 	// ex: continue must be in a loop
-	if (parentDependency.contains(token->getStringValue())) {
-		if (!hasParentKeywordBlock(parentDependency.at(token->getStringValue()))) {
+	if (parentDependency.contains(tokenKeyword)) {
+		if (!hasParentKeywordBlock(parentDependency.at(tokenKeyword))) {
 			std::string result = token->getStringValue() + "must be inside of ";
-			for (const std::string &keyword : parentDependency.at(token->getStringValue())) {
-				result += keyword + " or ";
+			for (const KeywordEnum &keyword : parentDependency.at(tokenKeyword)) {
+				result += KeywordToken::keywordString(keyword) + " or ";
 			}
 			result.erase(result.end() - 4, result.end());
 			result += " block";
@@ -392,7 +405,7 @@ ExpressionResult Lexer::parseFunctionCall(const Token *token) {
 	if (result.error()) return result;
 	if (this->currentLine->back()->getType() == TOKEN_TYPE_PATH) {
 		this->currentLine->back()->setType(TOKEN_TYPE_MODULE_FUNCTION_CALL);
-	} else {
+	} else {	
 		this->currentLine->back()->setType(TOKEN_TYPE_FUNCTION_CALL);
 	}
 
@@ -406,7 +419,7 @@ ExpressionResult Lexer::parseFunctionCall(const Token *token) {
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
 std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *block) {
-	const Token *keyword = static_cast<CodeBlock*>(block)->getKeyword();
+	const Token *keyword = static_cast<CodeBlock*>(block)->getKeywordToken();
 	if (this->codeBlocks.empty())
 		return std::make_pair(ExpressionResult(
 			"Expected function definition before function block",

@@ -94,16 +94,16 @@ main -> none fun
 		last :time.time =
 		:terminal.clear
 		rings rings direction :moveSnake =
-		:terminal.width 2 / 9 - 1 "Press a key to quit" terminal.YELLOW terminal.DEFAULT_BACKGROUND :terminal.drawText
-		scoreText rings :len 3 - f"Score: {}" =
-		:terminal.width 2 / scoreText :len 2 / - 2 scoreText terminal.DEFAULT terminal.DEFAULT_BACKGROUND :terminal.drawText
-		apple :drawApple 
-		rings :drawSnake
 		rings apple :appleCollision if
 			apple rings :spawnApple =
 		else
 			rings 0 :remove
 		fi
+		:terminal.width 2 / 9 - 1 "Press a key to quit" terminal.YELLOW terminal.DEFAULT_BACKGROUND :terminal.drawText
+		scoreText rings :len 3 - f"Score: {}" =
+		:terminal.width 2 / scoreText :len 2 / - 2 scoreText terminal.DEFAULT terminal.DEFAULT_BACKGROUND :terminal.drawText
+		apple :drawApple 
+		rings :drawSnake
 		
 		gameOver rings :snakeCollision =
 		gameOver gameOver rings :terminal.width :terminal.height :wallCollision  :or =

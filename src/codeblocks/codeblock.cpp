@@ -1,6 +1,6 @@
 #include "codeblocks/codeblock.hpp"
 
-CodeBlock::CodeBlock(Token *keyword) : BaseBlock(CODE_BLOCK), keyword(keyword), next(nullptr) {}
+CodeBlock::CodeBlock(KeywordToken *keyword) : BaseBlock(CODE_BLOCK), keyword(keyword), next(nullptr) {}
 
 CodeBlock::~CodeBlock() {
 	this->clear();
@@ -48,8 +48,12 @@ void CodeBlock::reset() {
 	this->blocks.reset();
 }
 
-Token* CodeBlock::getKeyword() {
+KeywordToken* CodeBlock::getKeywordToken() {
 	return this->keyword;
+}
+
+KeywordEnum CodeBlock::getKeyword() const {
+	return this->keyword->getKeyword();
 }
 
 void CodeBlock::display() const {
