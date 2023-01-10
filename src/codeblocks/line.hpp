@@ -20,6 +20,7 @@ class Line : public BaseBlock {
 		void reset();
 
 		TextRange lastRange() const;
+		TextRange lineRange() const;
 
 		LineIterator begin();
 

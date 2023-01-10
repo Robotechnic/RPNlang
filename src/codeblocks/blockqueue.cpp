@@ -71,7 +71,7 @@ BlockQueueIterator BlockQueue::begin() {
 }
 
 BlockQueueIterator BlockQueue::end() {
-	return BlockQueueIterator(this, this->blocks.size() - 1);
+	return BlockQueueIterator(this, this->blocks.size());
 }
 
 

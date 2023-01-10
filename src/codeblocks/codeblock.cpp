@@ -48,6 +48,17 @@ void CodeBlock::reset() {
 	this->blocks.reset();
 }
 
+size_t CodeBlock::size() const {
+	return this->blocks.size();
+}
+
+BlockQueueIterator CodeBlock::begin() {
+	return this->blocks.begin();
+}
+BlockQueueIterator CodeBlock::end() {
+	return this->blocks.end();
+}
+
 KeywordToken* CodeBlock::getKeywordToken() {
 	return this->keyword;
 }

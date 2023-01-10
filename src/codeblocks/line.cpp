@@ -57,6 +57,13 @@ TextRange Line::lastRange() const {
 	return this->tokens.back()->getRange();
 }
 
+TextRange Line::lineRange() const {
+	if (this->tokens.empty()) {
+		throw std::runtime_error("Line::lineRange() called on empty stack");
+	}
+	return TextRange::merge(this->tokens.front()->getRange(), this->tokens.back()->getRange());
+}
+
 LineIterator Line::begin() {
 	return LineIterator(this);
 }

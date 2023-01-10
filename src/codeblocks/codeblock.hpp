@@ -23,6 +23,10 @@ class CodeBlock : public BaseBlock {
 		bool empty() const;
 		void clear();
 		void reset();
+		size_t size() const;
+
+		BlockQueueIterator begin();
+		BlockQueueIterator end();
 
 		TextRange lastRange() const;
 
