@@ -9,6 +9,7 @@ enum ValueType {
 	BOOL,
 	PATH,
 	LIST,
+	STRUCT,
 	ANY,
 	NONE
 };
