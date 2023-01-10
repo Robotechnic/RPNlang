@@ -70,6 +70,8 @@ std::string Token::stringType(TokenType type) {
 			return "function call";
 		case TOKEN_TYPE_MODULE_FUNCTION_CALL:
 			return "module function call";
+		case TOKEN_TYPE_STRUCT_NAME:
+			return "struct name";
 		default:
 			return "unknown";
 	}

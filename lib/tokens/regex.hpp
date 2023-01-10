@@ -26,7 +26,9 @@ matchResult arrowMatch(std::string_view str);
 matchResult expressionSeparatorMatch(std::string_view str);
 matchResult affectTokenMatch(std::string_view str);
 matchResult dotMatch(std::string_view str);
+matchResult capsLiteralMatch(std::string_view str);
 matchResult literalMatch(std::string_view str);
+matchResult structMatch(std::string_view str);
 matchResult operatorMatch(std::string_view str);
 matchResult booleanOperatorMatch(std::string_view str);
 matchResult lineSeparatorMatch(std::string_view str);
@@ -38,7 +40,7 @@ matchResult commentMatch(std::string_view str);
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
  */
-const std::array<std::pair<Matcher, TokenType>, 19> tokenRegexes = {
+const std::array<std::pair<Matcher, TokenType>, 21> tokenRegexes = {
 	std::make_pair(binNumMatch,              TOKEN_TYPE_BIN),
 	std::make_pair(hexNumMatch,              TOKEN_TYPE_HEX),
 	std::make_pair(floatMatch,               TOKEN_TYPE_FLOAT),
@@ -56,6 +58,8 @@ const std::array<std::pair<Matcher, TokenType>, 19> tokenRegexes = {
 	std::make_pair(expressionSeparatorMatch, TOKEN_TYPE_EXPRESSION_SEPARATOR),
 	std::make_pair(lineSeparatorMatch,       TOKEN_TYPE_END_OF_LINE),
 	std::make_pair(dotMatch,                 TOKEN_TYPE_DOT),
+	std::make_pair(capsLiteralMatch,         TOKEN_TYPE_LITERAL),
+	std::make_pair(structMatch,              TOKEN_TYPE_STRUCT_NAME),
 	std::make_pair(literalMatch,             TOKEN_TYPE_LITERAL),
 	std::make_pair(commentMatch,             TOKEN_TYPE_COMMENT)
 };

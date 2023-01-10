@@ -21,7 +21,9 @@ constexpr auto keywordsRegex = ctre::match<"^("
 	"try|"
 	"catch|"
 	"finally|"
-	"yrt"
+	"yrt|"
+	"struct|"
+	"tcurts"
 ")$">;
 
 enum KeywordEnum {
@@ -40,7 +42,9 @@ enum KeywordEnum {
 	KEYWORD_TRY,
 	KEYWORD_CATCH,
 	KEYWORD_FINALLY,
-	KEYWORD_YRT
+	KEYWORD_YRT,
+	KEYWORD_STRUCT,
+	KEYWORD_TCURTS
 };
 
 const std::unordered_map<KeywordEnum, std::vector<KeywordEnum>> blockOpeners = {
@@ -51,7 +55,8 @@ const std::unordered_map<KeywordEnum, std::vector<KeywordEnum>> blockOpeners = {
 	{KEYWORD_TRY    , {KEYWORD_YRT, KEYWORD_CATCH, KEYWORD_FINALLY}},
 	{KEYWORD_ELSE   , {KEYWORD_FI}},
 	{KEYWORD_CATCH  , {KEYWORD_YRT, KEYWORD_FINALLY}},
-	{KEYWORD_FINALLY, {KEYWORD_YRT}}
+	{KEYWORD_FINALLY, {KEYWORD_YRT}},
+	{KEYWORD_STRUCT , {KEYWORD_TCURTS}}
 };
 
 const std::unordered_map<KeywordEnum, KeywordEnum> blockClosers = {
@@ -62,7 +67,8 @@ const std::unordered_map<KeywordEnum, KeywordEnum> blockClosers = {
 	{KEYWORD_YRT    , KEYWORD_TRY},
 	{KEYWORD_ELSE   , KEYWORD_IF},
 	{KEYWORD_CATCH  , KEYWORD_TRY},
-	{KEYWORD_FINALLY, KEYWORD_TRY}
+	{KEYWORD_FINALLY, KEYWORD_TRY},
+	{KEYWORD_TCURTS , KEYWORD_STRUCT}
 };
 
 const std::unordered_map<KeywordEnum, std::vector<KeywordEnum>> parentDependency = {

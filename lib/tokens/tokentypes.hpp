@@ -13,6 +13,7 @@ enum TokenType {
 	TOKEN_TYPE_VALUE,
 	TOKEN_TYPE_FSTRING,
 	TOKEN_TYPE_LITERAL,
+	TOKEN_TYPE_STRUCT_NAME,
 
 	// this tokens are made with combination of others tokens by the lexer
 	TOKEN_TYPE_FUNCTION_CALL,

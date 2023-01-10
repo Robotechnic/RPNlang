@@ -33,6 +33,10 @@ KeywordToken::KeywordToken(TextRange range, std::string_view keyword) : Token(ra
 		this->keyword = KEYWORD_FUN;
 	} else if (keyword == "nuf") {
 		this->keyword = KEYWORD_NUF;
+	} else if (keyword == "struct") {
+		this->keyword = KEYWORD_STRUCT;
+	} else if (keyword == "tcurts") {
+		this->keyword = KEYWORD_TCURTS;
 	} else {
 		throw std::runtime_error("Invalid keyword");
 	}
@@ -76,6 +80,10 @@ std::string KeywordToken::keywordString(KeywordEnum keyword) {
 			return "fun";
 		case KEYWORD_NUF:
 			return "nuf";
+		case KEYWORD_STRUCT:
+			return "struct";
+		case KEYWORD_TCURTS:
+			return "tcurts";
 		default:
 			throw std::runtime_error("Invalid keyword");
 	}
