@@ -1,0 +1,5 @@
+Test struct
+	age -> int
+	name -> string
+	e -> float
+tcurts

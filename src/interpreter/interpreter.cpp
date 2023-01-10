@@ -39,7 +39,6 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 	
 	if (error)
 		return false;				
-
 	Lexer lexer(tokens, this->context);
 	result = lexer.lex();
 	if (result.error()) {
@@ -187,6 +186,9 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 				f->lastRange(),
 				Value::CONTEXT_VARIABLE
 			));
+		} else if (block->getType() == STRUCT_BLOCK)  {
+			StructBlock *b = static_cast<StructBlock*>(block);
+			Struct::addStructDefinition(b->getDefinition());
 		} else {
 			result = ExpressionResult(
 				"Lexer didn't to its job corectly ;(",

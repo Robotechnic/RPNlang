@@ -19,6 +19,7 @@
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/line.hpp"
 #include "codeblocks/functionblock.hpp"
+#include "codeblocks/structblock.hpp"
 
 
 #include "value/value.hpp"
@@ -52,7 +53,8 @@ class Lexer {
 		ExpressionResult parseLiteral(Token *token);
 		ExpressionResult parsePath(Token *token);
 		ExpressionResult parseKeyword(Token *token);
-		std::pair<ExpressionResult, FunctionBlock*> parseFunction(BaseBlock *block);
+		std::pair<ExpressionResult, FunctionBlock*> parseFunction(CodeBlock *block);
+		std::pair<ExpressionResult, StructBlock*> parseStruct(CodeBlock *block);
 		ExpressionResult parseFunctionCall(const Token *token);
 
 	private:

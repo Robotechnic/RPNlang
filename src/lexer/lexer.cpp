@@ -331,9 +331,13 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 			);
 		
 		if (name == KEYWORD_FUN) {
-			auto [result, function] = this->parseFunction(block);
+			auto [result, function] = this->parseFunction(static_cast<CodeBlock*>(block));
 			if (result.error()) return result;
 			block = function;
+		} else if (name == KEYWORD_STRUCT) {
+			auto [result, structDefinition] = this->parseStruct(static_cast<CodeBlock*>(block));
+			if (result.error()) return result;
+			block = structDefinition;
 		}
 
 		if (!this->keywordBlockStack.empty()) {
@@ -418,8 +422,8 @@ ExpressionResult Lexer::parseFunctionCall(const Token *token) {
  * @param keyword the fun keyword token
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
-std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *block) {
-	const Token *keyword = static_cast<CodeBlock*>(block)->getKeywordToken();
+std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(CodeBlock *block) {
+	const Token *keyword = block->getKeywordToken();
 	if (this->codeBlocks.empty())
 		return std::make_pair(ExpressionResult(
 			"Expected function definition before function block",
@@ -495,8 +499,99 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(BaseBlock *bloc
 		args,
 		types,
 		returnType,
-		static_cast<CodeBlock*>(block)
+		block
 	));
+}
+
+/**
+ * @brief Check if the previous line containts a struct name and parse the struct definition
+ * 
+ * For example:
+ * Exemple struct
+ * 		name -> string
+ * 		age -> int
+ * 		...
+ * tcurts
+ * 
+ * @param block the struct definition block
+ * @return std::pair<ExpressionResult, StructBlock*> if the struct is correct and the struct block
+ */
+std::pair<ExpressionResult, StructBlock*> Lexer::parseStruct(CodeBlock *block) {
+	if (this->codeBlocks.empty()) {
+		return std::make_pair(ExpressionResult(
+			"Exepcted struct name before struct block",
+			block->getRange(),
+			this->context
+		), nullptr);
+	}
+	std::unique_ptr<Line>line {static_cast<Line*>(this->codeBlocks.popBack())};
+	if (line->size() < 1) {
+		return std::make_pair(ExpressionResult(
+			"Expected struct name before struct block",
+			block->getRange(),
+			this->context
+		), nullptr);
+	}
+	if (line->size() != 1) {
+		return std::make_pair(ExpressionResult(
+			"Expected only struct name before struct block",
+			line->top()->getRange(),
+			this->context
+		), nullptr);
+	}
+	if (line->top()->getType() != TOKEN_TYPE_STRUCT_NAME) {
+		return std::make_pair(ExpressionResult(
+			"Expected struct name before struct block",
+			line->top()->getRange(),
+			this->context
+		), nullptr);
+	}
+
+	std::string_view name = line->top()->getStringValue();
+	StructDefinition def(name);
+	for (BaseBlock *b : *block) {
+		if (b->getType() != LINE_BLOCK) {
+			return std::make_pair(ExpressionResult(
+				"Struct member definition must be in the form 'name -> type'",
+				b->lastRange(),
+				this->context
+			), nullptr);
+		}
+		Line *l = static_cast<Line *>(b);
+		if (l->size() != 3) {
+			return std::make_pair(ExpressionResult(
+				"Struct member definition must be in the form 'name -> type'",
+				l->size() != 0 ? l->lineRange() : line->top()->getRange(),
+				this->context
+			), nullptr);
+		}
+		if (l->top()->getType() != TOKEN_TYPE_LITERAL) {
+			return std::make_pair(ExpressionResult(
+				"Struct member name must be a literal",
+				l->top()->getRange(),
+				this->context
+			), nullptr);
+		}
+		std::unique_ptr<Token> name{l->pop()};
+		if (l->top()->getType() != TOKEN_TYPE_ARROW) {
+			return std::make_pair(ExpressionResult(
+				"Struct member definition must be in the form 'name -> type'",
+				l->top()->getRange(),
+				this->context
+			), nullptr);
+		}
+		delete l->pop();
+		if (l->top()->getType() != TOKEN_TYPE_VALUE_TYPE) {
+			return std::make_pair(ExpressionResult(
+				"Struct member type must be a value type",
+				l->top()->getRange(),
+				this->context
+			), nullptr);
+		}
+		std::unique_ptr<TypeToken> type{static_cast<TypeToken*>(l->pop())};
+		def.addMember(name->getStringValue(), type->getValueType());
+	}
+	return std::make_pair(ExpressionResult(), new StructBlock(def));
 }
 
 /**
