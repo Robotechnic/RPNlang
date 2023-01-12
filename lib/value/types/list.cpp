@@ -110,7 +110,7 @@ inline std::string List::getStringValue() const {
 	return result;
 }
 
-operatorResult List::opadd(const Value *other, const ContextPtr &context) const {
+operatorResult List::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (other->getType() == ValueType::LIST) {
 		std::vector<Value *> newValues = values;
 		for (auto &value : static_cast<const List*>(other)->values) {
@@ -131,7 +131,7 @@ operatorResult List::opadd(const Value *other, const ContextPtr &context) const 
 	);
 }
 
-operatorResult List::opsub(const Value *other, const ContextPtr &context) const {
+operatorResult List::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair<ExpressionResult, Value*>(
 		ExpressionResult(
 			"Cannot subtract element of type " + Value::stringType(other->getType()) + " from list",
@@ -142,7 +142,7 @@ operatorResult List::opsub(const Value *other, const ContextPtr &context) const 
 	);
 }
 
-operatorResult List::opmul(const Value *other, const ContextPtr &context) const {
+operatorResult List::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (other->getType() == ValueType::INT) {
 		std::vector<Value *> newValues;
 		int valueCount = static_cast<const Int*>(other)->getValue();
@@ -176,7 +176,7 @@ operatorResult List::opmul(const Value *other, const ContextPtr &context) const 
 	);
 }
 
-operatorResult List::opdiv(const Value *other, const ContextPtr &context) const {
+operatorResult List::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair<ExpressionResult, Value*>(
 		ExpressionResult(
 			"Cannot divide list by element of type " + Value::stringType(other->getType()),
@@ -187,7 +187,7 @@ operatorResult List::opdiv(const Value *other, const ContextPtr &context) const 
 	);
 }
 
-operatorResult List::opmod(const Value *other, const ContextPtr &context) const {
+operatorResult List::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair<ExpressionResult, Value*>(
 		ExpressionResult(
 			"Cannot mod list by element of type " + Value::stringType(other->getType()),
@@ -198,7 +198,7 @@ operatorResult List::opmod(const Value *other, const ContextPtr &context) const 
 	);
 }
 
-operatorResult List::oppow(const Value *other, const ContextPtr &context) const {
+operatorResult List::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair<ExpressionResult, Value*>(
 		ExpressionResult(
 			"Cannot raise list to the power of element of type " + Value::stringType(other->getType()),
@@ -210,7 +210,7 @@ operatorResult List::oppow(const Value *other, const ContextPtr &context) const 
 }
 
 
-operatorResult List::opgt(const Value *other, const ContextPtr &context) const {
+operatorResult List::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair<ExpressionResult, Value*>(
 		ExpressionResult(
 			"Cannot compare list to element of type " + Value::stringType(other->getType()),
@@ -221,7 +221,7 @@ operatorResult List::opgt(const Value *other, const ContextPtr &context) const {
 	);
 }
 
-operatorResult List::opge(const Value *other, const ContextPtr &context) const {
+operatorResult List::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair<ExpressionResult, Value*>(
 		ExpressionResult(
 			"Cannot compare list to element of type " + Value::stringType(other->getType()),
@@ -232,7 +232,7 @@ operatorResult List::opge(const Value *other, const ContextPtr &context) const {
 	);
 }
 
-operatorResult List::oplt(const Value *other, const ContextPtr &context) const {
+operatorResult List::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair<ExpressionResult, Value*>(
 		ExpressionResult(
 			"Cannot compare list to element of type " + Value::stringType(other->getType()),
@@ -243,7 +243,7 @@ operatorResult List::oplt(const Value *other, const ContextPtr &context) const {
 	);
 }
 
-operatorResult List::ople(const Value *other, const ContextPtr &context) const {
+operatorResult List::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair<ExpressionResult, Value*>(
 		ExpressionResult(
 			"Cannot compare list to element of type " + Value::stringType(other->getType()),
@@ -254,14 +254,14 @@ operatorResult List::ople(const Value *other, const ContextPtr &context) const {
 	);
 }
 
-operatorResult List::opne(const Value *other, const ContextPtr &context) const {
+operatorResult List::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	bool result = true;
 	if (other->getType() == ValueType::LIST) {
 		const std::vector<Value*> otherList = static_cast<const List*>(other)->values;
 		if (values.size() == otherList.size()) {
 			result = true;
 			for (size_t i = 0; i < values.size() && result; i++) {
-				operatorResult opResult = values[i]->opne(otherList[i], context);
+				operatorResult opResult = values[i]->opne(otherList[i], range, context);
 				if (opResult.first.error()) {
 					return opResult;
 				}
@@ -280,14 +280,14 @@ operatorResult List::opne(const Value *other, const ContextPtr &context) const {
 	);
 }
 
-operatorResult List::opeq(const Value *other, const ContextPtr &context) const {
+operatorResult List::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	bool result = false;
 	if (other->getType() == ValueType::LIST) {
 		const std::vector<Value*> otherList = static_cast<const List*>(other)->values;
 		if (values.size() == otherList.size()) {
 			result = true;
 			for (size_t i = 0; i < values.size() && result; i++) {
-				operatorResult opResult = values[i]->opeq(otherList[i], context);
+				operatorResult opResult = values[i]->opeq(otherList[i], range, context);
 				if (opResult.first.error()) {
 					return opResult;
 				}

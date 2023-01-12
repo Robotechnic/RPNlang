@@ -337,6 +337,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 		} else if (name == KEYWORD_STRUCT) {
 			auto [result, structDefinition] = this->parseStruct(static_cast<CodeBlock*>(block));
 			if (result.error()) return result;
+			delete block;
 			block = structDefinition;
 		}
 
@@ -407,6 +408,13 @@ ExpressionResult Lexer::parseFunctionCall(const Token *token) {
 	ExpressionResult result = this->parseLiteral(literal);
 	delete literal;
 	if (result.error()) return result;
+	if (this->currentLine->size() < 1) {
+		return ExpressionResult(
+			"Expected function name after colon token",
+			token->getRange().merge(this->tokens.front()->getRange()),
+			this->context
+		);
+	}
 	if (this->currentLine->back()->getType() == TOKEN_TYPE_PATH) {
 		this->currentLine->back()->setType(TOKEN_TYPE_MODULE_FUNCTION_CALL);
 	} else {	
@@ -549,6 +557,13 @@ std::pair<ExpressionResult, StructBlock*> Lexer::parseStruct(CodeBlock *block) {
 
 	std::string_view name = line->top()->getStringValue();
 	StructDefinition def(name);
+	if (block->size() == 0) {
+		return std::make_pair(ExpressionResult(
+			"Struct definition must contain at least one member",
+			block->getRange(),
+			this->context
+		), nullptr);
+	}
 	for (BaseBlock *b : *block) {
 		if (b->getType() != LINE_BLOCK) {
 			return std::make_pair(ExpressionResult(
@@ -572,7 +587,7 @@ std::pair<ExpressionResult, StructBlock*> Lexer::parseStruct(CodeBlock *block) {
 				this->context
 			), nullptr);
 		}
-		std::unique_ptr<Token> name{l->pop()};
+		Token *name = l->pop();
 		if (l->top()->getType() != TOKEN_TYPE_ARROW) {
 			return std::make_pair(ExpressionResult(
 				"Struct member definition must be in the form 'name -> type'",
@@ -580,7 +595,7 @@ std::pair<ExpressionResult, StructBlock*> Lexer::parseStruct(CodeBlock *block) {
 				this->context
 			), nullptr);
 		}
-		delete l->pop();
+		l->pop();
 		if (l->top()->getType() != TOKEN_TYPE_VALUE_TYPE) {
 			return std::make_pair(ExpressionResult(
 				"Struct member type must be a value type",
@@ -588,8 +603,7 @@ std::pair<ExpressionResult, StructBlock*> Lexer::parseStruct(CodeBlock *block) {
 				this->context
 			), nullptr);
 		}
-		std::unique_ptr<TypeToken> type{static_cast<TypeToken*>(l->pop())};
-		def.addMember(name->getStringValue(), type->getValueType());
+		def.addMember(name->getStringValue(), static_cast<TypeToken*>(l->pop())->getValueType());
 	}
 	return std::make_pair(ExpressionResult(), new StructBlock(def));
 }
@@ -622,7 +636,7 @@ ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString, st
 				if (type == TOKEN_TYPE_COMMENT)
 					return ExpressionResult();
 				if (type != TOKEN_TYPE_INDENT)
-					tokens.push(new StringToken(lineNumber, column, type, value));
+					tokens.push(new StringToken(lineNumber, column, type, value, matchSize));
 				else
 					column += 1;
 			}

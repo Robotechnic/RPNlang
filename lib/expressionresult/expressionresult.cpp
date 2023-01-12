@@ -160,7 +160,7 @@ void ExpressionResult::displayArrow(TextRange range, std::string_view lineString
 			}
 		} else {
 			if (lineString[i] == '\t') {
-				std::cout << "^\t";
+				std::cout << "\t";
 			} else {
 				std::cout << "^";
 			}

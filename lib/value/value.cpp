@@ -34,6 +34,10 @@ void Value::setVariableRange(const TextRange &range) {
 	this->variableRange = range;
 }
 
+void Value::setVariableRange(const TextRange &&range) {
+	this->variableRange = range;
+}
+
 /**
  * @brief return the string representation of the ValueType
  * 
@@ -62,7 +66,7 @@ std::string Value::stringType(const ValueType &type) {
 			return "list";
 		case ANY:
 			return "any";
-		
+			
 		default:
 			throw std::runtime_error("This type doesn't exist " + std::to_string(type));
 	}
@@ -112,45 +116,45 @@ void Value::concatValueRange(const Token *other) {
 operatorResult Value::applyOperator(const Value *other, const Token *operatorToken, const ContextPtr &context) {
 	OperatorToken::OperatorTypes op = static_cast<const OperatorToken*>(operatorToken)->getOperatorType();
 
-	this->concatValueRange(other);
-	this->concatValueRange(operatorToken);
+	TextRange range = TextRange::merge(this->getRange(), other->getRange());
+	range.merge(operatorToken->getRange());
 
 	switch (op) {
 		case OperatorToken::OP_ADD:
-			return this->opadd(other, context);
+			return this->opadd(other, range, context);
 			break;
 		case OperatorToken::OP_SUB:
-			return this->opsub(other, context);
+			return this->opsub(other, range, context);
 			break;
 		case OperatorToken::OP_MUL:
-			return this->opmul(other, context);
+			return this->opmul(other, range, context);
 			break;
 		case OperatorToken::OP_DIV:
-			return this->opdiv(other, context);
+			return this->opdiv(other, range, context);
 			break;
 		case OperatorToken::OP_MOD:
-			return this->opmod(other, context);
+			return this->opmod(other, range, context);
 			break;
 		case OperatorToken::OP_POW:
-			return this->oppow(other, context);
+			return this->oppow(other, range, context);
 			break;
 		case OperatorToken::OP_EQ:
-			return this->opeq(other, context);
+			return this->opeq(other, range, context);
 			break;
 		case OperatorToken::OP_NE:
-			return this->opne(other, context);
+			return this->opne(other, range, context);
 			break;
 		case OperatorToken::OP_GT:
-			return this->opgt(other, context);
+			return this->opgt(other, range, context);
 			break;
 		case OperatorToken::OP_GE:
-			return this->opge(other, context);
+			return this->opge(other, range, context);
 			break;
 		case OperatorToken::OP_LT:
-			return this->oplt(other, context);
+			return this->oplt(other, range, context);
 			break;
 		case OperatorToken::OP_LE:
-			return this->ople(other, context);
+			return this->ople(other, range, context);
 			break;
 	}
 

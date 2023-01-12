@@ -36,7 +36,7 @@ const RPNFunction* Function::getValue() const {
 }	
 
 
-operatorResult Function::opadd(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot add value of type " + other->getStringType() + " to a function",
@@ -47,7 +47,7 @@ operatorResult Function::opadd(const Value *other, const ContextPtr &context) co
 	);
 }
 
-operatorResult Function::opsub(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot subtract value of type " + other->getStringType() + " from a function",
@@ -58,7 +58,7 @@ operatorResult Function::opsub(const Value *other, const ContextPtr &context) co
 	);
 }
 
-operatorResult Function::opmul(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot multiply a function by a value of type " + other->getStringType(),
@@ -69,7 +69,7 @@ operatorResult Function::opmul(const Value *other, const ContextPtr &context) co
 	);
 }
 
-operatorResult Function::opdiv(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot divide a function by a value of type " + other->getStringType(),
@@ -80,7 +80,7 @@ operatorResult Function::opdiv(const Value *other, const ContextPtr &context) co
 	);
 }
 
-operatorResult Function::opmod(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot modulo a function by a value of type " + other->getStringType(),
@@ -91,7 +91,7 @@ operatorResult Function::opmod(const Value *other, const ContextPtr &context) co
 	);
 }
 
-operatorResult Function::oppow(const Value *other, const ContextPtr &context) const {
+operatorResult Function::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot exponentiate a function by a value of type " + other->getStringType(),
@@ -102,7 +102,7 @@ operatorResult Function::oppow(const Value *other, const ContextPtr &context) co
 	);
 }
 
-operatorResult Function::opgt(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot compare a function to a value of type " + other->getStringType(),
@@ -113,7 +113,7 @@ operatorResult Function::opgt(const Value *other, const ContextPtr &context) con
 	);
 }
 
-operatorResult Function::opge(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot compare a function to a value of type " + other->getStringType(),
@@ -124,7 +124,7 @@ operatorResult Function::opge(const Value *other, const ContextPtr &context) con
 	);
 }
 
-operatorResult Function::oplt(const Value *other, const ContextPtr &context) const {
+operatorResult Function::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot compare a function to a value of type " + other->getStringType(),
@@ -135,7 +135,7 @@ operatorResult Function::oplt(const Value *other, const ContextPtr &context) con
 	);
 }
 
-operatorResult Function::ople(const Value *other, const ContextPtr &context) const {
+operatorResult Function::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	return std::make_pair(
 		ExpressionResult(
 			"Cannot compare a function to a value of type " + other->getStringType(),
@@ -146,7 +146,7 @@ operatorResult Function::ople(const Value *other, const ContextPtr &context) con
 	);
 }
 
-operatorResult Function::opne(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (other->getType() != FUNCTION)
 		return std::make_pair(
 			ExpressionResult(),
@@ -159,7 +159,7 @@ operatorResult Function::opne(const Value *other, const ContextPtr &context) con
 	);
 }
 
-operatorResult Function::opeq(const Value *other, const ContextPtr &context) const {
+operatorResult Function::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (other->getType() != FUNCTION)
 		return std::make_pair(
 			ExpressionResult(),

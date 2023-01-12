@@ -311,9 +311,14 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 					static_cast<Value*>(None::empty())
 				);
 			}
+			Value *value = list->at(index->getValue());
+			value->setVariableRange(TextRange::merge(
+				args[0]->getRange(),
+				range
+			));
 			return std::make_pair(
 				ExpressionResult(),
-				list->at(index->getValue())
+				value
 			);
 		}
 	)},

@@ -43,7 +43,7 @@ inline std::string Bool::getStringValue() const {
 	return  value ? "true" : "false";
 }
 
-operatorResult Bool::opadd(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -75,7 +75,7 @@ operatorResult Bool::opadd(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Bool::opsub(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -107,7 +107,7 @@ operatorResult Bool::opsub(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Bool::opmul(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -139,7 +139,7 @@ operatorResult Bool::opmul(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Bool::opdiv(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -204,7 +204,7 @@ operatorResult Bool::opdiv(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Bool::opmod(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -269,7 +269,7 @@ operatorResult Bool::opmod(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Bool::oppow(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -301,7 +301,7 @@ operatorResult Bool::oppow(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Bool::opgt(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -333,7 +333,7 @@ operatorResult Bool::opgt(const Value *other, const ContextPtr &context) const {
 	};
 }
 
-operatorResult Bool::opge(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -365,7 +365,7 @@ operatorResult Bool::opge(const Value *other, const ContextPtr &context) const {
 	};
 }
 
-operatorResult Bool::oplt(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -397,7 +397,7 @@ operatorResult Bool::oplt(const Value *other, const ContextPtr &context) const {
 	};
 }
 
-operatorResult Bool::ople(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -429,7 +429,7 @@ operatorResult Bool::ople(const Value *other, const ContextPtr &context) const {
 	};
 }
 
-operatorResult Bool::opne(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(),
@@ -457,7 +457,7 @@ operatorResult Bool::opne(const Value *other, const ContextPtr &context) const {
 	};
 }
 
-operatorResult Bool::opeq(const Value *other, const ContextPtr &context) const {
+operatorResult Bool::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(),

@@ -47,7 +47,7 @@ inline std::string Float::getStringValue() const {
 	return  value;
 }
 
-operatorResult Float::opadd(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -79,7 +79,7 @@ operatorResult Float::opadd(const Value *other, const ContextPtr &context) const
 	};
 }
 
-operatorResult Float::opsub(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -111,7 +111,7 @@ operatorResult Float::opsub(const Value *other, const ContextPtr &context) const
 	};
 }
 
-operatorResult Float::opmul(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -143,7 +143,7 @@ operatorResult Float::opmul(const Value *other, const ContextPtr &context) const
 	};
 }
 
-operatorResult Float::opdiv(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -208,7 +208,7 @@ operatorResult Float::opdiv(const Value *other, const ContextPtr &context) const
 	};
 }
 
-operatorResult Float::opmod(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -273,7 +273,7 @@ operatorResult Float::opmod(const Value *other, const ContextPtr &context) const
 	};
 }
 
-operatorResult Float::oppow(const Value *other, const ContextPtr &context) const {
+operatorResult Float::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -305,7 +305,7 @@ operatorResult Float::oppow(const Value *other, const ContextPtr &context) const
 	};
 }
 
-operatorResult Float::opgt(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -337,7 +337,7 @@ operatorResult Float::opgt(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Float::opge(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -369,7 +369,7 @@ operatorResult Float::opge(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Float::oplt(const Value *other, const ContextPtr &context) const {
+operatorResult Float::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -401,7 +401,7 @@ operatorResult Float::oplt(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Float::ople(const Value *other, const ContextPtr &context) const {
+operatorResult Float::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(
@@ -433,7 +433,7 @@ operatorResult Float::ople(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Float::opne(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(),
@@ -461,7 +461,7 @@ operatorResult Float::opne(const Value *other, const ContextPtr &context) const 
 	};
 }
 
-operatorResult Float::opeq(const Value *other, const ContextPtr &context) const {
+operatorResult Float::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (!other->isNumber())
 		return std::make_pair(
 			ExpressionResult(),

@@ -1,7 +1,7 @@
 #include "tokens/tokens/stringtoken.hpp"
 
-StringToken::StringToken(int line, int column, TokenType type, std::string_view value) : 
-	Token(TextRange(line, column, value.size()), type), 
+StringToken::StringToken(int line, int column, TokenType type, std::string_view value, size_t realSize) : 
+	Token(TextRange(line, column, value.size() < realSize ? realSize : value.size()), type), 
 	value(value) {}
 
 StringToken::StringToken(TextRange range, TokenType type, std::string_view value) :
