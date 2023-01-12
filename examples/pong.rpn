@@ -1,0 +1,100 @@
+"terminal" :import
+"time" :import
+
+drawPaddle list pos -> none fun
+	pos 0 :at pos 1 :at pos 2 :at pos 3 :at terminal.WHITE_BACKGROUND :terminal.drawRect
+	:terminal.flush
+nuf
+
+drawBall list pos -> none fun
+	pos 0 :at pos 1 :at pos 2 :at 1.6 * pos 2 :at terminal.WHITE_BACKGROUND :terminal.drawRect
+	:terminal.flush
+nuf
+
+drawMidLine int width int height -> none fun
+	middle width 2 / =
+	i 0 height 1 + 1 for
+		middle i "|" terminal.WHITE terminal.DEFAULT_BACKGROUND :terminal.setAscii
+	rof
+nuf
+
+moveBall list pos int xdir int ydir -> list fun
+	pos 0 :at xdir + pos 1 :at ydir + pos 2 :at 3 list return
+nuf
+
+paddleCollision list paddle list ball -> bool fun
+	paddle 0 :at paddle 2 :at + ball 0 :at >= paddle 1 :at ball 1 :at ball 2 :at + < :and paddle 1 :at paddle 3 :at + ball 1 :at > :and return
+nuf
+
+wallCollision list ball int width int height -> int fun
+	ball 1 :at 1 <= ball 1 :at ball 2 :at + height > :or if
+		1 return
+	else ball 0 :at ball 2 :at 1.6 * + width > if
+		2 return
+	else ball 0 :at 0 <= if
+		3 return
+	fi fi fi
+	0 return
+nuf
+
+movePaddle list paddle int ydir -> list fun
+	paddle 0 :at paddle 1 :at ydir + paddle 2 :at paddle 3 :at 4 list return
+nuf
+
+main -> none fun
+	:terminal.clear
+	:terminal.rawMode
+	quit false =
+	width :terminal.width =
+	height :terminal.height =
+	paddle 5 height 2 / 5 -  2 11 4 list =
+	ball width 2 / height 2 / 2 3 list =
+	xdir 1 =
+	ydir 1 =
+	score 0 =
+	last :time.time =
+	
+	quit :not while
+		# keyboard management
+		key :terminal.getKey =
+		key "a" == if
+			quit true =
+		else key "z" == if
+			paddle paddle -1 :movePaddle =
+		else key "s" == if
+			paddle paddle 1 :movePaddle =
+		fi fi fi
+
+		# game logic
+		:time.time last - 50 < if
+			continue
+		fi
+		width :terminal.width =
+		height :terminal.height =
+		last :time.time =
+		:terminal.clear
+		ball ball xdir ydir :moveBall =
+		paddle ball :paddleCollision if
+			xdir xdir -1.1 * =
+			ydir ydir 1.1 * =
+			score score 1 + =
+		fi
+		side ball width height :wallCollision =
+		if side 1 == if
+			ydir ydir -1 * =
+		else side 2 == if
+			xdir xdir -1 * =
+		else side 3 == if
+			quit true =
+		fi fi fi fi
+		width height :drawMidLine
+		paddle :drawPaddle
+		ball :drawBall
+		5 2 score f"Score: {}" terminal.WHITE terminal.DEFAULT_BACKGROUND :terminal.drawText
+		:terminal.flush
+	elihw
+	:terminal.normalMode
+	:terminal.clear
+	:terminal.home
+	score f"Game Over\nScore : {}\n" :print
+nuf

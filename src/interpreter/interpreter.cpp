@@ -143,14 +143,13 @@ ExpressionResult Interpreter::checkMemory() {
 
 	if (this->memory.size() > 1) {
 		int size = this->memory.size();
-		Value *last = this->memory.pop();
+		TextRange range = this->memory.top()->getRange();
 		this->memory.clear(1);
 		ExpressionResult result(
 			"To much remaining values in the memory (" + std::to_string(size) + ")",
-			last->getRange().merge(this->memory.top()->getRange()),
+			range.merge(this->memory.top()->getRange()),
 			this->context
 		);
-		Value::deleteValue(&last, Value::INTERPRETER);
 		Value::deleteValue(&this->memory.pop(), Value::INTERPRETER);
 
 		return result;

@@ -106,9 +106,9 @@ ExpressionResult loader(CppModule *module) {
 
 	module->addFunction(
 		"setAscii", {"x", "y", "letter", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			const std::string letter = args[0]->getStringValue();
-			int x = static_cast<Int*>(args[1])->getValue();
-			int y = static_cast<Int*>(args[2])->getValue();
+			const std::string letter = args[2]->getStringValue();
+			int x = static_cast<Int*>(args[0])->getValue();
+			int y = static_cast<Int*>(args[1])->getValue();
 			int color = static_cast<Int*>(args[3])->getValue();
 			int background = static_cast<Int*>(args[4])->getValue();
 			if (color < 30 || color > 39) {
@@ -139,9 +139,9 @@ ExpressionResult loader(CppModule *module) {
 
 	module->addFunction(
 		"setRGBAscii", {"x", "y", "letter", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			const std::string letter = args[0]->getStringValue();
-			int x = static_cast<Int*>(args[1])->getValue();
-			int y = static_cast<Int*>(args[2])->getValue();
+			const std::string letter = args[2]->getStringValue();
+			int x = static_cast<Int*>(args[0])->getValue();
+			int y = static_cast<Int*>(args[1])->getValue();
 			int red = static_cast<Int*>(args[3])->getValue();
 			int blue = static_cast<Int*>(args[4])->getValue();
 			int green = static_cast<Int*>(args[5])->getValue();
@@ -205,10 +205,10 @@ ExpressionResult loader(CppModule *module) {
 			std::cout << "\033[" << y << ";" << x << "H";
 			std::cout << "\033[" << color << "m";
 			for (int i = 0; i < height; i++) {
-				std::cout << "\033[" << i << "C";
 				for (int j = 0; j < width; j++) {
 					std::cout << " ";
 				}
+				std::cout << "\033[" << y + i + 1 << ";" << x << "H";
 			}
 			return std::make_pair(ExpressionResult(), None::empty());
 		}
