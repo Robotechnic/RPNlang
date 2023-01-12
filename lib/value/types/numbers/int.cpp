@@ -36,7 +36,7 @@ Value *Int::to(ValueType type, ValueOwner owner) const {
 }
 
  Value *Int::copy(ValueOwner owner) const {
-	return new Int(value, range, owner);
+	return new Int(value, range, owner, variableRange);
 }
 
 inline std::string Int::getStringValue() const {
