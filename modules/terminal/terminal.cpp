@@ -192,7 +192,7 @@ ExpressionResult loader(CppModule *module) {
 			int width = static_cast<Int*>(args[2])->getValue();
 			int height = static_cast<Int*>(args[3])->getValue();
 			int color = static_cast<Int*>(args[4])->getValue();
-			if (color < 30 || color > 49) {
+			if (color < 40 || color > 49) {
 				return std::make_pair(
 					ExpressionResult(
 						"Color must be between 40 and 49",
