@@ -3,3 +3,6 @@ Test struct
 	name -> string
 	e -> float
 tcurts
+
+a 12 "Bidule" 2.7 Test =
+

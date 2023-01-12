@@ -59,6 +59,7 @@ class Interpreter {
 		ExpressionResult interpretFor(Line &line, CodeBlock &block);
 		ExpressionResult interpretTry(Line &line, CodeBlock &block);
 		ExpressionResult interpretList(const Token *keywordToken);
+		ExpressionResult interpretStruct(const Token *keywordToken);
 		TextRange mergeRanges(const std::vector<Value*> &values);
 
 		Value *lastValue;

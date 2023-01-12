@@ -236,6 +236,9 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 			case TOKEN_TYPE_VALUE_TYPE:
 				result = this->interpretValueType(*it);
 				break;
+			case TOKEN_TYPE_STRUCT_NAME:
+				result = this->interpretStruct(*it);
+				break;
 			default:
 				result = ExpressionResult(
 					"Unknow token (TODO) : " + Token::stringType((*it)->getType()),
@@ -390,7 +393,7 @@ ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
 ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 	ExpressionResult result = this->memory.sizeExpected(
 		2,
-		"Not enough values for operator " + operatorToken->getStringValue(), 
+		"Not enough values for assignement",
 		operatorToken->getRange(),
 		this->context
 	);
@@ -667,5 +670,40 @@ ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
 		range.merge(values.at(0)->getRange());
 	}
 	this->memory.push(new List(values, range, Value::INTERPRETER));
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretStruct(const Token *keywordToken) {
+	std::string name = keywordToken->getStringValue();
+	if (!Struct::structExists(name)) {
+		return ExpressionResult(
+			"Undefined struct name : " + std::string(name),
+			keywordToken->getRange(),
+			this->context
+		);
+	};
+	size_t count = Struct::getStructMembersCount(name);
+	ExpressionResult result = this->memory.sizeExpected(
+		count,
+		"Not enough values to create struct, expected " + std::to_string(count) +
+		" but got " + std::to_string(this->memory.size()),
+		keywordToken->getRange(),
+		this->context
+	);
+	if (result.error()) return result;
+	std::vector<Value *> members(count, nullptr);
+	TextRange range = keywordToken->getRange();
+	for (size_t i = 0; i < count; i++) {
+		result = this->memory.popVariableValue(members.at(count - i - 1), this->context);
+		if (result.error()) return result;
+		if (members.at(count - i - 1)->getOwner() == Value::OBJECT_VALUE)
+			members.at(count - i - 1) = members.at(count - i - 1)->copy();
+		members.at(count - i - 1)->setOwner(Value::OBJECT_VALUE);
+	}
+	range.merge(members.at(0)->getRange());
+	Struct *s = new Struct(range, name, Value::INTERPRETER);
+	result = s->setMembers(members, this->context);
+	if (result.error()) return result;
+	this->memory.push(s);
 	return ExpressionResult();
 }
