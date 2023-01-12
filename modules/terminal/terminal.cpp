@@ -186,6 +186,35 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
+		"drawRect", {"x", "y", "width", "height", "color"}, {INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			int x = static_cast<Int*>(args[0])->getValue();
+			int y = static_cast<Int*>(args[1])->getValue();
+			int width = static_cast<Int*>(args[2])->getValue();
+			int height = static_cast<Int*>(args[3])->getValue();
+			int color = static_cast<Int*>(args[4])->getValue();
+			if (color < 40 || color > 39) {
+				return std::make_pair(
+					ExpressionResult(
+						"Color must be between 40 and 49",
+						args[4]->getRange(),
+						context
+					),
+					None::empty()
+				);
+			}
+			std::cout << "\033[" << y << ";" << x << "H";
+			std::cout << "\033[" << color << "m";
+			for (int i = 0; i < height; i++) {
+				std::cout << "\033[" << i << "C";
+				for (int j = 0; j < width; j++) {
+					std::cout << " ";
+				}
+			}
+			return std::make_pair(ExpressionResult(), None::empty());
+		}
+	);
+
+	module->addFunction(
 		"drawText", {"x", "y", "text", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
 			const std::string text = args[2]->getStringValue();
 			int x = static_cast<Int*>(args[0])->getValue();
