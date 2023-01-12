@@ -1,7 +1,7 @@
 #include "value/types/string.hpp"
 
-String::String(std::string_view value, TextRange range, ValueOwner owner) :
-	Value(STRING, range, owner),
+String::String(std::string_view value, TextRange range, ValueOwner owner, const TextRange variableRange) :
+	Value(STRING, range, owner, variableRange),
 	value(value) {}
 
 std::unique_ptr<String> String::emptyString = std::make_unique<String>("", TextRange(), Value::EMPTY_VALUE);
@@ -30,7 +30,7 @@ Value *String::to(ValueType type, ValueOwner owner) const {
 }
 
 Value *String::copy(ValueOwner owner) const {
-	return new String(this->value, this->range, owner);
+	return new String(this->value, this->range, owner, this->variableRange);
 }
 
 operatorResult String::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {

@@ -7,8 +7,8 @@
 
 class List : public Value {
 	public:
-		List(TextRange range, ValueOwner owner);
-		List(std::vector<Value *> values, TextRange range, ValueOwner owner);
+		List(TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
+		List(std::vector<Value *> values, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 		~List();
 
 		bool isCastableTo(ValueType type) const override;

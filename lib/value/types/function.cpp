@@ -1,7 +1,7 @@
 #include "value/types/function.hpp"
 
-Function::Function(const RPNFunction* function, TextRange range, ValueOwner owner) :
-	Value(FUNCTION, range, owner),
+Function::Function(const RPNFunction* function, TextRange range, ValueOwner owner, const TextRange variableRange) :
+	Value(FUNCTION, range, owner, variableRange),
 	function(function) {}
 
 bool Function::isCastableTo(ValueType type) const {
@@ -20,7 +20,7 @@ Value *Function::to(ValueType type, ValueOwner owner) const {
 }
 
 Value *Function::copy(ValueOwner owner) const {
-	return new Function(function, range, owner);
+	return new Function(function, range, owner, this->variableRange);
 }
 
 inline std::string Function::getStringValue() const {

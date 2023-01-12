@@ -1,8 +1,9 @@
 #include "value/types/list.hpp"
 
-List::List(TextRange range, ValueOwner owner) : Value(ValueType::LIST, range, owner) {}
-List::List(std::vector<Value *> values, TextRange range, ValueOwner owner) : 
-	Value(ValueType::LIST, range, owner), 
+List::List(TextRange range, ValueOwner owner, const TextRange variableRange) : 
+	Value(ValueType::LIST, range, owner, variableRange) {}
+List::List(std::vector<Value *> values, TextRange range, ValueOwner owner, const TextRange variableRange) : 
+	Value(ValueType::LIST, range, owner, variableRange), 
 	values(values)
 {}
 
@@ -94,7 +95,7 @@ inline Value *List::copy(ValueOwner owner) const {
 	for (auto &value : values) {
 		newValues.push_back(value->copy(Value::OBJECT_VALUE));
 	}
-	return new List(newValues, range, owner);
+	return new List(newValues, range, owner, this->variableRange);
 }
 
 inline std::string List::getStringValue() const {

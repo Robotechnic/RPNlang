@@ -8,7 +8,7 @@
 
 class String : public Value {
 	public:
-		String(std::string_view value, TextRange range, ValueOwner owner);
+		String(std::string_view value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 
 		inline std::string getStringValue() const;
 

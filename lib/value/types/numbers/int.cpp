@@ -1,16 +1,12 @@
 #include "value/types/numbers/int.hpp"
 
-Int::Int(const std::string &value, TextRange range, ValueOwner owner) : 
-	Value(INT, range, owner),
+Int::Int(const std::string &value, TextRange range, ValueOwner owner, const TextRange variableRange) : 
+	Value(INT, range, owner, variableRange),
 	value(std::stoll(value)) {}
 
-Int::Int(int64_t value, TextRange range, ValueOwner owner) : 
-	Value(INT, range, owner),
+Int::Int(int64_t value, TextRange range, ValueOwner owner, const TextRange variableRange) : 
+	Value(INT, range, owner, variableRange),
 	value(value) {}
-
-Int::Int(const Value *other) :
-	Value(INT, other->getRange(), other->getOwner()),
-	value(static_cast<Int const*>(other)->getValue()) {}
 
 std::unique_ptr<Int> Int::emptyInt = std::make_unique<Int>(0, TextRange(), Value::EMPTY_VALUE);
 

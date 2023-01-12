@@ -1,12 +1,16 @@
 #include "value/value.hpp"
 
-Value::Value(ValueType type, const TextRange range, ValueOwner owner) :
+Value::Value(ValueType type, const TextRange range, ValueOwner owner, const TextRange variableRange) :
 	range(range),
-	variableRange(range),
 	type(type),
 	owner(owner) {
 		if (type == ANY) {
 			throw std::runtime_error("ANY type is not allowed in value type");
+		}
+		if (variableRange == TextRange()) {
+			this->variableRange = range;
+		} else {
+			this->variableRange = variableRange;
 		}
 	}
 

@@ -1,11 +1,11 @@
 #include "value/types/numbers/bool.hpp"
 
-Bool::Bool(const std::string &value, TextRange range, ValueOwner owner) : 
-	Value(BOOL, range, owner),
+Bool::Bool(const std::string &value, TextRange range, ValueOwner owner, const TextRange variableRange) : 
+	Value(BOOL, range, owner, variableRange),
 	value(value != "false"){}
 
-Bool::Bool(bool value, TextRange range, ValueOwner owner) : 
-	Value(BOOL, range, owner),
+Bool::Bool(bool value, TextRange range, ValueOwner owner, const TextRange variableRange) : 
+	Value(BOOL, range, owner, variableRange),
 	value(value){}
 
 std::unique_ptr<Bool> Bool::emptyBool = std::make_unique<Bool>(false, TextRange(), Value::EMPTY_VALUE);
@@ -36,7 +36,7 @@ Value *Bool::to(ValueType type, ValueOwner owner) const {
 }
 
 Value *Bool::copy(ValueOwner owner) const {
-	return new Bool(value, range, owner);
+	return new Bool(value, range, owner, variableRange);
 }
 
 inline std::string Bool::getStringValue() const {

@@ -28,7 +28,7 @@ class Value {
 			MODULE           = 5,
 			EMPTY_VALUE      = 6
 		};
-		Value(ValueType type, const TextRange range, ValueOwner owner);
+		Value(ValueType type, const TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 		virtual ~Value() = default;
 		
 		virtual bool isCastableTo(ValueType type) const = 0;

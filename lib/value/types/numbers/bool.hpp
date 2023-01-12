@@ -16,8 +16,8 @@ class String;
 
 class Bool : public Value {
 	public:
-		Bool(const std::string &value, TextRange range, ValueOwner owner);
-		Bool(bool value, TextRange range, ValueOwner owner);
+		Bool(const std::string &value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
+		Bool(bool value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 
 		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const { return true; };

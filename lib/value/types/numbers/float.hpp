@@ -16,8 +16,8 @@ class String;
 
 class Float : public Value {
 	public:
-		Float(const std::string &value, TextRange range, ValueOwner owner);
-		Float(float value, TextRange range, ValueOwner owner);
+		Float(const std::string &value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
+		Float(float value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 
 		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const { return true; };

@@ -16,10 +16,9 @@ class String;
 
 class Int : public Value {
 	public:
-		Int(const std::string &value, TextRange range, ValueOwner owner);
-		Int(int64_t value, TextRange range, ValueOwner owner);
-		Int(const Value *other);
-
+		Int(const std::string &value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
+		Int(int64_t value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
+		
 		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const { return true; };
 

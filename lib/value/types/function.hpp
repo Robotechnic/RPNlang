@@ -8,7 +8,7 @@
 
 class Function : public Value {
 	public:
-		Function(const RPNFunction* function, TextRange range, ValueOwner owner);
+		Function(const RPNFunction* function, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };

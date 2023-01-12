@@ -1,11 +1,11 @@
 #include "value/types/numbers/float.hpp"
 
-Float::Float(const std::string &value, TextRange range, ValueOwner owner) : 
-	Value(FLOAT, range, owner),
+Float::Float(const std::string &value, TextRange range, ValueOwner owner, const TextRange variableRange) : 
+	Value(FLOAT, range, owner, variableRange),
 	value(std::stof(value)){}
 
-Float::Float(float value, TextRange range, ValueOwner owner) : 
-	Value(FLOAT, range, owner),
+Float::Float(float value, TextRange range, ValueOwner owner, const TextRange variableRange) : 
+	Value(FLOAT, range, owner, variableRange),
 	value(value) {}
 
 std::unique_ptr<Float> Float::emptyFloat = std::make_unique<Float>(0.0f, TextRange(), Value::EMPTY_VALUE);
@@ -36,7 +36,7 @@ Value *Float::to(ValueType type, ValueOwner owner) const {
 }
 
  Value *Float::copy(ValueOwner owner) const {
-	return new Float(value, range, owner);
+	return new Float(value, range, owner, variableRange);
 }
 
 inline std::string Float::getStringValue() const {
