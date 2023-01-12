@@ -84,6 +84,34 @@ std::string Context::getName() const {
 	return this->name;
 }
 
+std::string Context::getTypeName() const {
+	std::string result;
+	switch (this->type) {
+		case CONTEXT_TYPE_DEFAULT:
+			result = "";
+			break;
+		case CONTEXT_TYPE_FILE:
+			result = "file ";
+			break;
+		case CONTEXT_TYPE_MODULE:
+			result = "module ";
+			break;
+		case CONTEXT_TYPE_BUILTIN_MODULE:
+			result = "builtin module ";
+			break;
+		case CONTEXT_TYPE_FUNCTION:
+			result = "function ";
+			break;
+		case CONTEXT_TYPE_BUILTIN_FUNCTION:
+			result = "builtin function ";
+			break;
+		default:
+			result = "unknown ";
+			break;
+	}
+	return result + this->name;
+}
+
 inline void Context::setFilePath(std::string_view filePath) {
 	this->filePath = filePath;
 }
@@ -212,7 +240,7 @@ ExpressionResult Context::getValue(const Token *name, Value *&value) {
 	);
 }
 
-ExpressionResult Context::getModuleValue(std::vector<std::string> path, TextRange range, Value *&value) {
+ExpressionResult Context::getModuleValue(std::vector<std::string> path, TextRange range, Value *&value, ContextPtr parentContext) {
 	std::string nameStr = path.back();
 	if (this->symbols.find(nameStr) != this->symbols.end()) {
 		value = this->symbols.at(nameStr);
@@ -222,7 +250,7 @@ ExpressionResult Context::getModuleValue(std::vector<std::string> path, TextRang
 	return ExpressionResult(
 		"Undefined variable name : " + nameStr,
 		range,
-		this->shared_from_this()
+		parentContext
 	);
 }
 
@@ -262,6 +290,10 @@ void Context::takeOwnership() {
 	}
 }
 
+bool Context::hasParentType(ContextType type) const {
+	return this->type == type || (this->parent != nullptr && this->parent->hasParentType(type));
+}
+
 std::ostream& operator<<(std::ostream& os, const ContextPtr &context) {
 	if (context->getParent().use_count() > 0) {
 		os << context->getParent();
@@ -279,6 +311,9 @@ std::ostream& operator<<(std::ostream& os, const ContextPtr &context) {
 		case CONTEXT_TYPE_MODULE:
 		case CONTEXT_TYPE_BUILTIN_MODULE:
 			os <<"In module: ";
+			break;
+		case CONTEXT_TYPE_BUILTIN_FUNCTION:
+			os << "In builtin function: ";
 			break;
 	}
 

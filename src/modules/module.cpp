@@ -114,9 +114,9 @@ ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, c
 	}
 
 	if (Module::modules.find(path[0]) != Module::modules.end())
-		return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, valuePath->getRange(), value);
+		return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, valuePath->getRange(), value, parentContext);
 	else if (Module::builtinModules.find(path[0]) != Module::builtinModules.end())
-		return Module::builtinModules.at(path[0]).getModuleContext()->getModuleValue(path, valuePath->getRange(), value);
+		return Module::builtinModules.at(path[0]).getModuleContext()->getModuleValue(path, valuePath->getRange(), value, parentContext);
 	else
 		throw std::runtime_error("Module::getModuleValue: module not found");
 }
@@ -145,6 +145,7 @@ ExpressionResult Module::getModuleContext(const Value *valuePath, const ContextP
 		moduleContext = Module::builtinModules.at(path.at(0)).getModuleContext();
 	else
 		throw std::runtime_error("Module::getModuleContext: module not found");
+	moduleContext->setParent(parentContext);
 	return ExpressionResult();
 }
 

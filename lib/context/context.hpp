@@ -28,6 +28,7 @@ class Context : public std::enable_shared_from_this<Context> {
 
 		inline void setName(std::string_view name);
 		std::string getName() const;
+		std::string getTypeName() const;
 
 		inline void setFilePath(std::string_view filePath);
 		std::string getFilePath();
@@ -43,12 +44,14 @@ class Context : public std::enable_shared_from_this<Context> {
 		
 		ExpressionResult getValue(const Value *name, Value *&value);
 		ExpressionResult getValue(const Token *name, Value *&value);
-		ExpressionResult getModuleValue(std::vector<std::string> path, TextRange range, Value *&value);
+		ExpressionResult getModuleValue(std::vector<std::string> path, TextRange range, Value *&value, ContextPtr parentContext);
 		Value *getValue(const Value *name);
 		Value *getValue(const std::string &name);
 
 		bool hasValue(std::string_view name) const;
 		void takeOwnership();
+
+		bool hasParentType(ContextType type) const;
 
 	private:
 		std::string name, filePath;

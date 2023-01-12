@@ -113,7 +113,7 @@ void ExpressionResult::displayLineError(std::string_view code) const {
  * @param fileName the file which contains the errored code
 
  */
-void ExpressionResult::display() const {
+void ExpressionResult::display() {
 	// reset ANSI color
 	std::cout << "\033[0m" << std::endl;
 
@@ -125,8 +125,15 @@ void ExpressionResult::display() const {
 	TextRange range = this->getRange();
 	std::cout << "Error : " << this->errorMessage<<std::endl;
 
-	if (this->context->getType() == CONTEXT_TYPE_BUILTIN_MODULE) {
-		return;
+	if (this->context->hasParentType(CONTEXT_TYPE_BUILTIN_MODULE)) {
+		while (
+			this->context->getType() != CONTEXT_TYPE_FUNCTION &&
+			this->context->getType() != CONTEXT_TYPE_FILE &&
+			this->context->getType() != CONTEXT_TYPE_DEFAULT
+		) {
+			this->context = this->context->getParent();
+		}
+		std::cout << "Invoked from " << this->context->getTypeName() << std::endl;
 	}
 
 	std::ifstream file;
@@ -151,13 +158,11 @@ void ExpressionResult::display() const {
 }
 
 void ExpressionResult::displayArrow(TextRange range, std::string_view lineString) const {
-	for (long unsigned int i = 0; i < range.columnEnd; i++) {
-		if (lineString[i] == '\t') {
+	for (long unsigned int i = 1; i <= range.columnEnd; i++) {
+		if (lineString[i - 1] == '\t') {
 			std::cout << "\t";
 		} else if (i < range.columnStart) {
-			if (lineString[i] == ' ') {
-				std::cout << "~";
-			}
+			std::cout << " ";
 		} else {
 			std::cout << "^";
 		}

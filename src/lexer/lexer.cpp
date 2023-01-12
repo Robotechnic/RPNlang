@@ -282,6 +282,7 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
  */
 ExpressionResult Lexer::parsePath(Token *token) {
 	std::vector<std::string> path{token->getStringValue()};
+	TextRange range = token->getRange();
 	while (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_DOT) {
 		delete this->tokens.front();
 		this->tokens.pop();
@@ -292,11 +293,12 @@ ExpressionResult Lexer::parsePath(Token *token) {
 				this->context
 			);
 		path.push_back(this->tokens.front()->getStringValue());
+		range.merge(this->tokens.front()->getRange());
 		delete this->tokens.front();
 		this->tokens.pop();
 	}
 	this->currentLine->push(new ValueToken(
-		new Path(path, token->getRange()),
+		new Path(path, range),
 		TOKEN_TYPE_PATH
 	));
 	return ExpressionResult();

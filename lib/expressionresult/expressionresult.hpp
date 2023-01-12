@@ -34,7 +34,7 @@ class ExpressionResult {
 		ContextPtr getContext() const;
 
 		void displayLineError(std::string_view line) const;
-		void display() const;
+		void display();
 
 		bool breakingLoop() const;
 		bool continuingLoop() const;

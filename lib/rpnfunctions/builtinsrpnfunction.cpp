@@ -24,7 +24,7 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	const TextRange &range,
 	ContextPtr context
 ) const {
-	ContextPtr functionContext = std::make_shared<Context>(this->name, "<builtin>", context, CONTEXT_TYPE_FUNCTION);
+	ContextPtr functionContext = std::make_shared<Context>(this->name, "<builtin>", context, CONTEXT_TYPE_BUILTIN_FUNCTION);
 
 	RPNFunctionResult result = std::make_pair(this->checkTypes(args, context), None::empty());
 	if (result.first.error()) return result;
