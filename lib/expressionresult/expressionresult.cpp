@@ -152,18 +152,14 @@ void ExpressionResult::display() const {
 
 void ExpressionResult::displayArrow(TextRange range, std::string_view lineString) const {
 	for (long unsigned int i = 0; i < range.columnEnd; i++) {
-		if (i < range.columnStart) {
-			if (lineString[i] == '\t') {
-				std::cout << "\t";
-			} else {
-				std::cout << " ";
+		if (lineString[i] == '\t') {
+			std::cout << "\t";
+		} else if (i < range.columnStart) {
+			if (lineString[i] == ' ') {
+				std::cout << "~";
 			}
 		} else {
-			if (lineString[i] == '\t') {
-				std::cout << "\t";
-			} else {
-				std::cout << "^";
-			}
+			std::cout << "^";
 		}
 	}
 	std::cout << std::endl;

@@ -474,6 +474,10 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 		if (result.error()) return result;
 		callResult = function->call(arguments, functionName->getRange(), ctx);
 	}
+	if (arguments.size() > 0)
+		callResult.second->setVariableRange(TextRange::merge(functionName->getRange(), arguments.front()->getRange()));
+	else
+		callResult.second->setVariableRange(functionName->getRange());
 	for (Value *value : arguments)
 		Value::deleteValue(&value, Value::INTERPRETER);
 	if (std::get<0>(callResult).error()) {
