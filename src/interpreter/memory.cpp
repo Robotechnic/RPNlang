@@ -34,10 +34,7 @@ ExpressionResult Memory::popVariableValue(Value *&value, const ContextPtr &conte
 		result = Struct::getStruct(path, structVaue, context);
 		if (result.error()) return result;
 		result = static_cast<Struct*>(structVaue)->getMember(
-			path->ats(path->size() - 1),
-			path->getRange(),
-			value,
-			context
+			path, value, context
 		);
 	}
 	if (result.error()) return result;

@@ -420,8 +420,7 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 		result = Struct::getStruct(path, structValue, this->context);
 		if (result.error()) return result;
 		result = static_cast<Struct *>(structValue)->setMember(
-			path->ats(path->size() - 1),
-			path->getRange(),
+			path,
 			copy ? left->copy() : left,
 			this->context,
 			&hold

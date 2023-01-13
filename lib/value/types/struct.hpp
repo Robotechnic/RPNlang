@@ -43,8 +43,8 @@ class Struct : public Value {
 		~Struct() override;
 		ExpressionResult setMembers(std::vector<Value*> members, ContextPtr context);
 
-		ExpressionResult setMember(const std::string &name, TextRange range, Value *value, ContextPtr context, Value **hold);
-		ExpressionResult getMember(const std::string &name, TextRange range, Value *&value, ContextPtr context);
+		ExpressionResult setMember(const Path *member, Value *value, ContextPtr context, Value **hold);
+		ExpressionResult getMember(const Path *member, Value *&value, ContextPtr context);
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const;

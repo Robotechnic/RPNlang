@@ -91,44 +91,51 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 	return ExpressionResult();
 }
 
-ExpressionResult Struct::setMember(const std::string &name, TextRange range, Value *value, ContextPtr context, Value **hold) {
+ExpressionResult Struct::setMember(const Path *member, Value *value, ContextPtr context, Value **hold) {
 	ValueType memberType;
-	if (!this->definition->hasMember(name, &memberType)) {
+	if (!this->definition->hasMember(member->ats(member->size() - 1), &memberType)) {
 		return ExpressionResult(
-			"Struct " + this->definition->name + " has no member named " + name,
-			range,
+			"Struct " + this->definition->name + " has no member named " + member->ats(member->size() - 1),
+			member->getRange(),
+			context
+		);
+	}
+	if (this->immutable) {
+		return ExpressionResult(
+			"Struct " + this->definition->name + " is immutable",
+			member->getRange(),
 			context
 		);
 	}
 	if (memberType != value->getType()) {
 		return ExpressionResult(
-			"Struct " + this->definition->name + " member " + name + 
+			"Struct " + this->definition->name + " member " + member->ats(member->size() - 1) + 
 			" is of type " + value->getStringType() + " but " + value->getStringType() + " was given",
 			value->getRange(),
 			context
 		);
 	}
 
-	Value **member = &this->members[name];
+	Value **memberValue = &this->members[member->ats(member->size() - 1)];
 	if (hold != nullptr) {
-		*hold = *member;
-		delete (*member);
+		*hold = *memberValue;
+		delete (*memberValue);
 	}
-	*member = value;
+	*memberValue = value;
 
 	return ExpressionResult();
 }
 
-ExpressionResult Struct::getMember(const std::string &name, TextRange range, Value *&value, ContextPtr context) {
+ExpressionResult Struct::getMember(const Path *member, Value *&value, ContextPtr context) {
 	ValueType memberType;
-	if (!this->definition->hasMember(name, &memberType)) {
+	if (!this->definition->hasMember(member->ats(member->size() - 1), &memberType)) {
 		return ExpressionResult(
-			"Struct " + this->definition->name + " has no member named " + name,
-			range,
+			"Struct " + this->definition->name + " has no member named " + member->ats(member->size() - 1),
+			member->getRange(),
 			context
 		);
 	}
-	value = this->members[name];
+	value = this->members[member->ats(member->size() - 1)];
 	return ExpressionResult();
 }
 
@@ -204,10 +211,7 @@ ExpressionResult Struct::getStruct(const Path *path, Value *&structValue, Contex
 	for (size_t i = 1; i < path->size() - 1; i++) {
 		Value *value;
 		result = static_cast<Struct *>(structValue)->getMember(
-			path->ats(i),
-			path->getRange(),
-			value,
-			context
+			path, value, context
 		);
 		if (result.error()) return result;
 		if (value->getType() != STRUCT) {
