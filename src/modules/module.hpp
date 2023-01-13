@@ -33,7 +33,7 @@ class Module {
 		static bool isModule(const std::string &moduleName);
 		static bool isImported(std::string_view modulePath, std::string &moduleName);
 
-		static std::string checkPath(std::vector<std::string> path);
+		static std::string checkPath(const Path* path);
 		static ExpressionResult addModule(std::string_view modulePath, const std::string &name, TextRange importRange, const ContextPtr &context);
 		static ExpressionResult getModuleValue(const Value *valuePath, Value *&value, const ContextPtr &parentContext);
 		static ExpressionResult getModuleContext(const Value *valuePath, const ContextPtr &parentContext, ContextPtr &moduleContext);

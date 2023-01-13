@@ -5,4 +5,12 @@ Test struct
 tcurts
 
 a 12 "Bidule" 2.7 Test =
+b 5 =
 
+a->name f"{} \n" :print
+a->e f"{} \n" :print
+a->age f"{} \n" :print
+
+
+a->name "Truc" =
+a->name f"{} \n" :print

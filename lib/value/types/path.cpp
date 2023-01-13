@@ -1,11 +1,24 @@
 #include "value/types/path.hpp"
 
-Path::Path(std::string_view name, TextRange range) : Value(PATH, range, Value::VALUE_TOKEN), path(split(name, '.')) {}
-Path::Path(std::vector<std::string> path, TextRange range) : Value(PATH, range, Value::VALUE_TOKEN), path(path) {}
-Path::Path(std::vector<std::string> path, std::string name, TextRange range) : Value(PATH, range, Value::VALUE_TOKEN), name(name), path(path) {}
+
+Path::Path(std::vector<std::string> path, TextRange range, ValueType type) :
+	Value(type, range, Value::VALUE_TOKEN),
+	path(path) {}
 
 std::vector<std::string> Path::getPath() const {
 	return this->path;
+}
+
+std::string_view Path::at(size_t index) const {
+	return this->path.at(index).data();
+}
+
+std::string Path::ats(size_t index) const {
+	return this->path.at(index);
+}
+
+size_t Path::size() const {
+	return this->path.size();
 }
 
 bool Path::isCastableTo(ValueType type) const {
@@ -20,11 +33,11 @@ Value *Path::to(ValueType type, ValueOwner owner) const {
 }
 
 inline std::string Path::getStringValue() const {
-	return this->name;
+	return join(this->path, '.');
 }
 
 Value* Path::copy(ValueOwner owner) const {
-	return new Path(this->path, this->name, this->range);
+	return new Path(this->path, this->range, this->type);
 }
 
 operatorResult Path::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {

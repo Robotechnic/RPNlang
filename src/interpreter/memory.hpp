@@ -12,7 +12,6 @@ class Memory {
 		~Memory();
 
 		void push(Value* value);
-		ExpressionResult topVariableToValue(const ContextPtr &context);
 		Value*& pop();
 		ExpressionResult popVariableValue(Value *&value, const ContextPtr &context);
 		Value*& top();

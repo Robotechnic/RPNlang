@@ -10,7 +10,7 @@
 #include <filesystem>
 
 std::vector<std::string> split(std::string_view str, char delimiter);
-std::string join(std::vector<std::string> str, char delimiter);
+std::string join(const std::vector<std::string> &str, char delimiter);
 std::ostream &operator<<(std::ostream &os, const std::vector<std::string> &v);
 std::string extractFileName(std::string_view path);
 std::string extractFilePath(std::string_view path);

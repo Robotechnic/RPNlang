@@ -100,14 +100,6 @@ ExpressionResult Lexer::lex() {
 			case TOKEN_TYPE_COLON:
 				result = this->parseFunctionCall(token);
 				break;
-			case TOKEN_TYPE_PATH:
-				this->currentLine->push(new ValueToken(
-					new Path(
-						token->getStringValue(),
-						token->getRange()
-					)
-				));
-				break;
 			case TOKEN_TYPE_VALUE_TYPE:
 				this->currentLine->push(new TypeToken(token->getRange(), token->getStringValue()));
 				break;
@@ -260,8 +252,12 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 		return result;
 	}
 
-	if (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_DOT) {
-		return this->parsePath(token);
+	if (this->tokens.size() > 0) {
+		Token *next = this->tokens.front();
+		if (next->getType() == TOKEN_TYPE_DOT)
+			return this->parsePath(token);
+		if (next->getType() == TOKEN_TYPE_ARROW)
+			return this->parseStructAccess(token);
 	}
 
 	this->currentLine->push(new ValueToken(
@@ -300,6 +296,49 @@ ExpressionResult Lexer::parsePath(Token *token) {
 	this->currentLine->push(new ValueToken(
 		new Path(path, range),
 		TOKEN_TYPE_PATH
+	));
+	return ExpressionResult();
+}
+
+/**
+ * @brief check if a given struct access is correctly formatted and convert it to a struct access token
+ * 
+ * @param token the first literal of the path
+ * @return ExpressionResult if the conversion was successful, otherwise an error
+ */
+ExpressionResult Lexer::parseStructAccess(Token *token) {
+	std::vector<std::string> path{token->getStringValue()};
+	TextRange range = token->getRange();
+	while (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_ARROW) {
+		Token *arrow = this->tokens.front();
+		this->tokens.pop();
+		if (this->tokens.size() == 0) {
+			return ExpressionResult(
+				"Invalid path: expected literal after arrow",
+				token->getRange(),
+				this->context
+			);
+		} 
+		if (this->tokens.front()->getType() == TOKEN_TYPE_VALUE_TYPE) {
+			this->currentLine->push(new ValueToken(
+				new Variable(
+					token->getStringValue(),
+					token->getRange()
+				),
+				TOKEN_TYPE_LITERAL
+			));
+			this->currentLine->push(arrow);
+			return ExpressionResult();
+		}
+		delete arrow;
+		path.push_back(this->tokens.front()->getStringValue());
+		range.merge(this->tokens.front()->getRange());
+		delete this->tokens.front();
+		this->tokens.pop();
+	}
+	this->currentLine->push(new ValueToken(
+		new Path(path, range, STRUCT_ACCESS),
+		TOKEN_TYPE_STRUCT_ACCESS
 	));
 	return ExpressionResult();
 }

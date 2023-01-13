@@ -8,8 +8,7 @@
 
 class Path : public Value {
 	public:
-		Path(std::string_view name, TextRange range);
-		Path(std::vector<std::string> path, TextRange range);
+		Path(std::vector<std::string> path, TextRange range, ValueType type = PATH);
 		
 		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const override;
@@ -19,6 +18,9 @@ class Path : public Value {
 
 		inline std::string getStringValue() const;
 		std::vector<std::string> getPath() const;
+		std::string_view at(size_t index) const;
+		std::string ats(size_t index) const;
+		size_t size() const;
 
 		operatorResult opadd(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 		operatorResult opsub(const Value *other, const TextRange &range, const ContextPtr &context) const override;
@@ -34,7 +36,5 @@ class Path : public Value {
 		operatorResult opeq(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 	
 	private:
-		Path(std::vector<std::string> path, std::string name, TextRange range);
-		std::string name;
 		std::vector<std::string> path;
 };

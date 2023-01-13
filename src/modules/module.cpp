@@ -82,13 +82,13 @@ bool Module::isModule(const std::string &moduleName) {
  * @param path the path to check
  * @return std::string contains the error message, empty if there is not
  */
-std::string Module::checkPath(std::vector<std::string> path) {
-	if (path.size() > 2) {
+std::string Module::checkPath(const Path* path) {
+	if (path->size() > 2) {
 		return "Maximum path depth is 2";
 	}
 
-	if (!Module::isModule(path[0])) {
-		return "Module '" + path[0] + "' does not exist";
+	if (!Module::isModule(path->ats(0))) {
+		return "Module '" + path->ats(0) + "' does not exist";
 	}
 
 	return "";
@@ -103,7 +103,7 @@ std::string Module::checkPath(std::vector<std::string> path) {
  * @return ExpressionResult if the value exists
  */
 ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, const ContextPtr &parentContext) {
-	std::vector<std::string> path = static_cast<const Path*>(valuePath)->getPath();
+	const Path* path = static_cast<const Path*>(valuePath);
 	std::string error = Module::checkPath(path);
 	if (error != "") {
 		return ExpressionResult(
@@ -113,10 +113,10 @@ ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, c
 		);
 	}
 
-	if (Module::modules.find(path[0]) != Module::modules.end())
-		return Module::modules.at(path[0])->getModuleContext()->getModuleValue(path, valuePath->getRange(), value, parentContext);
-	else if (Module::builtinModules.find(path[0]) != Module::builtinModules.end())
-		return Module::builtinModules.at(path[0]).getModuleContext()->getModuleValue(path, valuePath->getRange(), value, parentContext);
+	if (Module::modules.find(path->ats(0)) != Module::modules.end())
+		return Module::modules.at(path->ats(0))->getModuleContext()->getModuleValue(path->getPath(), valuePath->getRange(), value, parentContext);
+	else if (Module::builtinModules.find(path->ats(0)) != Module::builtinModules.end())
+		return Module::builtinModules.at(path->ats(0)).getModuleContext()->getModuleValue(path->getPath(), valuePath->getRange(), value, parentContext);
 	else
 		throw std::runtime_error("Module::getModuleValue: module not found");
 }
@@ -130,7 +130,7 @@ ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, c
  * @return ExpressionResult 
  */
 ExpressionResult Module::getModuleContext(const Value *valuePath, const ContextPtr &parentContext, ContextPtr &moduleContext) {
-	std::vector<std::string> path = static_cast<const Path*>(valuePath)->getPath();
+	const Path* path = static_cast<const Path*>(valuePath);
 	std::string error = Module::checkPath(path);
 	if (error != "") {
 		return ExpressionResult(
@@ -139,10 +139,10 @@ ExpressionResult Module::getModuleContext(const Value *valuePath, const ContextP
 			parentContext
 		);
 	}
-	if (Module::modules.find(path[0]) != Module::modules.end())
-		moduleContext = Module::modules.at(path.at(0))->getModuleContext();
-	else if (Module::builtinModules.find(path[0]) != Module::builtinModules.end())
-		moduleContext = Module::builtinModules.at(path.at(0)).getModuleContext();
+	if (Module::modules.find(path->ats(0)) != Module::modules.end())
+		moduleContext = Module::modules.at(path->ats(0))->getModuleContext();
+	else if (Module::builtinModules.find(path->ats(0)) != Module::builtinModules.end())
+		moduleContext = Module::builtinModules.at(path->ats(0)).getModuleContext();
 	else
 		throw std::runtime_error("Module::getModuleContext: module not found");
 	moduleContext->setParent(parentContext);

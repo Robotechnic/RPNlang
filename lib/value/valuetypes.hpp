@@ -8,6 +8,7 @@ enum ValueType {
 	FUNCTION,
 	BOOL,
 	PATH,
+	STRUCT_ACCESS,
 	LIST,
 	STRUCT,
 	ANY,

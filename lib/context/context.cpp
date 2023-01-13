@@ -152,49 +152,53 @@ ContextPtr Context::getParent() const {
  */
 void Context::setValue(const std::string &name, Value *value, Value **hold, bool takeOwnership) {
 	value->setOwner(Value::CONTEXT_VARIABLE, takeOwnership);
-	if (
-		this->symbols.contains(name) && 
-		this->symbols[name] != nullptr && 
-		this->symbols[name]->getOwner() == Value::CONTEXT_VARIABLE
-	) {
-		if (hold)
-			(*hold) = this->symbols[name];
-		delete this->symbols[name];
+	if (this->symbols.contains(name)) {
+		Value **symbol = &this->symbols[name];
+		if (*symbol != nullptr && (*symbol)->getOwner() == Value::CONTEXT_VARIABLE) {
+			if (hold)
+				*hold = *symbol;
+			delete *symbol;
+		}
+		*symbol = value;
+	} else {
+		this->symbols[name] = value;
 	}
-	this->symbols[name] = value;
 }
 
 void Context::setValue(const Token *name, Value *value, Value **hold, bool takeOwnership) {
 	value->setOwner(Value::CONTEXT_VARIABLE, takeOwnership);
 	std::string nameStr = name->getStringValue();
-	if (
-		this->symbols.contains(nameStr) && 
-		this->symbols[nameStr] != nullptr && 
-		this->symbols[nameStr]->getOwner() == Value::CONTEXT_VARIABLE
-	) {
-		if (hold)
-			(*hold) = this->symbols[nameStr];
-		delete this->symbols[nameStr];
+	if (this->symbols.contains(nameStr)) {
+		Value **symbol = &this->symbols[nameStr];
+		if (*symbol != nullptr && (*symbol)->getOwner() == Value::CONTEXT_VARIABLE) {
+			if (hold)
+				*hold = *symbol;
+			delete *symbol;
+		}
+		*symbol = value;
+	} else {
+		this->symbols[nameStr] = value;
 	}
-	this->symbols[nameStr] = value;
 }
 
 void Context::setValue(const Value *name, Value *value, Value **hold, bool takeOwnership) {
 	if (name->getType() != VARIABLE)
 		throw std::runtime_error("Context::setValue() - name is not a variable");
+
 	value->setOwner(Value::CONTEXT_VARIABLE, takeOwnership);
 
 	std::string nameStr = name->getStringValue();
-	if (
-		this->symbols.contains(nameStr) && 
-		this->symbols[nameStr] != nullptr && 
-		this->symbols[nameStr]->getOwner() == Value::CONTEXT_VARIABLE
-	) {
-		if (hold)
-			(*hold) = this->symbols[nameStr];
-		delete this->symbols[nameStr];
+	if (this->symbols.contains(nameStr)) {
+		Value **symbol = &this->symbols[nameStr];
+		if (*symbol != nullptr && (*symbol)->getOwner() == Value::CONTEXT_VARIABLE) {
+			if (hold)
+				*hold = *symbol;
+			delete *symbol;
+		}
+		*symbol = value;
+	} else {
+		this->symbols[nameStr] = value;
 	}
-	this->symbols[nameStr] = value;
 }
 
 /**
@@ -236,6 +240,23 @@ ExpressionResult Context::getValue(const Token *name, Value *&value) {
 	return ExpressionResult(
 		"Undefined variable name : " + nameStr,
 		name->getRange(),
+		this->shared_from_this()
+	);
+}
+
+ExpressionResult Context::getValue(const std::string &name, TextRange range, Value *&value) {
+	if (this->symbols.find(name) != this->symbols.end()) {
+		value = this->symbols.at(name);
+		return ExpressionResult();
+	}
+
+	if (this->root) {
+		return this->root->getValue(name, range, value);
+	}
+	
+	return ExpressionResult(
+		"Undefined variable name : " + name,
+		range,
 		this->shared_from_this()
 	);
 }

@@ -20,6 +20,7 @@ enum TokenType {
 	TOKEN_TYPE_MODULE_FUNCTION_CALL,
 	TOKEN_TYPE_KEYWORD,
 	TOKEN_TYPE_PATH,
+	TOKEN_TYPE_STRUCT_ACCESS,
 
 	// this tokens will stay as they are durring lexing
 	TOKEN_TYPE_OPERATOR,

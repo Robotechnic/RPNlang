@@ -18,20 +18,32 @@ Value*& Memory::pop() {
 }
 
 ExpressionResult Memory::popVariableValue(Value *&value, const ContextPtr &context) {
-	if (this->stack.top()->getType() != VARIABLE && this->stack.top()->getType() != PATH) {
+	if (this->stack.top()->getType() != VARIABLE && this->stack.top()->getType() != PATH && this->stack.top()->getType() != STRUCT_ACCESS) {
 		value = this->pop();
 		return ExpressionResult();
 	}
 	
 	ExpressionResult result;
-	if (this->stack.top()->getType() == VARIABLE)
+	if (this->stack.top()->getType() == VARIABLE) {
 		result = context->getValue(this->stack.top(), value);
-	else
+	} else if (this->stack.top()->getType() == PATH) {
 		result = Module::getModuleValue(this->stack.top(), value, context);
+	} else {
+		const Path* path = static_cast<Path*>(this->stack.top());
+		Value *structVaue;
+		result = Struct::getStruct(path, structVaue, context);
+		if (result.error()) return result;
+		result = static_cast<Struct*>(structVaue)->getMember(
+			path->ats(path->size() - 1),
+			path->getRange(),
+			value,
+			context
+		);
+	}
+	if (result.error()) return result;
 	TextRange range = this->stack.top()->getRange();
 	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);
 	this->stack.pop();
-	if (result.error()) return result;
 	value->setVariableRange(range);
 	return result;
 }
@@ -76,31 +88,5 @@ ExpressionResult Memory::sizeExpected(size_t size, const std::string &message, T
 			ctx
 		);
 	}
-	return ExpressionResult();
-}
-
-/**
- * @brief replace top value with it's value if it's a variable
- * 
- * @param context the current context
- * @return ExpressionResult the result of the operation
- */
-ExpressionResult Memory::topVariableToValue(const ContextPtr &context) {
-	if (this->stack.size() == 0) 
-		throw std::runtime_error("Memory::topVariableToValue: stack is empty");
-	if (this->stack.top()->getType() != VARIABLE && this->stack.top()->getType() != PATH) 
-		return ExpressionResult();
-
-	Value *value;
-	ExpressionResult result;
-	if (this->stack.top()->getType() == VARIABLE)
-		result = context->getValue(this->stack.top(), value);
-	else
-		result = Module::getModuleValue(this->stack.top(), value, context);
-	
-	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);
-	this->stack.pop();
-	if (result.error()) return result;
-	this->stack.push(value);
 	return ExpressionResult();
 }

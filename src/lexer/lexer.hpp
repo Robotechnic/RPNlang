@@ -52,6 +52,7 @@ class Lexer {
 		ExpressionResult parseString(Token *token);
 		ExpressionResult parseLiteral(Token *token);
 		ExpressionResult parsePath(Token *token);
+		ExpressionResult parseStructAccess(Token *token);
 		ExpressionResult parseKeyword(Token *token);
 		std::pair<ExpressionResult, FunctionBlock*> parseFunction(CodeBlock *block);
 		std::pair<ExpressionResult, StructBlock*> parseStruct(CodeBlock *block);

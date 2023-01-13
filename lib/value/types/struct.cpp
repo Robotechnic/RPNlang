@@ -2,7 +2,7 @@
 
 StructDefinition::StructDefinition(std::string_view name) : name(name) {}
 
-StructDefinition::StructDefinition(const StructDefinition &other) : 
+StructDefinition::StructDefinition(const StructDefinition &other) :
 	name(other.name),
 	members(other.members),
 	memberOrder(other.memberOrder) {}
@@ -52,8 +52,9 @@ std::ostream &operator<<(std::ostream &stream, const StructDefinition &definitio
 	return stream;
 }
 
-Struct::Struct(TextRange range, std::string_view name, ValueOwner owner) : 
+Struct::Struct(TextRange range, std::string_view name, ValueOwner owner, bool immutable) :
 	Value(STRUCT, range, owner), 
+	immutable(immutable),
 	definition(&definitions[std::string(name)]) {}
 
 Struct::~Struct() {
@@ -90,41 +91,44 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 	return ExpressionResult();
 }
 
-ExpressionResult Struct::setMember(Value *name, Value *value, ContextPtr context) {
+ExpressionResult Struct::setMember(const std::string &name, TextRange range, Value *value, ContextPtr context, Value **hold) {
 	ValueType memberType;
-	if (!this->definition->hasMember(name->getStringValue(), &memberType)) {
+	if (!this->definition->hasMember(name, &memberType)) {
 		return ExpressionResult(
-			"Struct " + this->definition->name + " has no member named " + name->getStringValue(),
-			name->getRange(),
+			"Struct " + this->definition->name + " has no member named " + name,
+			range,
 			context
 		);
 	}
 	if (memberType != value->getType()) {
 		return ExpressionResult(
-			"Struct " + this->definition->name + " member " + name->getStringValue() + 
+			"Struct " + this->definition->name + " member " + name + 
 			" is of type " + value->getStringType() + " but " + value->getStringType() + " was given",
 			value->getRange(),
 			context
 		);
 	}
 
-	Value **member = &this->members[name->getStringValue()];
-	Value::deleteValue(member, Value::OBJECT_VALUE);
+	Value **member = &this->members[name];
+	if (hold != nullptr) {
+		*hold = *member;
+		delete (*member);
+	}
 	*member = value;
 
 	return ExpressionResult();
 }
 
-ExpressionResult Struct::getMember(Value *name, Value *value, ContextPtr context) {
+ExpressionResult Struct::getMember(const std::string &name, TextRange range, Value *&value, ContextPtr context) {
 	ValueType memberType;
-	if (!this->definition->hasMember(name->getStringValue(), &memberType)) {
+	if (!this->definition->hasMember(name, &memberType)) {
 		return ExpressionResult(
-			"Struct " + this->definition->name + " has no member named " + name->getStringValue(),
-			name->getRange(),
+			"Struct " + this->definition->name + " has no member named " + name,
+			range,
 			context
 		);
 	}
-	value = this->members[name->getStringValue()];
+	value = this->members[name];
 	return ExpressionResult();
 }
 
@@ -185,6 +189,37 @@ int Struct::getStructMembersCount(std::string_view structName) {
 
 bool Struct::structExists(std::string_view name) {
 	return Struct::definitions.find(std::string(name)) != Struct::definitions.end();
+}
+
+ExpressionResult Struct::getStruct(const Path *path, Value *&structValue, ContextPtr context) {
+	ExpressionResult result = context->getValue(path->ats(0), path->getRange(), structValue);
+	if (result.error()) return result;
+	if (structValue->getType() != STRUCT) {
+		return ExpressionResult(
+			"Can't access member of non struct",
+			path->getRange(),
+			context
+		);
+	}
+	for (size_t i = 1; i < path->size() - 1; i++) {
+		Value *value;
+		result = static_cast<Struct *>(structValue)->getMember(
+			path->ats(i),
+			path->getRange(),
+			value,
+			context
+		);
+		if (result.error()) return result;
+		if (value->getType() != STRUCT) {
+			return ExpressionResult(
+				"Can't access member of non struct",
+				path->getRange(),
+				context
+			);
+		}
+		structValue = value;
+	}
+	return result;
 }
 
 

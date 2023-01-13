@@ -213,6 +213,7 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 			case TOKEN_TYPE_VALUE:
 			case TOKEN_TYPE_LITERAL:
 			case TOKEN_TYPE_PATH:
+			case TOKEN_TYPE_STRUCT_ACCESS:
 				this->memory.push(static_cast<ValueToken*>(*it)->getValue());
 				break;
 			case TOKEN_TYPE_OPERATOR:
@@ -403,15 +404,30 @@ ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
 	Value *left;
 	result = this->memory.popVariableValue(left, this->context);
 	if (result.error()) return result;
-	if (this->memory.top()->getType() != VARIABLE) {
+	if (this->memory.top()->getType() != VARIABLE && this->memory.top()->getType() != STRUCT_ACCESS) {
 		return ExpressionResult(
 			"Can't assign value to a non variable",
 			this->memory.top()->getRange(),
 			this->context
 		);
 	}
-	Value *hold;
-	this->context->setValue(this->memory.top(), copy ? left->copy() : left, &hold);
+	Value *hold = nullptr;
+	if (this->memory.top()->getType() == VARIABLE) {
+		this->context->setValue(this->memory.top(), copy ? left->copy() : left, &hold);
+	} else {
+		Path *path = static_cast<Path *>(this->memory.top());
+		Value *structValue;
+		result = Struct::getStruct(path, structValue, this->context);
+		if (result.error()) return result;
+		result = static_cast<Struct *>(structValue)->setMember(
+			path->ats(path->size() - 1),
+			path->getRange(),
+			copy ? left->copy() : left,
+			this->context,
+			&hold
+		);
+		if (result.error()) return result;
+	}
 	if (this->lastValue == hold)
 		this->lastValue = nullptr;
 	

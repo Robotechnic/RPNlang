@@ -10,6 +10,7 @@
 
 #include "value/value.hpp"
 #include "value/types/numbers/bool.hpp"
+#include "value/types/path.hpp"
 
 class StructDefinition final {
 	public:
@@ -38,12 +39,12 @@ std::ostream &operator<<(std::ostream &stream, const StructDefinition &definitio
 
 class Struct : public Value {
 	public:
-		Struct(TextRange range, std::string_view name, ValueOwner owner);
+		Struct(TextRange range, std::string_view name, ValueOwner owner, bool immutable = false);
 		~Struct() override;
 		ExpressionResult setMembers(std::vector<Value*> members, ContextPtr context);
 
-		ExpressionResult setMember(Value *name, Value *value, ContextPtr context);
-		ExpressionResult getMember(Value *name, Value *value, ContextPtr context);
+		ExpressionResult setMember(const std::string &name, TextRange range, Value *value, ContextPtr context, Value **hold);
+		ExpressionResult getMember(const std::string &name, TextRange range, Value *&value, ContextPtr context);
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const;
@@ -74,6 +75,9 @@ class Struct : public Value {
 		static void addStructDefinition(StructDefinition &definition);
 		static int  getStructMembersCount(std::string_view structName);
 		static bool structExists(std::string_view structName);
+		static ExpressionResult getStruct(const Path *path, Value *&structValue, ContextPtr context);
+
+		bool immutable;
 
 	private:
 		StructDefinition *definition;
