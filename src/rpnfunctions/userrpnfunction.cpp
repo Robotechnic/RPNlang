@@ -9,7 +9,7 @@ UserRPNFunction::UserRPNFunction(const UserRPNFunction &other) :
 UserRPNFunction::UserRPNFunction(
 	const std::string &name,
 	const std::vector<std::string> &argsName,
-	const std::vector<ValueType> &argsTypes,
+	const RPNFunctionArgTypes &argsTypes,
 	const ValueType &returnType,
 	CodeBlock *body
 ):
@@ -33,7 +33,17 @@ RPNFunctionResult UserRPNFunction::call(
 
 	ContextPtr functionContext = std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
 	for (size_t i = 0; i < args.size(); i++) {
-		functionContext->setValue(this->argsName[i], args[i]->to(this->argsTypes[i], Value::CONTEXT_VARIABLE));
+		if (this->argsTypes[i].index() == 0) {
+			functionContext->setValue(
+				this->argsName[i],
+				args[i]->copy(Value::CONTEXT_VARIABLE)
+			);
+		} else {
+			functionContext->setValue(
+				this->argsName[i], 
+				args[i]->to(std::get<ValueType>(this->argsTypes[i]), Value::CONTEXT_VARIABLE)
+			);
+		}
 	}
 
 	Interpreter interpreter(functionContext);
@@ -42,25 +52,29 @@ RPNFunctionResult UserRPNFunction::call(
 	if (result.error()) 
 		return std::make_pair(result, None::empty());
 
+
 	//check the return type	
-	Value *returnValue = interpreter.getLastValue();
-	if (this->returnType == NONE) {
-		if (returnValue->getType() != this->returnType) {
+	if (!result.returnValue()) {
+		if (this->returnType != NONE)
 			return std::make_pair(
 				ExpressionResult(
-					returnValue->getType() != NONE ? 
-						"Function " + this->name + " does not return any value" :
-						"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
+					"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
 					this->body->lastRange(),
 					context
 				),
 				None::empty()
 			);
-		}
-	} else if (!result.returnValue()) {
+		
+		return std::make_pair(ExpressionResult(), None::empty());
+	}
+
+	Value *returnValue = interpreter.getLastValue();
+	if (this->returnType == NONE) {
 		return std::make_pair(
 			ExpressionResult(
-				"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
+				returnValue->getType() != NONE ? 
+					"Function " + this->name + " does not return any value" :
+					"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
 				this->body->lastRange(),
 				context
 			),
@@ -86,7 +100,7 @@ RPNFunctionResult UserRPNFunction::call(
 std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(
 			const std::string &name,
 			std::vector<std::string> argsName,
-			std::vector<ValueType> argsTypes,
+			RPNFunctionArgTypes argsTypes,
 			ValueType returnType, 
 			CodeBlock *body
 		) 

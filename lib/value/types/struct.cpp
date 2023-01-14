@@ -12,6 +12,7 @@ StructDefinition::StructDefinition(StructDefinition &&other) :
 	members(std::move(other.members)),
 	memberOrder(std::move(other.memberOrder)) {}
 
+
 void StructDefinition::operator=(StructDefinition &other) {
 	this->name = other.name;
 	this->members = other.members;
@@ -55,10 +56,12 @@ std::ostream &operator<<(std::ostream &stream, const StructDefinition &definitio
 Struct::Struct(TextRange range, std::string_view name, ValueOwner owner, bool immutable) :
 	Value(STRUCT, range, owner), 
 	immutable(immutable),
-	definition(&definitions[std::string(name)]) {}
+	definition(&definitions[std::string(name)]),
+	members(std::make_shared<std::unordered_map<std::string, Value*>>()) {}
 
 Struct::~Struct() {
-	for (auto &pair : this->members) {
+	if (this->members.use_count() != 1) return;
+	for (auto &pair : *this->members) {
 		Value::deleteValue(&pair.second, OBJECT_VALUE);
 	}
 }
@@ -85,7 +88,7 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 				context
 			);
 		}
-		this->members[key] = (*it)->to(type, Value::OBJECT_VALUE);
+		(*this->members)[key] = (*it)->to(type, Value::OBJECT_VALUE);
 		it++;
 	}
 	return ExpressionResult();
@@ -116,11 +119,12 @@ ExpressionResult Struct::setMember(const Path *member, Value *value, ContextPtr 
 		);
 	}
 
-	Value **memberValue = &this->members[member->ats(member->size() - 1)];
+	Value **memberValue = &this->members->at(member->ats(member->size() - 1));
 	if (hold != nullptr) {
 		*hold = *memberValue;
-		delete (*memberValue);
+		Value::deleteValue(memberValue, Value::OBJECT_VALUE);
 	}
+	value->setOwner(Value::OBJECT_VALUE);
 	*memberValue = value;
 
 	return ExpressionResult();
@@ -135,7 +139,7 @@ ExpressionResult Struct::getMember(const Path *member, Value *&value, ContextPtr
 			context
 		);
 	}
-	value = this->members[member->ats(member->size() - 1)];
+	value = this->members->at(member->ats(member->size() - 1));
 	return ExpressionResult();
 }
 
@@ -156,9 +160,8 @@ Value *Struct::to(ValueType type, ValueOwner owner) const {
 
 inline Value *Struct::copy(ValueOwner owner) const {
 	Struct *copy = new Struct(this->getRange(), this->definition->name, owner);
-	for (const std::string &key : this->definition->memberOrder) {
-		copy->members[key] = this->members.at(key)->copy(Value::OBJECT_VALUE);
-	}
+	copy->members = this->members;
+	copy->immutable = this->immutable;
 	return copy;
 }
 
@@ -167,13 +170,17 @@ inline std::string Struct::getStringValue() const {
 	stream << "Struct " << this->definition->name << " ";
 	for (size_t i = 0; i < this->definition->memberOrder.size(); i++) {
 		stream << this->definition->memberOrder[i] << " -> ";
-		stream << this->members.at(this->definition->memberOrder[i])->getStringValue();
+		stream << this->members->at(this->definition->memberOrder[i])->getStringValue();
 		if (i < this->definition->memberOrder.size() - 1) {
 			stream << "; ";
 		}
 	}
 	stream << "End of Struct " << this->definition->name;
 	return stream.str();
+}
+
+std::string_view Struct::getStructName() const {
+	return this->definition->name;
 }
 
 void Struct::setData(std::any data) {
@@ -352,8 +359,8 @@ operatorResult Struct::opne(const Value *other, const TextRange &range, const Co
 			new Bool(true, this->getRange(), Value::INTERPRETER)
 		);
 	}
-	for (auto it = this->members.begin(); it != this->members.end(); it++) {
-		auto otherIt = otherStruct->members.find(it->first);
+	for (auto it = this->members->begin(); it != this->members->end(); it++) {
+		auto otherIt = otherStruct->members->find(it->first);
 		operatorResult result = it->second->opne(otherIt->second, range, context);
 		if (result.first.error()) {
 			return result;
@@ -385,8 +392,8 @@ operatorResult Struct::opeq(const Value *other, const TextRange &range, const Co
 			new Bool(false, this->getRange(), Value::INTERPRETER)
 		);
 	}
-	for (auto it = this->members.begin(); it != this->members.end(); it++) {
-		auto otherIt = otherStruct->members.find(it->first);
+	for (auto it = this->members->begin(); it != this->members->end(); it++) {
+		auto otherIt = otherStruct->members->find(it->first);
 		operatorResult result = it->second->opeq(otherIt->second, range, context);
 		if (result.first.error()) {
 			return result;

@@ -7,6 +7,7 @@
 #include "value/value.hpp"
 #include "value/valuetypes.hpp"
 #include "value/types/none.hpp"
+#include "value/types/struct.hpp"
 #include "context/context.hpp"
 
 class RPNFunction {
@@ -14,7 +15,7 @@ class RPNFunction {
 		RPNFunction(
 			std::string_view name,
 			const std::vector<std::string> &argsName,
-			const std::vector<ValueType> &argsTypes,
+			const RPNFunctionArgTypes &argsTypes,
 			const ValueType &returnType
 		);
 		virtual ~RPNFunction();
@@ -34,7 +35,7 @@ class RPNFunction {
 
 		std::string name;
 		std::vector<std::string> argsName;
-		std::vector<ValueType> argsTypes;
+		RPNFunctionArgTypes argsTypes;
 		ValueType returnType;
 };
 

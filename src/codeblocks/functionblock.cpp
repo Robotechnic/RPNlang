@@ -3,7 +3,7 @@
 FunctionBlock::FunctionBlock(
 	const std::string &name,
 	const std::vector<std::string> &argsName,
-	const std::vector<ValueType> &argsTypes,
+	const RPNFunctionArgTypes &argsTypes,
 	const ValueType &returnType,
 	CodeBlock *body
 ) : BaseBlock(FUNCTION_BLOCK) {

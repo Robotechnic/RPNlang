@@ -53,6 +53,7 @@ class Struct : public Value {
 		inline Value *copy(ValueOwner owner = INTERPRETER) const;
 		
 		inline std::string getStringValue() const;
+		std::string_view getStructName() const;
 
 		// this is only for struct which are used directly by c++ code
 		void setData(std::any data);
@@ -81,7 +82,7 @@ class Struct : public Value {
 
 	private:
 		StructDefinition *definition;
-		std::unordered_map<std::string, Value*> members;
+		std::shared_ptr<std::unordered_map<std::string, Value*>> members;
 		std::any data;
 
 		static std::unordered_map<std::string, StructDefinition> definitions;

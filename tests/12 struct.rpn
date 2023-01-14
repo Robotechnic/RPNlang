@@ -1,3 +1,8 @@
+multiply Test t -> none fun
+	t->age t->age t->e * int =
+	t->name t->name "Multiplied" + =
+nuf
+
 Test struct
 	age -> int
 	name -> string
@@ -14,3 +19,8 @@ a->age f"{} \n" :print
 
 a->name "Truc" =
 a->name f"{} \n" :print
+
+a :multiply
+a->name f"{} \n" :print
+a->e f"{} \n" :print
+a->age f"{} \n" :print

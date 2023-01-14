@@ -481,7 +481,7 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(CodeBlock *bloc
 		), nullptr);
 	
 	std::vector<std::string>args;
-	std::vector<ValueType>types;
+	RPNFunctionArgTypes types;
 
 	std::unique_ptr<Line>line {static_cast<Line*>(this->codeBlocks.popBack())};
 	if (line->size() < 3)
@@ -503,13 +503,16 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(CodeBlock *bloc
 	while (line->top()->getType() != TOKEN_TYPE_ARROW && line->size() > 2) {
 		current = line->pop();
 		if (i % 2 == 0) {
-			if (current->getType() != TOKEN_TYPE_VALUE_TYPE)
+			if (current->getType() == TOKEN_TYPE_VALUE_TYPE)
+				types.push_back(static_cast<TypeToken*>(current)->getValueType());
+			else if (current->getType() == TOKEN_TYPE_STRUCT_NAME)
+				types.push_back(current->getStringValue());
+			else
 				return std::make_pair(ExpressionResult(
-					"Expected value type",
+					"Expected value type or struct name",
 					current->getRange(),
 					this->context
 				), nullptr);
-			types.push_back(static_cast<TypeToken*>(current)->getValueType());
 		} else {
 			if (current->getType() != TOKEN_TYPE_LITERAL)
 				return std::make_pair(ExpressionResult(

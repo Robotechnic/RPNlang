@@ -11,7 +11,7 @@ class FunctionBlock : public BaseBlock {
 		FunctionBlock(
 			const std::string &name,
 			const std::vector<std::string> &argsName,
-			const std::vector<ValueType> &argsTypes,
+			const RPNFunctionArgTypes &argsTypes,
 			const ValueType &returnType,
 			CodeBlock *body
 		);

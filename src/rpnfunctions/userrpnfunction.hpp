@@ -13,7 +13,7 @@ class UserRPNFunction : public RPNFunction {
 		UserRPNFunction(
 			const std::string &name,
 			const std::vector<std::string> &argsName,
-			const std::vector<ValueType> &argsTypes,
+			const RPNFunctionArgTypes &argsTypes,
 			const ValueType &returnType,
 			CodeBlock *body
 		);
@@ -28,7 +28,7 @@ class UserRPNFunction : public RPNFunction {
 		static std::shared_ptr<UserRPNFunction> addFunction(
 			const std::string &name,
 			std::vector<std::string> argsName,
-			std::vector<ValueType> argsTypes,
+			RPNFunctionArgTypes argsTypes,
 			ValueType returnType, 
 			CodeBlock *body
 		);

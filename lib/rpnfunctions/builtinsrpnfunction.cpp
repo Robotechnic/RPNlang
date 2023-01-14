@@ -5,7 +5,7 @@ BuiltinRPNFunction::BuiltinRPNFunction() : RPNFunction("",{},{},NONE), function(
 BuiltinRPNFunction::BuiltinRPNFunction(
 			std::string_view name,
 			std::vector<std::string> argsName,
-			std::vector<ValueType> argumentsTypes,
+			RPNFunctionArgTypes argumentsTypes,
 			ValueType returnType,
 			BuiltinRPNFunctionType function
 		) : RPNFunction(name, argsName, argumentsTypes, returnType), function(function) {
@@ -35,15 +35,22 @@ RPNFunctionResult BuiltinRPNFunction::call(
 
 	RPNFunctionArgs converted;
 	for (size_t i = 0; i < args.size(); i++) {
-		if (this->argsTypes.at(i) == ANY || args.at(i)->getType() == this->argsTypes.at(i))
+		if (this->argsTypes.at(i).index() == 0) {
+			converted.push_back(args.at(i));
+		}
+		ValueType type = std::get<ValueType>(this->argsTypes.at(i));
+		if (type == ANY || args.at(i)->getType() == type)
 			converted.push_back(args.at(i));
 		else
-			converted.push_back(args.at(i)->to(this->argsTypes.at(i)));
+			converted.push_back(args.at(i)->to(type));
 	}
 	result = this->function(converted, functionRange, functionContext);
-	for (size_t i = 0; i < args.size(); i++)
-		if (this->argsTypes.at(i) != ANY && args.at(i)->getType() != this->argsTypes.at(i)) 
+	for (size_t i = 0; i < args.size(); i++) {
+		if (this->argsTypes.at(i).index() == 1) continue;
+		ValueType type = std::get<ValueType>(this->argsTypes.at(i));
+		if (type != ANY && args.at(i)->getType() != type) 
 			delete converted.at(i);
+	}
 	
 	assert(
 		result.second != nullptr &&

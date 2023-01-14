@@ -3,14 +3,18 @@
 RPNFunction::RPNFunction(
 	std::string_view name,
 	const std::vector<std::string> &argsName,
-	const std::vector<ValueType> &argsTypes,
+	const RPNFunctionArgTypes &argsTypes,
 	const ValueType &returnType
 ):
 	name(name),
 	argsName(argsName),
 	argsTypes(argsTypes),
 	returnType(returnType)
-{}
+{
+	if (argsName.size() != argsTypes.size()) {
+		throw std::runtime_error("RPNFunction: argsName and argsTypes must have the same size");
+	}
+}
 
 RPNFunction::~RPNFunction() {}
 
@@ -51,12 +55,32 @@ RPNFunctionResult RPNFunction::call(
  */
 ExpressionResult RPNFunction::checkTypes(RPNFunctionArgs &args, const ContextPtr &context) const {
 	for (size_t i = 0; i < args.size(); i++) {
-		if (args[i]->getType() == this->argsTypes[i] || this->argsTypes[i] == ANY) continue;
+		if (const auto structName (std::get_if<std::string>(&this->argsTypes[i])); structName) {
+			if (args[i]->getType() != STRUCT) {
+				return ExpressionResult(
+					"Function call argument type mismatch, expected struct" +
+					*structName + " but got " + args[i]->getStringType(),
+					args[i]->getRange(),
+					context
+				);
+			}
+			if (static_cast<Struct*>(args[i])->getStructName() != *structName) {
+				return ExpressionResult(
+					"Function call argument type mismatch, expected struct " +
+					*structName + " but got struct " + std::string(static_cast<Struct*>(args[i])->getStructName()),
+					args[i]->getRange(),
+					context
+				);
+			}
+			continue;
+		}
 		
-		if (!args[i]->isCastableTo(this->argsTypes[i])) {
+		ValueType type = std::get<ValueType>(this->argsTypes[i]);
+		if (args[i]->getType() == type || type == ANY) continue;
+		if (!args[i]->isCastableTo(type)) {
 			return ExpressionResult(
 				"Function call argument type mismatch, expected " + 
-				std::string(Value::stringType(this->argsTypes[i])) + 
+				std::string(Value::stringType(type)) + 
 				" but got " + args[i]->getStringType(),
 				args[i]->getRange(),
 				context
