@@ -629,12 +629,18 @@ ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
 		return result;
 	
 	// finally
-	if (!result.error() || block.getNext()->getKeyword() == KEYWORD_FINALLY)
-		return this->interpret(block.getNext()->getBlocks());
+	if (!result.error()) {
+		if (block.getNext()->getKeyword() == KEYWORD_FINALLY)
+			return this->interpret(block.getNext()->getBlocks());
+		return result;
+	}
 	
 	// catch
-	if (block.getNext()->getKeyword() != KEYWORD_CATCH)
-		return result;
+	if (block.getNext()->getKeyword() != KEYWORD_CATCH) {
+		if (block.getNext()->getKeyword() == KEYWORD_FINALLY)
+			return this->interpret(block.getNext()->getBlocks());
+		return ExpressionResult();
+	}
 	
 	this->context->setValue(
 		line.top()->getStringValue(),

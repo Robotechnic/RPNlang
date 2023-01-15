@@ -1,4 +1,12 @@
 e try
+	"Ok\n" :print
+catch
+	"Catch should not be called\n" :print
+	1 :exit
+yrt
+
+
+e try
 	1 0 /
 catch
 	e f"Error: {}\n" :print
