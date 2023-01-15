@@ -70,7 +70,8 @@ std::string Value::stringType(const ValueType &type) {
 			return "list";
 		case ANY:
 			return "any";
-			
+		case STRUCT:
+			return "struct";
 		default:
 			throw std::runtime_error("This type doesn't exist " + std::to_string(type));
 	}

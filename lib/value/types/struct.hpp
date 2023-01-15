@@ -61,8 +61,8 @@ class Struct : public Value {
 		std::string_view getStructName() const;
 
 		// this is only for struct which are used directly by c++ code
-		void setData(std::shared_ptr<void> data);
-		std::shared_ptr<void> getData();
+		void setData(const std::shared_ptr<void> &data);
+		std::shared_ptr<void> getData() const;
 
 		operatorResult opadd(const Value *other, const TextRange &range, const ContextPtr &context) const;
 		operatorResult opsub(const Value *other, const TextRange &range, const ContextPtr &context) const;
