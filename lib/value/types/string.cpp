@@ -23,7 +23,7 @@ Value *String::to(ValueType type, ValueOwner owner) const {
 		case ANY:
 			return new String(this->value, this->range, owner);
 		case BOOL:
-			return new Bool(this->value == "true", this->range, owner);
+			return new Bool(this->value.size() > 0, this->range, owner);
 		default:
 			throw std::runtime_error("Invalid value type");
 	};
