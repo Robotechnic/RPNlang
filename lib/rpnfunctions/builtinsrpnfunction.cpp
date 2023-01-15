@@ -6,7 +6,7 @@ BuiltinRPNFunction::BuiltinRPNFunction(
 			std::string_view name,
 			std::vector<std::string> argsName,
 			RPNFunctionArgTypes argumentsTypes,
-			ValueType returnType,
+			RPNFunctionValueType returnType,
 			BuiltinRPNFunctionType function
 		) : RPNFunction(name, argsName, argumentsTypes, returnType), function(function) {
 	if (this->function == nullptr) {

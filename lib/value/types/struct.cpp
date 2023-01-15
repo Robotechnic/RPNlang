@@ -143,6 +143,17 @@ ExpressionResult Struct::getMember(const Path *member, Value *&value, ContextPtr
 	return ExpressionResult();
 }
 
+void Struct::setMember(std::string_view member, Value *value, ContextPtr context) {
+	Value **memberValue = &this->members->at(std::string(member));
+	Value::deleteValue(memberValue, Value::OBJECT_VALUE);
+	value->setOwner(Value::OBJECT_VALUE);
+	*memberValue = value;
+}
+
+Value* Struct::getMember(std::string_view member, ContextPtr context) {
+	return this->members->at(std::string(member));
+}
+
 bool Struct::isCastableTo(ValueType type) const {
 	return type == STRING || type == STRUCT;
 }
@@ -162,6 +173,7 @@ inline Value *Struct::copy(ValueOwner owner) const {
 	Struct *copy = new Struct(this->getRange(), this->definition->name, owner);
 	copy->members = this->members;
 	copy->immutable = this->immutable;
+	copy->data = this->data;
 	return copy;
 }
 
@@ -183,11 +195,11 @@ std::string_view Struct::getStructName() const {
 	return this->definition->name;
 }
 
-void Struct::setData(std::any data) {
+void Struct::setData(std::shared_ptr<void> data) {
 	this->data = data;
 }
 
-std::any Struct::getData() {
+std::shared_ptr<void> Struct::getData() {
 	return this->data;
 }
 

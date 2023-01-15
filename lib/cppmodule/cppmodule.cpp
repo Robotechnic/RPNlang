@@ -73,13 +73,13 @@ void CppModule::addFunction(
 		const std::string &name,
 		const std::vector<std::string> &argsName,
 		const RPNFunctionArgTypes &argumentsTypes,
-		ValueType returnType,
+		RPNFunctionValueType returnType,
 		BuiltinRPNFunctionType function
 ) {
 	this->moduleFunctions.insert(
 		this->moduleFunctions.begin(), 
 		std::pair<std::string, BuiltinRPNFunction>(
-			name, 
+			name,
 			BuiltinRPNFunction(name, argsName, argumentsTypes, returnType, function)
 		)
 	);

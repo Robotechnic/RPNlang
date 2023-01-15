@@ -43,8 +43,13 @@ class Struct : public Value {
 		~Struct() override;
 		ExpressionResult setMembers(std::vector<Value*> members, ContextPtr context);
 
+		// this is for struct which are used by the interpreter
 		ExpressionResult setMember(const Path *member, Value *value, ContextPtr context, Value **hold);
 		ExpressionResult getMember(const Path *member, Value *&value, ContextPtr context);
+
+		// this is for struct which are used by the c++ code
+		void setMember(std::string_view member, Value *value, ContextPtr context);
+		Value* getMember(std::string_view member, ContextPtr context);
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const;
@@ -56,8 +61,8 @@ class Struct : public Value {
 		std::string_view getStructName() const;
 
 		// this is only for struct which are used directly by c++ code
-		void setData(std::any data);
-		std::any getData();
+		void setData(std::shared_ptr<void> data);
+		std::shared_ptr<void> getData();
 
 		operatorResult opadd(const Value *other, const TextRange &range, const ContextPtr &context) const;
 		operatorResult opsub(const Value *other, const TextRange &range, const ContextPtr &context) const;
@@ -83,7 +88,7 @@ class Struct : public Value {
 	private:
 		StructDefinition *definition;
 		std::shared_ptr<std::unordered_map<std::string, Value*>> members;
-		std::any data;
+		std::shared_ptr<void> data;
 
 		static std::unordered_map<std::string, StructDefinition> definitions;
 };

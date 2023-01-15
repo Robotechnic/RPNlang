@@ -19,7 +19,7 @@ class BuiltinRPNFunction : public RPNFunction {
 			std::string_view name,
 			std::vector<std::string> argsName,
 			RPNFunctionArgTypes argumentsTypes,
-			ValueType returnType,
+			RPNFunctionValueType returnType,
 			BuiltinRPNFunctionType function
 		);
 		~BuiltinRPNFunction();
