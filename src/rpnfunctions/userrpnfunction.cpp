@@ -10,7 +10,7 @@ UserRPNFunction::UserRPNFunction(
 	const std::string &name,
 	const std::vector<std::string> &argsName,
 	const RPNFunctionArgTypes &argsTypes,
-	const ValueType &returnType,
+	const RPNFunctionValueType &returnType,
 	CodeBlock *body
 ):
 	RPNFunction(name, argsName, argsTypes, returnType),
@@ -55,10 +55,12 @@ RPNFunctionResult UserRPNFunction::call(
 
 	//check the return type	
 	if (!result.returnValue()) {
-		if (this->returnType != NONE)
+		if (this->returnType.index() == 0 || (this->returnType.index() == 1 && std::get<ValueType>(this->returnType) != NONE))
 			return std::make_pair(
 				ExpressionResult(
-					"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
+					"Function " + this->name + " expected a return value of type " + 
+					(this->returnType.index() == 0 ? std::get<std::string>(this->returnType) : Value::stringType(std::get<ValueType>(this->returnType))) + 
+					", but no return value was found",
 					this->body->lastRange(),
 					context
 				),
@@ -69,12 +71,38 @@ RPNFunctionResult UserRPNFunction::call(
 	}
 
 	Value *returnValue = interpreter.getLastValue();
-	if (this->returnType == NONE) {
+	if (this->returnType.index() == 0) {
+		if (returnValue->getType() != STRUCT)
+			return std::make_pair(
+				ExpressionResult(
+					"Return type must be struct of type " + 
+					std::get<std::string>(this->returnType) + 
+					" but got " + Value::stringType(returnValue->getType()),
+					returnValue->getRange(),
+					context
+				),
+				None::empty()
+			);
+		
+		if (std::get<std::string>(this->returnType) != static_cast<Struct*>(returnValue)->getStructName())
+			return std::make_pair(
+				ExpressionResult(
+					"Return type must be struct of type " + 
+					std::get<std::string>(this->returnType) + 
+					" but got " + std::string(static_cast<Struct*>(returnValue)->getStructName()),
+					returnValue->getRange(),
+					context
+				),
+				None::empty()
+			);
+
+		return std::make_pair(ExpressionResult(), returnValue->copy());
+	}
+	
+	if (std::get<ValueType>(this->returnType) == NONE) {
 		return std::make_pair(
 			ExpressionResult(
-				returnValue->getType() != NONE ? 
-					"Function " + this->name + " does not return any value" :
-					"Function " + this->name + " expected a return value of type " + Value::stringType(this->returnType) + ", but no return value was found",
+				"Function " + this->name + " does not return any value",
 				this->body->lastRange(),
 				context
 			),
@@ -82,10 +110,10 @@ RPNFunctionResult UserRPNFunction::call(
 		);
 	}
 
-	if (!returnValue->isCastableTo(this->returnType)) {
+	if (!returnValue->isCastableTo(std::get<ValueType>(this->returnType))) {
 		return std::make_pair(
 			ExpressionResult(
-				"Return type must be " + Value::stringType(this->returnType) + " but got " + Value::stringType(returnValue->getType()),
+				"Return type must be " + Value::stringType(std::get<ValueType>(this->returnType)) + " but got " + Value::stringType(returnValue->getType()),
 				returnValue->getRange(),
 				context
 			),
@@ -93,15 +121,15 @@ RPNFunctionResult UserRPNFunction::call(
 		);
 	}
 
-	return std::make_pair(ExpressionResult(), returnValue->to(this->returnType));
+	return std::make_pair(ExpressionResult(), returnValue->to(std::get<ValueType>(this->returnType)));
 }
 
 
 std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(
 			const std::string &name,
-			std::vector<std::string> argsName,
-			RPNFunctionArgTypes argsTypes,
-			ValueType returnType, 
+			const std::vector<std::string> &argsName,
+			const RPNFunctionArgTypes &argsTypes,
+			RPNFunctionValueType returnType, 
 			CodeBlock *body
 		) 
 {

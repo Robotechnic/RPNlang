@@ -16,7 +16,7 @@ class RPNFunction {
 			std::string_view name,
 			const std::vector<std::string> &argsName,
 			const RPNFunctionArgTypes &argsTypes,
-			const ValueType &returnType
+			const RPNFunctionValueType &returnType
 		);
 		virtual ~RPNFunction();
 
@@ -36,7 +36,7 @@ class RPNFunction {
 		std::string name;
 		std::vector<std::string> argsName;
 		RPNFunctionArgTypes argsTypes;
-		ValueType returnType;
+		RPNFunctionValueType returnType;
 };
 
 std::ostream& operator<<(std::ostream& os, const RPNFunction& function);

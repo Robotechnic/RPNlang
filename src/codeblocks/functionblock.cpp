@@ -4,7 +4,7 @@ FunctionBlock::FunctionBlock(
 	const std::string &name,
 	const std::vector<std::string> &argsName,
 	const RPNFunctionArgTypes &argsTypes,
-	const ValueType &returnType,
+	const RPNFunctionValueType &returnType,
 	CodeBlock *body
 ) : BaseBlock(FUNCTION_BLOCK) {
 	this->function = UserRPNFunction::addFunction(name, argsName, argsTypes, returnType, body);

@@ -57,5 +57,17 @@ RPNFunctionResult BuiltinRPNFunction::call(
 		"BuiltinRPNFunction::call: result.second is nullptr"
 	);
 
+	if (result.first.error()) return result;
+
+	if (this->returnType.index() == 0) {
+		if (result.second->getType() != STRUCT)
+			throw std::runtime_error("BuiltinRPNFunction::call: result.second->getType() != STRUCT");
+		if (std::get<std::string>(this->returnType) != static_cast<Struct*>(result.second)->getStructName())
+			throw std::runtime_error("BuiltinRPNFunction::call: std::get<std::string>(this->returnType) != result.second->getStructName()");
+	} else {
+		if (result.second->getType() != std::get<ValueType>(this->returnType))
+			throw std::runtime_error("BuiltinRPNFunction::call: result.second->getType() != std::get<ValueType>(this->returnType)");
+	}
+
 	return result;
 }

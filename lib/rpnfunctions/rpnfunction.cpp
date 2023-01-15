@@ -4,7 +4,7 @@ RPNFunction::RPNFunction(
 	std::string_view name,
 	const std::vector<std::string> &argsName,
 	const RPNFunctionArgTypes &argsTypes,
-	const ValueType &returnType
+	const RPNFunctionValueType &returnType
 ):
 	name(name),
 	argsName(argsName),

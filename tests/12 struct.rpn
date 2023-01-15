@@ -1,13 +1,17 @@
-multiply Test t -> none fun
-	t->age t->age t->e * int =
-	t->name t->name "Multiplied" + =
-nuf
-
 Test struct
 	age -> int
 	name -> string
 	e -> float
 tcurts
+
+multiply Test t -> none fun
+	t->age t->age t->e * int =
+	t->name t->name "Multiplied" + =
+nuf
+
+structCreate -> Test fun
+	42 "Created by structCreate" 3.14 Test return
+nuf
 
 a 12 "Bidule" 2.7 Test =
 b 5 =
@@ -21,6 +25,11 @@ a->name "Truc" =
 a->name f"{} \n" :print
 
 a :multiply
+a->name f"{} \n" :print
+a->e f"{} \n" :print
+a->age f"{} \n" :print
+
+a :structCreate =
 a->name f"{} \n" :print
 a->e f"{} \n" :print
 a->age f"{} \n" :print

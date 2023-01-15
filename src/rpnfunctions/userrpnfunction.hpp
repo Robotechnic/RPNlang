@@ -14,7 +14,7 @@ class UserRPNFunction : public RPNFunction {
 			const std::string &name,
 			const std::vector<std::string> &argsName,
 			const RPNFunctionArgTypes &argsTypes,
-			const ValueType &returnType,
+			const RPNFunctionValueType &returnType,
 			CodeBlock *body
 		);
 		~UserRPNFunction() override;
@@ -27,9 +27,9 @@ class UserRPNFunction : public RPNFunction {
 
 		static std::shared_ptr<UserRPNFunction> addFunction(
 			const std::string &name,
-			std::vector<std::string> argsName,
-			RPNFunctionArgTypes argsTypes,
-			ValueType returnType, 
+			const std::vector<std::string> &argsName,
+			const RPNFunctionArgTypes &argsTypes,
+			RPNFunctionValueType returnType, 
 			CodeBlock *body
 		);
 

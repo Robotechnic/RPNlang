@@ -319,7 +319,7 @@ ExpressionResult Lexer::parseStructAccess(Token *token) {
 				this->context
 			);
 		} 
-		if (this->tokens.front()->getType() == TOKEN_TYPE_VALUE_TYPE) {
+		if (this->tokens.front()->getType() == TOKEN_TYPE_VALUE_TYPE || this->tokens.front()->getType() == TOKEN_TYPE_STRUCT_NAME) {
 			this->currentLine->push(new ValueToken(
 				new Variable(
 					token->getStringValue(),
@@ -329,6 +329,12 @@ ExpressionResult Lexer::parseStructAccess(Token *token) {
 			));
 			this->currentLine->push(arrow);
 			return ExpressionResult();
+		} else if (this->tokens.front()->getType() != TOKEN_TYPE_LITERAL) {
+			return ExpressionResult(
+				"Expected literal after '->' token",
+				this->tokens.front()->getRange(),
+				this->context
+			);
 		}
 		delete arrow;
 		path.push_back(this->tokens.front()->getStringValue());
@@ -537,22 +543,31 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(CodeBlock *bloc
 			this->context
 		), nullptr);
 	line->pop();
-	if (line->top()->getType() != TOKEN_TYPE_VALUE_TYPE)
-		return std::make_pair(ExpressionResult(
-			"Return type expected after '->' token but got" + line->top()->getStringType(),
-			line->top()->getRange(),
-			this->context
-		), nullptr);
-	
-	ValueType returnType = Value::valueType(line->pop()->getStringValue());
+	if (line->top()->getType() == TOKEN_TYPE_VALUE_TYPE)
+		return std::make_pair(ExpressionResult(), new FunctionBlock(
+			name,
+			args,
+			types,
+			static_cast<TypeToken*>(line->pop())->getValueType(),
+			block
+		));
+	if (line->top()->getType() == TOKEN_TYPE_STRUCT_NAME)
+		return std::make_pair(ExpressionResult(), new FunctionBlock(
+			name,
+			args,
+			types,
+			line->pop()->getStringValue(),
+			block
+		));
 
-	return std::make_pair(ExpressionResult(), new FunctionBlock(
-		name,
-		args,
-		types,
-		returnType,
-		block
-	));
+	return std::make_pair(ExpressionResult(
+		"Return type expected after '->' token but got" + line->top()->getStringType(),
+		line->top()->getRange(),
+		this->context
+	), nullptr);
+	
+
+	
 }
 
 /**
