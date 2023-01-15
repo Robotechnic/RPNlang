@@ -49,7 +49,7 @@ class Struct : public Value {
 
 		// this is for struct which are used by the c++ code
 		void setMember(std::string_view member, Value *value, ContextPtr context);
-		Value* getMember(std::string_view member, ContextPtr context);
+		Value* getMember(std::string_view member);
 
 		bool isCastableTo(ValueType type) const;
 		bool isNumber() const;

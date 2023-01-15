@@ -150,7 +150,7 @@ void Struct::setMember(std::string_view member, Value *value, ContextPtr context
 	*memberValue = value;
 }
 
-Value* Struct::getMember(std::string_view member, ContextPtr context) {
+Value* Struct::getMember(std::string_view member) {
 	return this->members->at(std::string(member));
 }
 
