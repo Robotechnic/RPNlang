@@ -10,15 +10,6 @@ Int::Int(int64_t value, TextRange range, ValueOwner owner, const TextRange varia
 
 std::unique_ptr<Int> Int::emptyInt = std::make_unique<Int>(0, TextRange(), Value::EMPTY_VALUE);
 
-bool Int::isCastableTo(ValueType type) const {
-	return 
-		type == STRING ||
-		type == INT ||
-		type == FLOAT ||
-		type == ANY ||
-		type == BOOL;
-}
-
 Value *Int::to(ValueType type, ValueOwner owner) const {
 	switch (type) {
 		case STRING:

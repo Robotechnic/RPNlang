@@ -1,5 +1,8 @@
 #pragma once
 
+#include <variant>
+#include <string>
+
 enum ValueType {
 	INT,
 	FLOAT,
@@ -14,3 +17,5 @@ enum ValueType {
 	ANY,
 	NONE
 };
+
+typedef std::variant<std::string, ValueType> RPNValueType;

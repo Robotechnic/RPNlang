@@ -80,7 +80,7 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 	auto it = members.begin();
 	for (const std::string &key : this->definition->memberOrder) {
 		ValueType type = this->definition->members.at(key);
-		if (!(*it)->isCastableTo(type)) {
+		if (!Value::isCastableTo((*it)->getType(), type)) {
 			return ExpressionResult(
 				"Struct " + this->definition->name + " member " + key + 
 				" is of type " + Value::stringType(type) + " but " + (*it)->getStringType() + " was given",
@@ -152,10 +152,6 @@ void Struct::setMember(std::string_view member, Value *value, ContextPtr context
 
 Value* Struct::getMember(std::string_view member) {
 	return this->members->at(std::string(member));
-}
-
-bool Struct::isCastableTo(ValueType type) const {
-	return type == STRING || type == STRUCT;
 }
 
 bool Struct::isNumber() const {

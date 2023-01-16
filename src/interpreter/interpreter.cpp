@@ -365,7 +365,7 @@ ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
 		this->context
 	);
 	if (result.error()) return result;
-	if (type == LIST && !this->memory.top()->isCastableTo(LIST)) {
+	if (type == LIST && !Value::isCastableTo(this->memory.top()->getType(), LIST)) {
 		return this->interpretList(typeToken);
 	}
 
@@ -373,7 +373,7 @@ ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
 	result = this->memory.popVariableValue(top, this->context);
 	if (result.error()) return result;
 
-	if (!top->isCastableTo(type)) {
+	if (!Value::isCastableTo(top->getType(), type)) {
 		return ExpressionResult(
 			"Can't cast " + top->getStringType() + " to " + Value::stringType(type),
 			typeToken->getRange(),

@@ -10,14 +10,6 @@ Float::Float(float value, TextRange range, ValueOwner owner, const TextRange var
 
 std::unique_ptr<Float> Float::emptyFloat = std::make_unique<Float>(0.0f, TextRange(), Value::EMPTY_VALUE);
 
-bool Float::isCastableTo(ValueType type) const {
-	return 
-		type == STRING ||
-		type == ANY ||
-		type == INT ||
-		type == FLOAT ||
-		type == BOOL;
-}
 
 Value *Float::to(ValueType type, ValueOwner owner) const {
 	switch (type) {

@@ -39,7 +39,7 @@ class CppModule {
 			const std::string &name,
 			const std::vector<std::string> &argsName,
 			const RPNFunctionArgTypes &argumentsTypes,
-			RPNFunctionValueType returnType,
+			RPNValueType returnType,
 			BuiltinRPNFunctionType function
 		);
 		void addVariable(const std::string &name, Value *value);

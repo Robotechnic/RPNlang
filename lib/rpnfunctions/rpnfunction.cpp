@@ -4,7 +4,7 @@ RPNFunction::RPNFunction(
 	std::string_view name,
 	const std::vector<std::string> &argsName,
 	const RPNFunctionArgTypes &argsTypes,
-	const RPNFunctionValueType &returnType
+	const RPNValueType &returnType
 ):
 	name(name),
 	argsName(argsName),
@@ -77,7 +77,7 @@ ExpressionResult RPNFunction::checkTypes(RPNFunctionArgs &args, const ContextPtr
 		
 		ValueType type = std::get<ValueType>(this->argsTypes[i]);
 		if (args[i]->getType() == type || type == ANY) continue;
-		if (!args[i]->isCastableTo(type)) {
+		if (!Value::isCastableTo(args[i]->getType(), type)) {
 			return ExpressionResult(
 				"Function call argument type mismatch, expected " + 
 				std::string(Value::stringType(type)) + 
@@ -100,4 +100,12 @@ std::string RPNFunction::getName() const {
 
 TextRange RPNFunction::getRange() const {
 	return TextRange(0, 0, 0);
+}
+
+RPNValueType RPNFunction::getReturnType() const {
+	return this->returnType;
+}
+
+RPNFunctionArgTypes RPNFunction::getArgsTypes() const {
+	return this->argsTypes;
 }

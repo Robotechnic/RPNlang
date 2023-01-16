@@ -12,7 +12,6 @@ class None : public Value {
 
 		inline std::string getStringValue() const;
 
-		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };
 
 		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;

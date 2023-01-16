@@ -11,7 +11,6 @@ class List : public Value {
 		List(std::vector<Value *> values, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 		~List();
 
-		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const override;
 		std::vector<Value *> getValues() const;
 

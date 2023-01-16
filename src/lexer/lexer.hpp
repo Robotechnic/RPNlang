@@ -19,7 +19,6 @@
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/line.hpp"
 #include "codeblocks/functionblock.hpp"
-#include "codeblocks/structblock.hpp"
 
 
 #include "value/value.hpp"

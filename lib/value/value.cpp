@@ -19,6 +19,24 @@ ValueType Value::getType() const {
 	return this->type;
 }
 
+bool Value::isCastableTo(ValueType from, ValueType to) {
+	if (from == to || to == ANY || to == STRING || to == BOOL) {
+		return true;
+	}
+	switch (from) {
+		case INT:
+		case FLOAT:
+		case BOOL:
+			return to == INT || to == FLOAT || to == BOOL;
+		case STRING:
+			return to == STRING || to == BOOL;
+		case LIST:
+			return to == LIST || to == STRING;
+		default:
+			return false;
+	}
+}
+
 std::string Value::getStringType() const {
 	return std::string(Value::stringType(this->type));
 }

@@ -6,12 +6,6 @@ String::String(std::string_view value, TextRange range, ValueOwner owner, const 
 
 std::unique_ptr<String> String::emptyString = std::make_unique<String>("", TextRange(), Value::EMPTY_VALUE);
 
-bool String::isCastableTo(ValueType type) const {
-	return 
-		type == STRING ||
-		type == ANY ||
-		type == BOOL;
-}
 
 inline std::string String::getStringValue() const {
 	return value;

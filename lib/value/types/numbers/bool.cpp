@@ -10,14 +10,6 @@ Bool::Bool(bool value, TextRange range, ValueOwner owner, const TextRange variab
 
 std::unique_ptr<Bool> Bool::emptyBool = std::make_unique<Bool>(false, TextRange(), Value::EMPTY_VALUE);
 
-bool Bool::isCastableTo(ValueType type) const {
-	return 
-		type == STRING ||
-		type == ANY ||
-		type == INT ||
-		type == FLOAT ||
-		type == BOOL;
-}
 
 Value *Bool::to(ValueType type, ValueOwner owner) const {
 	switch (type) {

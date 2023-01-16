@@ -12,7 +12,6 @@ class String : public Value {
 
 		inline std::string getStringValue() const;
 
-		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };
 
 		static String *empty() {

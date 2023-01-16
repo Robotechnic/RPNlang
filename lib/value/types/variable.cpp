@@ -5,10 +5,6 @@ Variable::Variable(std::string_view value, TextRange range) :
 	value(value) {}
 
 
-bool Variable::isCastableTo(ValueType type) const {
-	return type == VARIABLE;
-}
-
 inline std::string Variable::getStringValue() const {
 	return value;
 }

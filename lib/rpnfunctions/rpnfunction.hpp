@@ -16,7 +16,7 @@ class RPNFunction {
 			std::string_view name,
 			const std::vector<std::string> &argsName,
 			const RPNFunctionArgTypes &argsTypes,
-			const RPNFunctionValueType &returnType
+			const RPNValueType &returnType
 		);
 		virtual ~RPNFunction();
 
@@ -30,13 +30,16 @@ class RPNFunction {
 		std::string getName() const;
 		TextRange getRange() const;
 
+		RPNValueType getReturnType() const;
+		RPNFunctionArgTypes getArgsTypes() const;
+
 	protected:
 		ExpressionResult checkTypes(RPNFunctionArgs &args, const ContextPtr &context) const;		
 
 		std::string name;
 		std::vector<std::string> argsName;
 		RPNFunctionArgTypes argsTypes;
-		RPNFunctionValueType returnType;
+		RPNValueType returnType;
 };
 
 std::ostream& operator<<(std::ostream& os, const RPNFunction& function);

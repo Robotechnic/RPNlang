@@ -31,7 +31,7 @@ class Value {
 		Value(ValueType type, const TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 		virtual ~Value() = default;
 		
-		virtual bool isCastableTo(ValueType type) const = 0;
+		static bool isCastableTo(ValueType from, ValueType to);
 		virtual bool isNumber() const = 0;
 
 		virtual Value *to(ValueType type, ValueOwner owner = INTERPRETER) const = 0;

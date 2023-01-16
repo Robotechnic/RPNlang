@@ -10,7 +10,7 @@ UserRPNFunction::UserRPNFunction(
 	const std::string &name,
 	const std::vector<std::string> &argsName,
 	const RPNFunctionArgTypes &argsTypes,
-	const RPNFunctionValueType &returnType,
+	const RPNValueType &returnType,
 	CodeBlock *body
 ):
 	RPNFunction(name, argsName, argsTypes, returnType),
@@ -110,7 +110,7 @@ RPNFunctionResult UserRPNFunction::call(
 		);
 	}
 
-	if (!returnValue->isCastableTo(std::get<ValueType>(this->returnType))) {
+	if (!Value::isCastableTo(returnValue->getType(), std::get<ValueType>(this->returnType))) {
 		return std::make_pair(
 			ExpressionResult(
 				"Return type must be " + Value::stringType(std::get<ValueType>(this->returnType)) + " but got " + Value::stringType(returnValue->getType()),
@@ -129,7 +129,7 @@ std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(
 			const std::string &name,
 			const std::vector<std::string> &argsName,
 			const RPNFunctionArgTypes &argsTypes,
-			RPNFunctionValueType returnType, 
+			RPNValueType returnType, 
 			CodeBlock *body
 		) 
 {
@@ -141,6 +141,11 @@ std::shared_ptr<UserRPNFunction> UserRPNFunction::getFunction(const std::string 
 	if (userFunctions.find(name) == userFunctions.end())
 		return nullptr;
 	return userFunctions[name];
+}
+
+
+CodeBlock *UserRPNFunction::getBody() const {
+	return this->body;
 }
 
 TextRange UserRPNFunction::getRange() const {

@@ -10,7 +10,6 @@ class Path : public Value {
 	public:
 		Path(std::vector<std::string> path, TextRange range, ValueType type = PATH);
 		
-		bool isCastableTo(ValueType type) const override;
 		bool isNumber() const override;
 
 		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;

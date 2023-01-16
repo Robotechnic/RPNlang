@@ -14,7 +14,7 @@ class UserRPNFunction : public RPNFunction {
 			const std::string &name,
 			const std::vector<std::string> &argsName,
 			const RPNFunctionArgTypes &argsTypes,
-			const RPNFunctionValueType &returnType,
+			const RPNValueType &returnType,
 			CodeBlock *body
 		);
 		~UserRPNFunction() override;
@@ -29,9 +29,11 @@ class UserRPNFunction : public RPNFunction {
 			const std::string &name,
 			const std::vector<std::string> &argsName,
 			const RPNFunctionArgTypes &argsTypes,
-			RPNFunctionValueType returnType, 
+			RPNValueType returnType, 
 			CodeBlock *body
 		);
+
+		CodeBlock *getBody() const;
 
 		TextRange getRange() const;
 

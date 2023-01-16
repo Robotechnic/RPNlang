@@ -8,10 +8,6 @@ inline std::string None::getStringValue() const {
 	return "NONE";
 }
 
-bool None::isCastableTo(ValueType type) const {
-	return type == NONE || type == ANY || type == BOOL;
-}
-
 Value *None::to(ValueType type, ValueOwner owner) const {
 	if (type == NONE || type == ANY)
 		return new None(this->range, owner);

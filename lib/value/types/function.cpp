@@ -4,9 +4,6 @@ Function::Function(const RPNFunction* function, TextRange range, ValueOwner owne
 	Value(FUNCTION, range, owner, variableRange),
 	function(function) {}
 
-bool Function::isCastableTo(ValueType type) const {
-	return type == FUNCTION || type == STRING;
-}
 
 Value *Function::to(ValueType type, ValueOwner owner) const {
 	switch (type) {

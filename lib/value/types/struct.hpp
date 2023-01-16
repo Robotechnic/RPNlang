@@ -51,7 +51,6 @@ class Struct : public Value {
 		void setMember(std::string_view member, Value *value, ContextPtr context);
 		Value* getMember(std::string_view member);
 
-		bool isCastableTo(ValueType type) const;
 		bool isNumber() const;
 
 		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const;

@@ -73,7 +73,7 @@ void CppModule::addFunction(
 		const std::string &name,
 		const std::vector<std::string> &argsName,
 		const RPNFunctionArgTypes &argumentsTypes,
-		RPNFunctionValueType returnType,
+		RPNValueType returnType,
 		BuiltinRPNFunctionType function
 ) {
 	this->moduleFunctions.insert(

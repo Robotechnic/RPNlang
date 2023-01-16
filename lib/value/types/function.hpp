@@ -10,7 +10,6 @@ class Function : public Value {
 	public:
 		Function(const RPNFunction* function, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 
-		bool isCastableTo(ValueType type) const;
 		bool isNumber() const { return false; };
 
 		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;

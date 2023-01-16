@@ -21,9 +21,6 @@ size_t Path::size() const {
 	return this->path.size();
 }
 
-bool Path::isCastableTo(ValueType type) const {
-	return false;
-}
 bool Path::isNumber() const {
 	return false;
 }

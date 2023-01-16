@@ -13,10 +13,6 @@ List::~List() {
 	}
 }
 
-bool List::isCastableTo(ValueType type) const {
-	return type == ValueType::LIST || type == ValueType::STRING || type == ValueType::ANY;
-}
-
 bool List::isNumber() const {
 	return false;
 }
