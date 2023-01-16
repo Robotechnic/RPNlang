@@ -22,6 +22,16 @@ Token *Line::back() {
 	return this->tokens[this->tokens.size() - 1];
 }
 
+Token *Line::last() {
+	if (this->tokens.empty()) {
+		throw std::runtime_error("Line::last() called on empty stack");
+	}
+	if (this->currentToken == 0) {
+		return this->tokens[0];
+	}
+	return this->tokens[this->currentToken - 1];
+}
+
 bool Line::empty() const {
 	return this->currentToken >= this->tokens.size();
 }
