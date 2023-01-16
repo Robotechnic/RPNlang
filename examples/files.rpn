@@ -1,0 +1,27 @@
+"fs" :import
+
+path :fs.currentPath = f"Current path : {}\n" :print
+
+"Check if testFile.txt exists\n" :print
+filePath path "/testFile.txt" + = :fs.exists if
+	"testFile.txt exists\n" :print
+else
+	"testFile.txt does not exist\n" :print
+fi
+
+fileSize filePath :fs.size = if
+	fileSize f"testFile.txt size is {}b\n" :print
+else
+	"testFile.txt size is 0\n" :print
+fi
+
+"testFile.txt content :\n" :print
+file filePath "r" :fs.open =
+file :fs.charCount f"testFile.txt has {} characters\n" :print
+"File content :\n" :print
+c file :fs.get = while
+	c :print
+elihw
+"\nEnd of file\n" :print
+
+file :fs.close
