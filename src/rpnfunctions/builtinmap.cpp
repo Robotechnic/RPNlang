@@ -361,6 +361,31 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			);
 		}
 	)},
+	{"set", BuiltinRPNFunction (
+		"set",
+		{"list", "index", "value"},
+		{ValueType::LIST, ValueType::INT, ValueType::ANY},
+		ValueType::NONE,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			List *list = static_cast<List *>(args[0]);
+			Int *index = static_cast<Int *>(args[1]);
+			if (index->getValue() < 0 || index->getValue() >= list->size()) {
+				return std::make_pair(
+					ExpressionResult(
+						"Index out of range",
+						args[1]->getRange(),
+						context
+					),
+					None::empty()
+				);
+			}
+			list->set(index->getValue(), args[2]);
+			return std::make_pair(
+				ExpressionResult(),
+				None::empty()
+			);
+		}
+	)},
 	{"top", BuiltinRPNFunction(
 		"top",
 		{"value"},

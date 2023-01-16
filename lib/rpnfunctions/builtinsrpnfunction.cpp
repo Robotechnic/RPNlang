@@ -66,7 +66,7 @@ RPNFunctionResult BuiltinRPNFunction::call(
 		if (std::get<std::string>(this->returnType) != static_cast<Struct*>(result.second)->getStructName())
 			throw std::runtime_error("BuiltinRPNFunction::call: std::get<std::string>(this->returnType) != result.second->getStructName()");
 	} else {
-		if (result.second->getType() != std::get<ValueType>(this->returnType))
+		if (!result.second->isCastableTo(std::get<ValueType>(this->returnType)))
 			throw std::runtime_error("BuiltinRPNFunction::call: result.second->getType() != std::get<ValueType>(this->returnType)");
 	}
 

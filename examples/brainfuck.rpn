@@ -1,0 +1,68 @@
+"fs" :import
+"terminal" :import
+
+main -> none fun
+	filename "Source file : " :input =
+	filename :fs.exists :not if
+		"File not found\n" :print
+		1 :exit
+	fi
+	sourceFile filename "r" :fs.open =
+	pointer 0 =
+	memory 0 1 list =
+	loopStack 0 list =
+	op true =
+	op while
+		op sourceFile :fs.get =
+		op "+" == if
+			memory pointer memory pointer :at 1 + :set
+		else op "-" == if
+			memory pointer memory pointer :at 1 - :set
+		else op ">" == if
+			pointer pointer 1 + =
+			memory :len pointer <= if
+				memory 0 :push
+			fi
+		else op "<" == if
+			pointer 0 <= if
+				"Error : pointer out of bounds\n" :print
+				1 :exit
+			fi
+			pointer pointer 1 - =
+		else op "." == if
+			memory pointer :at :chr :print
+		else op "," == if
+			"Input : " :print
+			memory pointer :getChr :ord :set
+		else op "[" == if
+			memory pointer :at 0 == if
+				openBrackets 1 =
+				sourceFile :fs.eof :not openBrackets 0 != :and while
+					op sourceFile :fs.get =
+					op "[" == if
+						openBrackets openBrackets 1 + =
+					else op "]" == if
+						openBrackets openBrackets 1 - =
+					fi fi
+				elihw
+				sourceFile :fs.eof if
+					"Error : unmatched [\n" :print
+					1 :exit
+				fi
+			else
+				loopStack sourceFile :fs.tellp :push
+			fi
+		else op "]" == if
+			loopStack :len 0 == if
+				"Error : unmatched ]\n" :print
+				1 :exit
+			fi
+			memory pointer :at 0 == if
+				loopStack :pop
+			else
+				sourceFile loopStack :top true :fs.seekp
+			fi
+		fi fi fi fi fi fi fi fi
+	elihw
+	sourceFile :fs.close
+nuf
