@@ -23,6 +23,16 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			return std::make_pair(ExpressionResult(), new String(input, range, Value::INTERPRETER));
 		}
 	)},
+	{"getChr", BuiltinRPNFunction(
+		"getChr",
+		{},
+		{},
+		ValueType::STRING,
+		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+			char c = std::getchar();
+			return std::make_pair(ExpressionResult(), new String(std::string(1, c), range, Value::INTERPRETER));
+		}
+	)},
 	{"len", BuiltinRPNFunction(
 		"len",
 		{"value"},
