@@ -306,22 +306,51 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 	{"at", BuiltinRPNFunction(
 		"at",
 		{"value", "index"},
-		{ValueType::LIST, ValueType::INT},
+		{ValueType::ANY, ValueType::INT},
 		ValueType::ANY,
 		[](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-			List *list = static_cast<List *>(args[0]);
 			Int *index = static_cast<Int *>(args[1]);
-			if (index->getValue() < 0 || index->getValue() >= list->size()) {
+			Value *value = nullptr;
+			if (args[0]->getType() == ValueType::LIST) {
+				List *list = static_cast<List *>(args[0]);
+				if (index->getValue() < 0 || index->getValue() >= list->size()) {
+					return std::make_pair(
+						ExpressionResult(
+							"Index out of range",
+							args[1]->getRange(),
+							context
+						),
+						static_cast<Value*>(None::empty())
+					);
+				}
+				value = list->at(index->getValue());
+			} else if (args[0]->getType() == ValueType::STRING) {
+				std::string string = args[0]->getStringValue();
+				if (index->getValue() < 0 || index->getValue() >= string.size()) {
+					return std::make_pair(
+						ExpressionResult(
+							"Index out of range",
+							args[1]->getRange(),
+							context
+						),
+						static_cast<Value*>(None::empty())
+					);
+				}
+				TextRange charRange = args[0]->getRange();
+				charRange.columnStart += index->getValue();
+				charRange.columnEnd = charRange.columnStart + 1;
+				value = new String(std::string(string[index->getValue()], 1), charRange, Value::INTERPRETER);
+			} else {
 				return std::make_pair(
 					ExpressionResult(
-						"Index out of range",
-						args[1]->getRange(),
+						"Expected list or string as first argument",
+						args[0]->getRange(),
 						context
 					),
 					static_cast<Value*>(None::empty())
 				);
 			}
-			Value *value = list->at(index->getValue());
+			
 			value->setVariableRange(TextRange::merge(
 				args[0]->getRange(),
 				range
