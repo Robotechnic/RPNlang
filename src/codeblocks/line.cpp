@@ -68,10 +68,15 @@ LineIterator Line::begin() {
 	return LineIterator(this);
 }
 
+LineIterator Line::end() {
+	return LineIterator(this, this->tokens.size());
+}
+
 // Iterator implementation
 
 LineIterator::LineIterator(Line *line) : line(line), currentToken(0) {}
 LineIterator::LineIterator(const LineIterator &other) : line(other.line), currentToken(other.currentToken) {}
+LineIterator::LineIterator(Line *line, long unsigned int currentToken) : line(line), currentToken(currentToken) {}
 LineIterator::~LineIterator() {}
 
 LineIterator &LineIterator::operator=(const LineIterator &other) {
@@ -92,6 +97,10 @@ LineIterator LineIterator::operator++(int) {
 }
 
 Token *LineIterator::operator*() {
+	return this->line->tokens[this->currentToken];
+}
+
+Token *LineIterator::operator->() {
 	return this->line->tokens[this->currentToken];
 }
 

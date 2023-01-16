@@ -14,6 +14,10 @@ Value *&ValueToken::getValue() {
 	return this->value;
 }
 
+ValueType ValueToken::getValueType() const {
+	return this->value->getType();
+}
+
 inline std::string ValueToken::getStringValue() const {
 	return this->value->getStringValue();
 }

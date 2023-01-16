@@ -16,7 +16,6 @@
 #include "codeblocks/line.hpp"
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/functionblock.hpp"
-#include "codeblocks/structblock.hpp"
 
 #include "value/value.hpp"
 #include "value/types.hpp"

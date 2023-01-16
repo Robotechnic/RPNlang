@@ -23,6 +23,7 @@ class Line : public BaseBlock {
 		TextRange lineRange() const;
 
 		LineIterator begin();
+		LineIterator end();
 
 	private:
 		std::vector<Token*> tokens;
@@ -40,6 +41,7 @@ class LineIterator {
 		LineIterator &operator++();
 		LineIterator operator++(int);
 		Token *operator*();
+		Token *operator->();
 		bool operator==(const LineIterator &other) const;
 		bool operator!=(const LineIterator &other) const;
 		operator bool() const;
@@ -48,6 +50,9 @@ class LineIterator {
 		const Line* getLineConst() const;
 
 	private:
+		LineIterator(Line *line, long unsigned int currentToken);
 		Line *line;
 		long unsigned int currentToken;
+
+		friend class Line;
 };

@@ -382,10 +382,8 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 			if (result.error()) return result;
 			block = function;
 		} else if (name == KEYWORD_STRUCT) {
-			auto [result, structDefinition] = this->parseStruct(static_cast<CodeBlock*>(block));
-			if (result.error()) return result;
-			delete block;
-			block = structDefinition;
+			ExpressionResult result = this->parseStruct(static_cast<CodeBlock*>(block));
+			return result;
 		}
 
 		if (!this->keywordBlockStack.empty()) {
@@ -565,9 +563,6 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(CodeBlock *bloc
 		line->top()->getRange(),
 		this->context
 	), nullptr);
-	
-
-	
 }
 
 /**
@@ -581,90 +576,91 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(CodeBlock *bloc
  * tcurts
  * 
  * @param block the struct definition block
- * @return std::pair<ExpressionResult, StructBlock*> if the struct is correct and the struct block
+ * @return ExpressionResult if the struct is correct and the struct block
  */
-std::pair<ExpressionResult, StructBlock*> Lexer::parseStruct(CodeBlock *block) {
+ExpressionResult Lexer::parseStruct(CodeBlock *block) {
 	if (this->codeBlocks.empty()) {
-		return std::make_pair(ExpressionResult(
+		return ExpressionResult(
 			"Exepcted struct name before struct block",
 			block->getRange(),
 			this->context
-		), nullptr);
+		);
 	}
 	std::unique_ptr<Line>line {static_cast<Line*>(this->codeBlocks.popBack())};
 	if (line->size() < 1) {
-		return std::make_pair(ExpressionResult(
+		return ExpressionResult(
 			"Expected struct name before struct block",
 			block->getRange(),
 			this->context
-		), nullptr);
+		);
 	}
 	if (line->size() != 1) {
-		return std::make_pair(ExpressionResult(
+		return ExpressionResult(
 			"Expected only struct name before struct block",
 			line->top()->getRange(),
 			this->context
-		), nullptr);
+		);
 	}
 	if (line->top()->getType() != TOKEN_TYPE_STRUCT_NAME) {
-		return std::make_pair(ExpressionResult(
+		return ExpressionResult(
 			"Expected struct name before struct block",
 			line->top()->getRange(),
 			this->context
-		), nullptr);
+		);
 	}
 
 	std::string_view name = line->top()->getStringValue();
 	StructDefinition def(name);
 	if (block->size() == 0) {
-		return std::make_pair(ExpressionResult(
+		return ExpressionResult(
 			"Struct definition must contain at least one member",
 			block->getRange(),
 			this->context
-		), nullptr);
+		);
 	}
 	for (BaseBlock *b : *block) {
 		if (b->getType() != LINE_BLOCK) {
-			return std::make_pair(ExpressionResult(
+			return ExpressionResult(
 				"Struct member definition must be in the form 'name -> type'",
 				b->lastRange(),
 				this->context
-			), nullptr);
+			);
 		}
 		Line *l = static_cast<Line *>(b);
 		if (l->size() != 3) {
-			return std::make_pair(ExpressionResult(
+			return ExpressionResult(
 				"Struct member definition must be in the form 'name -> type'",
 				l->size() != 0 ? l->lineRange() : line->top()->getRange(),
 				this->context
-			), nullptr);
+			);
 		}
 		if (l->top()->getType() != TOKEN_TYPE_LITERAL) {
-			return std::make_pair(ExpressionResult(
+			return ExpressionResult(
 				"Struct member name must be a literal",
 				l->top()->getRange(),
 				this->context
-			), nullptr);
+			);
 		}
 		Token *name = l->pop();
 		if (l->top()->getType() != TOKEN_TYPE_ARROW) {
-			return std::make_pair(ExpressionResult(
+			return ExpressionResult(
 				"Struct member definition must be in the form 'name -> type'",
 				l->top()->getRange(),
 				this->context
-			), nullptr);
+			);
 		}
 		l->pop();
 		if (l->top()->getType() != TOKEN_TYPE_VALUE_TYPE) {
-			return std::make_pair(ExpressionResult(
+			return ExpressionResult(
 				"Struct member type must be a value type",
 				l->top()->getRange(),
 				this->context
-			), nullptr);
+			);
 		}
 		def.addMember(name->getStringValue(), static_cast<TypeToken*>(l->pop())->getValueType());
 	}
-	return std::make_pair(ExpressionResult(), new StructBlock(def));
+	Struct::addStructDefinition(def);
+	return ExpressionResult();
 }
 
 /**

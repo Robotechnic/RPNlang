@@ -55,7 +55,7 @@ class Lexer {
 		ExpressionResult parseStructAccess(Token *token);
 		ExpressionResult parseKeyword(Token *token);
 		std::pair<ExpressionResult, FunctionBlock*> parseFunction(CodeBlock *block);
-		std::pair<ExpressionResult, StructBlock*> parseStruct(CodeBlock *block);
+		ExpressionResult parseStruct(CodeBlock *block);
 		ExpressionResult parseFunctionCall(const Token *token);
 
 	private:

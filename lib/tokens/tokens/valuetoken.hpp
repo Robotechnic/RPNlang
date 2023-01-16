@@ -9,6 +9,7 @@ class ValueToken : public Token {
 		~ValueToken();
 
 		Value *&getValue();
+		ValueType getValueType() const;
 
 		inline std::string getStringValue() const override;
 
