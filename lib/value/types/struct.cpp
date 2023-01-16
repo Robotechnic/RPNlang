@@ -19,13 +19,13 @@ void StructDefinition::operator=(StructDefinition &other) {
 	this->memberOrder = other.memberOrder;
 }
 
-void StructDefinition::addMember(std::string_view name, ValueType type) {
+void StructDefinition::addMember(std::string_view name, RPNValueType type) {
 	std::string nameStr = std::string(name);
 	this->members[nameStr] = type;
 	this->memberOrder.push_back(nameStr.data());
 }
 
-bool StructDefinition::hasMember(std::string_view name, ValueType *memberType) const {
+bool StructDefinition::hasMember(std::string_view name, RPNValueType *memberType) const {
 	auto it = this->members.find(std::string(name));
 	if (it == this->members.end()) {
 		return false;
@@ -40,9 +40,27 @@ std::string StructDefinition::getName() const {
 	return this->name;
 }
 
+size_t StructDefinition::getMembersCount() const {
+	return this->members.size();
+}
+
+std::vector<std::string> StructDefinition::getMembersOrder() const {
+	return this->memberOrder;
+}
+
+RPNValueType StructDefinition::getMemberType(std::string_view name) const {
+	return this->members.at(std::string(name));
+}
+
 void StructDefinition::display(std::ostream &stream) const {
 	for (const std::string &key : this->memberOrder) {
-		stream << "\t" << key << " -> " << Value::stringType(this->members.at(key)) << std::endl;
+		stream << "\t" << key << " -> ";
+		if (this->members.at(key).index() == 0) {
+			stream << std::get<std::string>(this->members.at(key));
+		} else {
+			stream << std::get<ValueType>(this->members.at(key));
+		}
+		stream << std::endl;
 	}
 }
 
@@ -79,23 +97,44 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 	}
 	auto it = members.begin();
 	for (const std::string &key : this->definition->memberOrder) {
-		ValueType type = this->definition->members.at(key);
-		if (!Value::isCastableTo((*it)->getType(), type)) {
-			return ExpressionResult(
-				"Struct " + this->definition->name + " member " + key + 
-				" is of type " + Value::stringType(type) + " but " + (*it)->getStringType() + " was given",
-				(*it)->getRange(),
-				context
-			);
+		RPNValueType type = this->definition->members.at(key);
+		if (type.index() == 0) {
+			if ((*it)->getType() != STRUCT) {
+				return ExpressionResult(
+					"Struct " + this->definition->name + " member " + key + 
+					" is of type " + std::get<std::string>(type) + " but " + (*it)->getStringType() + " was given",
+					(*it)->getRange(),
+					context
+				);
+			}
+			Struct *structValue = static_cast<Struct*>(*it);
+			if (structValue->definition->name != std::get<std::string>(type)) {
+				return ExpressionResult(
+					"Struct " + this->definition->name + " member " + key + 
+					" is of type " + std::get<std::string>(type) + " but " + std::string(structValue->getStructName()) + " was given",
+					(*it)->getRange(),
+					context
+				);
+			}
+			(*this->members)[key] = (*it)->copy(OBJECT_VALUE);
+		} else {
+			if (!Value::isCastableTo((*it)->getType(), std::get<ValueType>(type))) {
+				return ExpressionResult(
+					"Struct " + this->definition->name + " member " + key + 
+					" is of type " + Value::stringType(std::get<ValueType>(type)) + " but " + (*it)->getStringType() + " was given",
+					(*it)->getRange(),
+					context
+				);
+			}
+			(*this->members)[key] = (*it)->to(std::get<ValueType>(type), Value::OBJECT_VALUE);
 		}
-		(*this->members)[key] = (*it)->to(type, Value::OBJECT_VALUE);
 		it++;
 	}
 	return ExpressionResult();
 }
 
 ExpressionResult Struct::setMember(const Path *member, Value *value, ContextPtr context, Value **hold) {
-	ValueType memberType;
+	RPNValueType memberType;
 	if (!this->definition->hasMember(member->ats(member->size() - 1), &memberType)) {
 		return ExpressionResult(
 			"Struct " + this->definition->name + " has no member named " + member->ats(member->size() - 1),
@@ -110,10 +149,28 @@ ExpressionResult Struct::setMember(const Path *member, Value *value, ContextPtr 
 			context
 		);
 	}
-	if (memberType != value->getType()) {
+	if (memberType.index() == 0) {
+		if (value->getType() != STRUCT) {
+			return ExpressionResult(
+				"Struct " + this->definition->name + " member " + member->ats(member->size() - 1) + 
+				" is of type struct but " + value->getStringType() + " was given",
+				value->getRange(),
+				context
+			);
+		}
+		Struct *structValue = static_cast<Struct*>(value);
+		if (structValue->definition->name != std::get<std::string>(memberType)) {
+			return ExpressionResult(
+				"Struct " + this->definition->name + " member " + member->ats(member->size() - 1) + 
+				" is of type " + std::get<std::string>(memberType) + " but " + std::string(structValue->getStructName()) + " was given",
+				value->getRange(),
+				context
+			);
+		}
+	} else if (std::get<ValueType>(memberType) != value->getType()) {
 		return ExpressionResult(
 			"Struct " + this->definition->name + " member " + member->ats(member->size() - 1) + 
-			" is of type " + value->getStringType() + " but " + value->getStringType() + " was given",
+			" is of type " + Value::stringType(std::get<ValueType>(memberType)) + " but " + value->getStringType() + " was given",
 			value->getRange(),
 			context
 		);
@@ -131,8 +188,7 @@ ExpressionResult Struct::setMember(const Path *member, Value *value, ContextPtr 
 }
 
 ExpressionResult Struct::getMember(const Path *member, Value *&value, ContextPtr context) {
-	ValueType memberType;
-	if (!this->definition->hasMember(member->ats(member->size() - 1), &memberType)) {
+	if (!this->definition->hasMember(member->ats(member->size() - 1), nullptr)) {
 		return ExpressionResult(
 			"Struct " + this->definition->name + " has no member named " + member->ats(member->size() - 1),
 			member->getRange(),
@@ -211,6 +267,10 @@ int Struct::getStructMembersCount(std::string_view structName) {
 
 bool Struct::structExists(std::string_view name) {
 	return Struct::definitions.find(std::string(name)) != Struct::definitions.end();
+}
+
+StructDefinition Struct::getStructDefinition(std::string_view structName) {
+	return Struct::definitions.at(std::string(structName));
 }
 
 ExpressionResult Struct::getStruct(const Path *path, Value *&structValue, ContextPtr context) {

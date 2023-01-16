@@ -21,15 +21,18 @@ class StructDefinition final {
 
 		void operator=(StructDefinition &other);
 
-		void addMember(std::string_view name, ValueType type);
-		bool hasMember(std::string_view name, ValueType *memberType = nullptr) const;
+		void addMember(std::string_view name, RPNValueType type);
+		bool hasMember(std::string_view name, RPNValueType *memberType = nullptr) const;
 
 		std::string getName() const;
 		void display(std::ostream &stream) const;
+		size_t getMembersCount() const;
+		std::vector<std::string> getMembersOrder() const;
+		RPNValueType getMemberType(std::string_view name) const;
 
 	private:
 		std::string name;
-		std::unordered_map<std::string, ValueType> members;
+		std::unordered_map<std::string, RPNValueType> members;
 		std::vector<std::string> memberOrder;
 
 		friend class Struct;
@@ -80,6 +83,7 @@ class Struct : public Value {
 		static void addStructDefinition(StructDefinition &definition);
 		static int  getStructMembersCount(std::string_view structName);
 		static bool structExists(std::string_view structName);
+		static StructDefinition getStructDefinition(std::string_view structName);
 		static ExpressionResult getStruct(const Path *path, Value *&structValue, ContextPtr context);
 
 		bool immutable;
