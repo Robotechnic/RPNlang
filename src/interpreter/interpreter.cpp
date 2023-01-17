@@ -63,11 +63,11 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 			const RPNFunction* func = val->getValue();
 			RPNFunctionArgs args;
 			RPNFunctionResult mainResult = func->call(args, mainRange, this->context);
-			Value::deleteValue(&mainResult.second, Value::INTERPRETER);
-			if (std::get<0>(mainResult).error()) {
-				std::get<0>(mainResult).display();
+			if (result = *std::get_if<ExpressionResult>(&mainResult); result.error()) {
+				result.display();
 				return false;
 			}
+			Value::deleteValue(&std::get<Value*>(mainResult), Value::INTERPRETER);
 		}
 	}
 
@@ -485,17 +485,16 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 		if (result.error()) return result;
 		callResult = function->call(arguments, functionName->getRange(), ctx);
 	}
+	if (result = *std::get_if<0>(&callResult); result.error()) return result;
+	Value *callReturnValue = std::get<Value*>(callResult);
 	if (arguments.size() > 0)
-		callResult.second->setVariableRange(TextRange::merge(functionName->getRange(), arguments.front()->getRange()));
+		callReturnValue->setVariableRange(TextRange::merge(functionName->getRange(), arguments.front()->getRange()));
 	else
-		callResult.second->setVariableRange(functionName->getRange());
+		callReturnValue->setVariableRange(functionName->getRange());
 	for (Value *value : arguments)
 		Value::deleteValue(&value, Value::INTERPRETER);
-	if (std::get<0>(callResult).error()) {
-		Value::deleteValue(&callResult.second, Value::INTERPRETER);
-		return std::get<0>(callResult);
-	}
-	this->memory.push(callResult.second);
+
+	this->memory.push(callReturnValue);
 	return ExpressionResult();
 }
 

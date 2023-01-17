@@ -5,6 +5,9 @@
 #include <stack>
 #include <tuple>
 
+#include "analyzer/analyzer.hpp"
+#include "expressionresult/expressionresult.hpp"
+#include "textutilities/escapecharacters.hpp"
 #include "tokens/token.hpp"
 #include "tokens/tokentypes.hpp"
 #include "tokens/keywords.hpp"
@@ -12,17 +15,13 @@
 #include "tokens/tokens/fstringtoken.hpp"
 #include "tokens/tokens/valuetoken.hpp"
 #include "tokens/tokens/operatortoken.hpp"
-
-#include "expressionresult/expressionresult.hpp"
-#include "textutilities/escapecharacters.hpp"
+#include "value/value.hpp"
+#include "value/valuetypes.hpp"
 #include "codeblocks/blockqueue.hpp"
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/line.hpp"
 #include "codeblocks/functionblock.hpp"
 
-
-#include "value/value.hpp"
-#include "value/valuetypes.hpp"
 
 class FunctionBlock;
 
@@ -63,6 +62,7 @@ class Lexer {
 		std::queue<Token*> tokens;
 		std::stack<CodeBlock*> keywordBlockStack;
 		BlockQueue codeBlocks;
+		Analyzer analyzer;
 		/**
 		 * @brief this member allow to track if the last token was used directly by the lexer so,
 		 * it allow to know it is necessary to clean the memory after token usage

@@ -11,10 +11,9 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinmap.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/userrpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/modules/module.cpp
-)
 
-list(APPEND sources
 	# code processing
+	${CMAKE_CURRENT_LIST_DIR}/analyzer/analyzer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/lexer/lexer.cpp
 	${CMAKE_CURRENT_LIST_DIR}/interpreter/memory.cpp
 	${CMAKE_CURRENT_LIST_DIR}/interpreter/interpreter.cpp

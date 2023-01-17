@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <tuple>
 #include <functional>
 #include <memory>
 #include <variant>
@@ -14,7 +13,7 @@ class Context;
 class TextRange;
 
 typedef std::vector<Value*> RPNFunctionArgs;
-typedef std::pair<ExpressionResult, Value*> RPNFunctionResult;
+typedef std::variant<ExpressionResult, Value*> RPNFunctionResult;
 typedef std::function<RPNFunctionResult(RPNFunctionArgs&, TextRange&, ContextPtr)> BuiltinRPNFunctionType;
 typedef std::variant<std::string, ValueType> RPNValueType;
 typedef std::vector<RPNValueType> RPNFunctionArgTypes;

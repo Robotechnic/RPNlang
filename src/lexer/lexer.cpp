@@ -3,7 +3,8 @@
 Lexer::Lexer(std::queue<Token*> tokens, ContextPtr context) :
 	context(context),
 	currentLine(new Line()),
-	tokens(tokens) {}
+	tokens(tokens),
+	analyzer(context) {}
 
 Lexer::~Lexer() {
 	delete this->currentLine;
@@ -17,7 +18,10 @@ void Lexer::pushLine() {
 	if (!this->keywordBlockStack.empty())
 		this->keywordBlockStack.top()->push(this->currentLine);
 	else
-		this->codeBlocks.push(currentLine);
+		this->codeBlocks.push(this->currentLine);
+
+	// if(this->keywordBlockStack.top()->getKeyword() != KEYWORD_FUN)
+	// 	this->analyzer.analyze(this->currentLine);
 
 	this->currentLine = new Line();
 }

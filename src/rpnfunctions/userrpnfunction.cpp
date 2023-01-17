@@ -28,8 +28,7 @@ RPNFunctionResult UserRPNFunction::call(
 	ContextPtr context
 ) const {
 	ExpressionResult result = this->checkTypes(args, context);
-	if (result.error()) 
-		return std::make_pair(result, None::empty());
+	if (result.error()) return result;
 
 	ContextPtr functionContext = std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
 	for (size_t i = 0; i < args.size(); i++) {
@@ -49,79 +48,63 @@ RPNFunctionResult UserRPNFunction::call(
 	Interpreter interpreter(functionContext);
 	result = interpreter.interpret(this->body->getBlocks());
 
-	if (result.error()) 
-		return std::make_pair(result, None::empty());
+	if (result.error()) return result;
 
 
 	//check the return type	
 	if (!result.returnValue()) {
 		if (this->returnType.index() == 0 || (this->returnType.index() == 1 && std::get<ValueType>(this->returnType) != NONE))
-			return std::make_pair(
-				ExpressionResult(
-					"Function " + this->name + " expected a return value of type " + 
-					(this->returnType.index() == 0 ? std::get<std::string>(this->returnType) : Value::stringType(std::get<ValueType>(this->returnType))) + 
-					", but no return value was found",
-					this->body->lastRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"Function " + this->name + " expected a return value of type " + 
+				(this->returnType.index() == 0 ? std::get<std::string>(this->returnType) : Value::stringType(std::get<ValueType>(this->returnType))) + 
+				", but no return value was found",
+				this->body->lastRange(),
+				context
 			);
 		
-		return std::make_pair(ExpressionResult(), None::empty());
+		return None::empty();
 	}
 
 	Value *returnValue = interpreter.getLastValue();
 	if (this->returnType.index() == 0) {
 		if (returnValue->getType() != STRUCT)
-			return std::make_pair(
-				ExpressionResult(
-					"Return type must be struct of type " + 
-					std::get<std::string>(this->returnType) + 
-					" but got " + Value::stringType(returnValue->getType()),
-					returnValue->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"Return type must be struct of type " + 
+				std::get<std::string>(this->returnType) + 
+				" but got " + Value::stringType(returnValue->getType()),
+				returnValue->getRange(),
+				context
 			);
 		
 		if (std::get<std::string>(this->returnType) != static_cast<Struct*>(returnValue)->getStructName())
-			return std::make_pair(
-				ExpressionResult(
-					"Return type must be struct of type " + 
-					std::get<std::string>(this->returnType) + 
-					" but got " + std::string(static_cast<Struct*>(returnValue)->getStructName()),
-					returnValue->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"Return type must be struct of type " + 
+				std::get<std::string>(this->returnType) + 
+				" but got " + std::string(static_cast<Struct*>(returnValue)->getStructName()),
+				returnValue->getRange(),
+				context
 			);
 
-		return std::make_pair(ExpressionResult(), returnValue->copy());
+		return returnValue->copy();
 	}
 	
 	if (std::get<ValueType>(this->returnType) == NONE) {
-		return std::make_pair(
-			ExpressionResult(
-				"Function " + this->name + " does not return any value",
-				this->body->lastRange(),
-				context
-			),
-			None::empty()
+		return ExpressionResult(
+			"Function " + this->name + " does not return any value",
+			this->body->lastRange(),
+			context
 		);
 	}
 
 	if (!Value::isCastableTo(returnValue->getType(), std::get<ValueType>(this->returnType))) {
-		return std::make_pair(
-			ExpressionResult(
-				"Return type must be " + Value::stringType(std::get<ValueType>(this->returnType)) + " but got " + Value::stringType(returnValue->getType()),
-				returnValue->getRange(),
-				context
-			),
-			None::empty()
+		return ExpressionResult(
+			"Return type must be " + Value::stringType(std::get<ValueType>(this->returnType)) + " but got " + Value::stringType(returnValue->getType()),
+			returnValue->getRange(),
+			context
 		);
 	}
 
-	return std::make_pair(ExpressionResult(), returnValue->to(std::get<ValueType>(this->returnType)));
+	return returnValue->to(std::get<ValueType>(this->returnType));
 }
 
 

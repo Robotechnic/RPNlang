@@ -6,23 +6,23 @@ ExpressionResult loader(CppModule *module) {
 	ExpressionResult result;
 	
 	module->addFunction(
-		"width", {}, {}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"width", {}, {}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			struct winsize w;
 			ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-			return std::make_pair(ExpressionResult(), new Int(w.ws_col, range, Value::INTERPRETER));
+			return new Int(w.ws_col, range, Value::INTERPRETER);
 		}
 	);
 
 	module->addFunction(
-		"height", {}, {}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"height", {}, {}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			struct winsize w;
 			ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-			return std::make_pair(ExpressionResult(), new Int(w.ws_row, range, Value::INTERPRETER));
+			return new Int(w.ws_row, range, Value::INTERPRETER);
 		}
 	);
 
 	module->addFunction(
-		"clear", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"clear", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// reset color and clear screen
 			std::cout << "\033[0m";
 			std::cout << "\033[2J";
@@ -31,114 +31,102 @@ ExpressionResult loader(CppModule *module) {
 			for (int i = 0; i < w.ws_row; i++) {
 				std::cout << "\033[" << i << ";0H ";
 			}
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"home", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"home", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// set cursor to top left of screen and reset colors
 			std::cout << "\033[0;0H";
 			std::cout << "\033[0m";
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"end", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"end", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// set cursor to bottom of screen
 			std::cout << "\033[9999;9999H";
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"flush", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"flush", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// flush output
 			std::cout << std::flush;
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"setPixelColor", {"x", "y", "color"}, {INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"setPixelColor", {"x", "y", "color"}, {INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			int pixel = static_cast<Int*>(args[2])->getValue();
 			if (pixel < 40 || pixel > 49) {
-				return std::make_pair(
-					ExpressionResult(
-						"Pixel color must be between 40 and 49",
-						args[2]->getRange(),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Pixel color must be between 40 and 49",
+					args[2]->getRange(),
+					context
 				);
 			}
 			std::cout << "\033[" << y << ";" << x << "H";
 			std::cout << "\033[" << pixel << "m ";
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"setRGBPixelColor", {"x","y","red", "blue", "green"}, {INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"setRGBPixelColor", {"x","y","red", "blue", "green"}, {INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			int red = static_cast<Int*>(args[2])->getValue();
 			int blue = static_cast<Int*>(args[3])->getValue();
 			int green = static_cast<Int*>(args[4])->getValue();
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			if (red < 0 || red > 255 || blue < 0 || blue > 255 || green < 0 || green > 255) {
-				return std::make_pair(
-					ExpressionResult(
-						"Pixel color must be between 0 and 255",
-						red < 0 || red > 255 ? args[0]->getRange() : (blue < 0 || blue > 255 ? args[1]->getRange() : args[2]->getRange()),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Pixel color must be between 0 and 255",
+					red < 0 || red > 255 ? args[0]->getRange() : (blue < 0 || blue > 255 ? args[1]->getRange() : args[2]->getRange()),
+					context
 				);
 			}
 			std::cout << "\033[" << y << ";" << x << "H";
 			std::cout << "\033[48;2;" << red << ";" << green << ";" << blue << "m ";
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"setAscii", {"x", "y", "letter", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"setAscii", {"x", "y", "letter", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			const std::string letter = args[2]->getStringValue();
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			int color = static_cast<Int*>(args[3])->getValue();
 			int background = static_cast<Int*>(args[4])->getValue();
 			if (color < 30 || color > 39) {
-				return std::make_pair(
-					ExpressionResult(
-						"Color must be between 30 and 39",
-						args[3]->getRange(),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Color must be between 30 and 39",
+					args[3]->getRange(),
+					context
 				);
 			}
 			if (background < 40 || background > 49) {
-				return std::make_pair(
-					ExpressionResult(
-						"Background must be between 40 and 49",
-						args[4]->getRange(),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Background must be between 40 and 49",
+					args[4]->getRange(),
+					context
 				);
 			}
 			std::cout << "\033[" << y << ";" << x << "H";
 			std::cout << "\033[" << color << ";" << background << "m" << letter;
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"setRGBAscii", {"x", "y", "letter", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"setRGBAscii", {"x", "y", "letter", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			const std::string letter = args[2]->getStringValue();
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
@@ -149,57 +137,45 @@ ExpressionResult loader(CppModule *module) {
 			int backgroundBlue = static_cast<Int*>(args[7])->getValue();
 			int backgroundGreen = static_cast<Int*>(args[8])->getValue();
 			if (red < 0 || red > 255 || blue < 0 || blue > 255 || green < 0 || green > 255) {
-				return std::make_pair(
-					ExpressionResult(
-						"Pixel color must be between 0 and 255",
-						red < 0 || red > 255 ? args[0]->getRange() : (blue < 0 || blue > 255 ? args[1]->getRange() : args[2]->getRange()),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Pixel color must be between 0 and 255",
+					red < 0 || red > 255 ? args[0]->getRange() : (blue < 0 || blue > 255 ? args[1]->getRange() : args[2]->getRange()),
+					context
 				);
 			}
 			if (backgroundRed < 0 || backgroundRed > 255 || backgroundBlue < 0 || backgroundBlue > 255 || backgroundGreen < 0 || backgroundGreen > 255) {
-				return std::make_pair(
-					ExpressionResult(
-						"Pixel color must be between 0 and 255",
-						backgroundRed < 0 || backgroundRed > 255 ? args[3]->getRange() : (backgroundBlue < 0 || backgroundBlue > 255 ? args[4]->getRange() : args[5]->getRange()),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Pixel color must be between 0 and 255",
+					backgroundRed < 0 || backgroundRed > 255 ? args[3]->getRange() : (backgroundBlue < 0 || backgroundBlue > 255 ? args[4]->getRange() : args[5]->getRange()),
+					context
 				);
 			}
 			if (letter.size() != 1) {
-				return std::make_pair(
-					ExpressionResult(
-						"Letter must be a single character",
-						args[0]->getRange(),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Letter must be a single character",
+					args[0]->getRange(),
+					context
 				);
 			}
 			std::cout << "\033[" << y << ";" << x << "H";
 			std::cout << "\033[38;2;" << red << ";" << green << ";" << blue << "m";
 			std::cout << "\033[48;2;" << backgroundRed << ";" << backgroundGreen << ";" << backgroundBlue << "m" << letter;
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"drawRect", {"x", "y", "width", "height", "color"}, {INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"drawRect", {"x", "y", "width", "height", "color"}, {INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			int width = static_cast<Int*>(args[2])->getValue();
 			int height = static_cast<Int*>(args[3])->getValue();
 			int color = static_cast<Int*>(args[4])->getValue();
 			if (color < 40 || color > 49) {
-				return std::make_pair(
-					ExpressionResult(
-						"Color must be between 40 and 49",
-						args[4]->getRange(),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Color must be between 40 and 49",
+					args[4]->getRange(),
+					context
 				);
 			}
 			std::cout << "\033[" << y << ";" << x << "H";
@@ -210,45 +186,39 @@ ExpressionResult loader(CppModule *module) {
 				}
 				std::cout << "\033[" << y + i + 1 << ";" << x << "H";
 			}
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"drawText", {"x", "y", "text", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"drawText", {"x", "y", "text", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			const std::string text = args[2]->getStringValue();
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			int color = static_cast<Int*>(args[3])->getValue();
 			int background = static_cast<Int*>(args[4])->getValue();
 			if (color < 30 || color > 39) {
-				return std::make_pair(
-					ExpressionResult(
-						"Color must be between 30 and 39",
-						args[3]->getRange(),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Color must be between 30 and 39",
+					args[3]->getRange(),
+					context
 				);
 			}
 			if (background < 40 || background > 49) {
-				return std::make_pair(
-					ExpressionResult(
-						"Background must be between 40 and 49",
-						args[4]->getRange(),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Background must be between 40 and 49",
+					args[4]->getRange(),
+					context
 				);
 			}
 			std::cout << "\033[" << y << ";" << x << "H";
 			std::cout << "\033[" << color << ";" << background << "m" << text;
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"drawTextRGB", {"x", "y", "text", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"drawTextRGB", {"x", "y", "text", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			const std::string text = args[0]->getStringValue();
 			int x = static_cast<Int*>(args[1])->getValue();
 			int y = static_cast<Int*>(args[2])->getValue();
@@ -259,29 +229,23 @@ ExpressionResult loader(CppModule *module) {
 			int backgroundBlue = static_cast<Int*>(args[7])->getValue();
 			int backgroundGreen = static_cast<Int*>(args[8])->getValue();
 			if (red < 0 || red > 255 || blue < 0 || blue > 255 || green < 0 || green > 255) {
-				return std::make_pair(
-					ExpressionResult(
-						"Pixel color must be between 0 and 255",
-						red < 0 || red > 255 ? args[0]->getRange() : (blue < 0 || blue > 255 ? args[1]->getRange() : args[2]->getRange()),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Pixel color must be between 0 and 255",
+					red < 0 || red > 255 ? args[0]->getRange() : (blue < 0 || blue > 255 ? args[1]->getRange() : args[2]->getRange()),
+					context
 				);
 			}
 			if (backgroundRed < 0 || backgroundRed > 255 || backgroundBlue < 0 || backgroundBlue > 255 || backgroundGreen < 0 || backgroundGreen > 255) {
-				return std::make_pair(
-					ExpressionResult(
-						"Pixel color must be between 0 and 255",
-						backgroundRed < 0 || backgroundRed > 255 ? args[3]->getRange() : (backgroundBlue < 0 || backgroundBlue > 255 ? args[4]->getRange() : args[5]->getRange()),
-						context
-					),
-					None::empty()
+				return ExpressionResult(
+					"Pixel color must be between 0 and 255",
+					backgroundRed < 0 || backgroundRed > 255 ? args[3]->getRange() : (backgroundBlue < 0 || backgroundBlue > 255 ? args[4]->getRange() : args[5]->getRange()),
+					context
 				);
 			}
 			std::cout << "\033[" << y << ";" << x << "H";
 			std::cout << "\033[38;2;" << red << ";" << green << ";" << blue << "m";
 			std::cout << "\033[48;2;" << backgroundRed << ";" << backgroundGreen << ";" << backgroundBlue << "m" << text;
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
@@ -290,7 +254,7 @@ ExpressionResult loader(CppModule *module) {
 	 * 
 	 */
 	module->addFunction(
-		"rawMode", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"rawMode", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			struct termios raw;
 			tcgetattr(STDIN_FILENO, &holdTermios);
 			raw = holdTermios;
@@ -301,7 +265,7 @@ ExpressionResult loader(CppModule *module) {
 			//hide the cursor
 			std::cout << "\033[?25l";
 			tcsetattr(STDIN_FILENO, TCSANOW, &raw);
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
@@ -310,11 +274,11 @@ ExpressionResult loader(CppModule *module) {
 	 * 
 	 */
 	module->addFunction(
-		"normalMode", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"normalMode", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			tcsetattr(STDIN_FILENO, TCSANOW , &holdTermios);
 			//show the cursor
 			std::cout << "\033[?25h";
-			return std::make_pair(ExpressionResult(), None::empty());
+			return None::empty();
 		}
 	);
 
@@ -323,12 +287,12 @@ ExpressionResult loader(CppModule *module) {
 	 * 
 	 */
 	module->addFunction(
-		"getKey", {}, {}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+		"getKey", {}, {}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			char input;
 			if (read(STDIN_FILENO, &input, 1) == 1) {
-				return std::make_pair(ExpressionResult(), new String(std::string(1, input), TextRange(), Value::INTERPRETER));
+				return new String(std::string(1, input), TextRange(), Value::INTERPRETER);
 			}
-			return std::make_pair(ExpressionResult(), new String("", TextRange(), Value::INTERPRETER));
+			return new String("", TextRange(), Value::INTERPRETER);
 		}
 	);
 

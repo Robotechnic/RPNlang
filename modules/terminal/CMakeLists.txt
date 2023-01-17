@@ -1,6 +1,6 @@
 add_library(terminal SHARED ${CMAKE_CURRENT_LIST_DIR}/terminal.cpp)
 target_link_libraries(terminal PRIVATE RPNlangLib)
-add_custom_command(
-	TARGET terminal POST_BUILD COMMAND
-	ln -sf ${CMAKE_CURRENT_BINARY_DIR}/libterminal.so ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules/terminal.so 2>/dev/null
+set_property(
+	TARGET terminal PROPERTY
+	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/RPNmodules
 )

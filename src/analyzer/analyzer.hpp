@@ -9,14 +9,16 @@
 #include "value/valuetypes.hpp"
 #include "value/types/numbers/int.hpp"
 #include "value/types/struct.hpp"
+#include "rpnfunctions/typedef.hpp"
 #include "tokens/token.hpp"
 #include "tokens/tokens/typetoken.hpp"
 #include "tokens/tokens/operatortoken.hpp"
 #include "tokens/tokens/valuetoken.hpp"
 #include "tokens/tokens/fstringtoken.hpp"
-#include "codeblocks/line.hpp"
-#include "codeblocks/codeblock.hpp"
-#include "codeblocks/functionblock.hpp"
+
+class FunctionBlock;
+class Line;
+class CodeBlock;
 
 struct AnalyzerValueType {
 	RPNValueType type;
@@ -61,3 +63,8 @@ class Analyzer final {
 		static bool isComparisonOperator(OperatorToken::OperatorTypes operatorType);
 		static std::optional<ValueType> getOperatorType(ValueType left, ValueType right, const OperatorToken *operatorToken);
 };
+
+
+#include "codeblocks/line.hpp"
+#include "codeblocks/codeblock.hpp"
+#include "codeblocks/functionblock.hpp"

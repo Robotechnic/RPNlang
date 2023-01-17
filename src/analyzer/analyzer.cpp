@@ -107,6 +107,7 @@ void Analyzer::analyze(FunctionBlock *functionBlock) {
 
 void Analyzer::analyseFunctionsBody() {
 	while (!functionBlocks.empty() && !this->hasErrors()) {
+		// TODO : create separated variables context
 		this->analyze(functionBlocks.front());
 		functionBlocks.pop();
 	}
@@ -296,7 +297,7 @@ void Analyzer::analyzeTypeCast(const TypeToken *token) {
 	}
 	AnalyzerValueType type = stack.top();
 	stack.pop();
-	if (token->getType() == LIST && type.type.index() == 1 && std::get<ValueType>(type.type) == INT) {
+	if (token->getValueType() == LIST && type.type.index() == 1 && std::get<ValueType>(type.type) == INT) {
 		return this->analyzeListCreation(token);
 	}
 	
@@ -324,7 +325,7 @@ void Analyzer::analyzeListCreation(const TypeToken *token) {
 		);
 		return;
 	}
-	if (stack.size() < size) {
+	if (stack.size() < (size_t)size) {
 		this->error = ExpressionResult(
 			"Not enough values for list creation, expected " + std::to_string(size) + " but got " + std::to_string(this->stack.size()),
 			token->getRange(),

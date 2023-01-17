@@ -41,119 +41,88 @@ ExpressionResult checkOpenMode(std::string_view strMode, const TextRange &range,
 }
 
 ExpressionResult loader(CppModule *module) {
-	module->addFunction("exists", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(fs::exists(args[0]->getStringValue()), range, Value::INTERPRETER)
+	module->addFunction("exists", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		return new Bool(
+			fs::exists(args[0]->getStringValue()), range, Value::INTERPRETER
 		);
 	});
 
-	module->addFunction("currentPath", {}, {}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("currentPath", {}, {}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		std::string path = fs::current_path(ec);
 		
 		if (ec) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				String::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
 
-		return std::make_pair(
-			ExpressionResult(),
-			new String(path, range, Value::INTERPRETER)
-		);
+		return new String(path, range, Value::INTERPRETER);
 	});
 	
-	module->addFunction("size", {"filename"}, {STRING}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("size", {"filename"}, {STRING}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		uintmax_t size = fs::file_size(args[0]->getStringValue(), ec);
 		
 		if (ec) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				Int::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
 
-		return std::make_pair(
-			ExpressionResult(),
-			new Int(size, range, Value::INTERPRETER)
-		);
+		return new Int(size, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("createDirectory", {"dirName"}, {STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("createDirectory", {"dirName"}, {STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool success = fs::create_directory(args[0]->getStringValue(), ec);
 		
 		if (!success) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
 
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
-	module->addFunction("remove", {"filename"}, {STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("remove", {"filename"}, {STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool success = fs::remove(args[0]->getStringValue(), ec);
 		
 		if (!success) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
 
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
-	module->addFunction("rename", {"oldName", "newName"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("rename", {"oldName", "newName"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		fs::rename(args[0]->getStringValue(), args[1]->getStringValue(), ec);
 		
 		if (ec) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
 
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
-	module->addFunction("copy", {"source", "destination"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("copy", {"source", "destination"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		fs::copy(
 			args[0]->getStringValue(), 
@@ -163,117 +132,81 @@ ExpressionResult loader(CppModule *module) {
 		);
 		
 		if (ec) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
 
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
-	module->addFunction("copyFile", {"source", "destination"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("copyFile", {"source", "destination"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool success = fs::copy_file(args[0]->getStringValue(), args[1]->getStringValue(), ec);
 		
 		if (!success) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
 
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
-	module->addFunction("isFile", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("isFile", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool result = fs::is_regular_file(args[0]->getStringValue(), ec);
 		if (ec) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				Bool::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(result, range, Value::INTERPRETER)
-		);
+		return new Bool(result, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("isDir", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("isDir", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool result = fs::is_directory(args[0]->getStringValue(), ec);
 		if (ec) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				Bool::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(result, range, Value::INTERPRETER)
-		);
+		return new Bool(result, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("isSymlink", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("isSymlink", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool result = fs::is_symlink(args[0]->getStringValue(), ec);
 		if (ec) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				Bool::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(result, range, Value::INTERPRETER)
-		);
+		return new Bool(result, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("isEmpty", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("isEmpty", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool result = fs::is_empty(args[0]->getStringValue(), ec);
 		if (ec) {
-			return std::make_pair(
-				ExpressionResult(
-					ec.message(),
-					range,
-					context
-				),
-				Bool::empty()
+			return ExpressionResult(
+				ec.message(),
+				range,
+				context
 			);
 		}
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(result, range, Value::INTERPRETER)
-		);
+		return new Bool(result, range, Value::INTERPRETER);
 	});
 
 	StructDefinition fileDefinition("File");
@@ -286,32 +219,26 @@ ExpressionResult loader(CppModule *module) {
 	fileDefinition.addMember("append", BOOL);
 	Struct::addStructDefinition(fileDefinition);
 
-	module->addFunction("open", {"filename", "mode"}, {STRING, STRING}, "File", [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("open", {"filename", "mode"}, {STRING, STRING}, "File", [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::ios_base::openmode mode;
 		std::string modeStr = args[1]->getStringValue();
 		ExpressionResult result = checkOpenMode(modeStr, range, context, mode);
 		if (result.error()) {
-			return std::make_pair(result, static_cast<Value*>(None::empty()));
+			return result;
 		}
 		std::shared_ptr<std::fstream> file = std::make_shared<std::fstream>();
 		file->open(args[0]->getStringValue(), mode);
 		if (file->bad()) {
-			return std::make_pair(
-				ExpressionResult(
-					"Failed to open file, can't read / write",
-					range,
-					context
-				),
-				static_cast<Value*>(None::empty())
+			return ExpressionResult(
+				"Failed to open file, can't read / write",
+				range,
+				context
 			);
 		} else if (file->fail() || !file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"Failed to open file",
-					range,
-					context
-				),
-				static_cast<Value*>(None::empty())
+			return ExpressionResult(
+				"Failed to open file",
+				range,
+				context
 			);
 		}
 		Struct *fileStruct = new Struct(range, "File", Value::INTERPRETER);
@@ -339,58 +266,43 @@ ExpressionResult loader(CppModule *module) {
 			"append", new Bool(mode & std::ios_base::app, range, Value::INTERPRETER), context
 		);
 		fileStruct->setData(file);
-		return std::make_pair(
-			ExpressionResult(),
-			static_cast<Value*>(fileStruct)
-		);
+		return fileStruct;
 	});
 
-	module->addFunction("eof", {"file"}, {"File"}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("eof", {"file"}, {"File"}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				Bool::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(file->eof(), range, Value::INTERPRETER)
-		);
+		return new Bool(file->eof(), range, Value::INTERPRETER);
 	});
 
 	/*
 	 * READ FUNCTIONS
 	*/
 
-	module->addFunction("charCount", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("charCount", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is readable
 		if (!static_cast<Bool*>(fileStruct->getMember("readable"))->getValue()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not readable",
-					args[0]->getRange(),
-					context
-				),
-				Int::empty()
+			return ExpressionResult(
+				"File is not readable",
+				args[0]->getRange(),
+				context
 			);
 		}
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				Int::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		int currentPos = file->tellg();
@@ -398,319 +310,226 @@ ExpressionResult loader(CppModule *module) {
 		int size = file->tellg();
 		file->seekg(currentPos, std::ios::beg);
 
-		return std::make_pair(
-			ExpressionResult(),
-			new Int(size, range, Value::INTERPRETER)
-		);
+		return new Int(size, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("get", {"file"}, {"File"}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("get", {"file"}, {"File"}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is readable
 		if (!static_cast<Bool*>(fileStruct->getMember("readable"))->getValue()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not readable",
-					args[0]->getRange(),
-					context
-				),
-				String::empty()
+			return ExpressionResult(
+				"File is not readable",
+				args[0]->getRange(),
+				context
 			);
 		}
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				String::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		char c;
-		if (!file->get(c)) {
-			return std::make_pair(
-				ExpressionResult(),
-				String::empty()
-			);
-		}
-		return std::make_pair(
-			ExpressionResult(),
-			new String(std::string(1, c), range, Value::INTERPRETER)
-		);
+		if (!file->get(c))
+			return String::empty();
+		
+		return new String(std::string(1, c), range, Value::INTERPRETER);
 	});
 
-	module->addFunction("getb", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("getb", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is readable
 		if (!static_cast<Bool*>(fileStruct->getMember("readable"))->getValue()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not readable",
-					args[0]->getRange(),
-					context
-				),
-				Int::empty()
+			return ExpressionResult(
+				"File is not readable",
+				args[0]->getRange(),
+				context
 			);
 		}
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				Int::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		char c;
-		if (!file->get(c)) {
-			return std::make_pair(
-				ExpressionResult(),
-				Int::empty()
-			);
-		}
-		return std::make_pair(
-			ExpressionResult(),
-			new Int(c, range, Value::INTERPRETER)
-		);
+		if (!file->get(c))
+			return Int::empty();
+		
+		return new Int(c, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("getLine", {"file"}, {"File"}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("getLine", {"file"}, {"File"}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is readable
 		if (!static_cast<Bool*>(fileStruct->getMember("readable"))->getValue()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not readable",
-					args[0]->getRange(),
-					context
-				),
-				String::empty()
+			return ExpressionResult(
+				"File is not readable",
+				args[0]->getRange(),
+				context
 			);
 		}
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		// check if the file is open
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				String::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		std::string line;
 		if (!std::getline(*file, line)) {
-			return std::make_pair(
-				ExpressionResult(
-					"End of file",
-					args[0]->getRange(),
-					context
-				),
-				String::empty()
+			return ExpressionResult(
+				"End of file",
+				args[0]->getRange(),
+				context
 			);
 		}
-		return std::make_pair(
-			ExpressionResult(),
-			new String(line, range, Value::INTERPRETER)
-		);
+		return new String(line, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("tellg", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("tellg", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				Int::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
-		return std::make_pair(
-			ExpressionResult(),
-			new Int(file->tellg(), range, Value::INTERPRETER)
-		);
+		return new Int(file->tellg(), range, Value::INTERPRETER);
 	});
 
-	module->addFunction("seekg", {"file", "pos", "beg"}, {"File", INT, BOOL}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("seekg", {"file", "pos", "beg"}, {"File", INT, BOOL}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		file->seekg(static_cast<Int*>(args[1])->getValue(), static_cast<Bool*>(args[2])->getValue() ? std::ios::beg : std::ios::end);
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
 	/*
 	 * WRITE FUNCTIONS
 	 */
-	module->addFunction("write", {"file", "value"}, {"File", STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("write", {"file", "value"}, {"File", STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is writable
 		if (!static_cast<Bool*>(fileStruct->getMember("writable"))->getValue()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not writable",
-					args[0]->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"File is not writable",
+				args[0]->getRange(),
+				context
 			);
 		}
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		// check if the file is open
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		// write the value
 		*file << args[1]->getStringValue();
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
-	module->addFunction("put", {"file", "value"}, {"File", INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("put", {"file", "value"}, {"File", INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is writable
 		if (!static_cast<Bool*>(fileStruct->getMember("writable"))->getValue()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not writable",
-					args[0]->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"File is not writable",
+				args[0]->getRange(),
+				context
 			);
 		}
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		// check if the file is open
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		// write the value
 		file->put(static_cast<Int*>(args[1])->getValue());
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
-	module->addFunction("tellp", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("tellp", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				Int::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
-		return std::make_pair(
-			ExpressionResult(),
-			new Int(file->tellp(), range, Value::INTERPRETER)
-		);
+		return new Int(file->tellp(), range, Value::INTERPRETER);
 	});
 
-	module->addFunction("seekp", {"file", "pos", "beg"}, {"File", INT, BOOL}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("seekp", {"file", "pos", "beg"}, {"File", INT, BOOL}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 
 		file->seekp(static_cast<Int*>(args[1])->getValue(), static_cast<Bool*>(args[2])->getValue() ? std::ios::beg : std::ios::end);
 
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
-	module->addFunction("flush", {"file"}, {"File"}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("flush", {"file"}, {"File"}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		file->flush();
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
 	/*
 	 * CLOSE FUNCTIONS
 	 */
 	
-	module->addFunction("close", {"file"}, {"File"}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) {
+	module->addFunction("close", {"file"}, {"File"}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
-			return std::make_pair(
-				ExpressionResult(
-					"File is not open",
-					args[0]->getRange(),
-					context
-				),
-				None::empty()
+			return ExpressionResult(
+				"File is not open",
+				args[0]->getRange(),
+				context
 			);
 		}
 		file->close();
-		return std::make_pair(
-			ExpressionResult(),
-			None::empty()
-		);
+		return None::empty();
 	});
 
 	return ExpressionResult();

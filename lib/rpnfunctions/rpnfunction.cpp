@@ -38,12 +38,10 @@ RPNFunctionResult RPNFunction::call(
 		}
 	}
 	ContextPtr functionContext = std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
-	return std::make_pair(ExpressionResult(
-			"Function is not callable", 
-			range,
-			functionContext
-		),
-		None::empty()
+	return ExpressionResult(
+		"Function is not callable", 
+		range,
+		functionContext
 	);
 }
 
