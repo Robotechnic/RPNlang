@@ -11,24 +11,40 @@ Lexer::~Lexer() {
 }
 
 /**
- * @brief append current line to the current code block if there is one or to the global code queue otherwise
+ * @brief check if the current line is well formed with the Analyzer
+ * 
+ * @return ExpressionResult if the line is well formed, otherwise an error
  */
-ExpressionResult Lexer::pushLine() {
+ExpressionResult Lexer::checkLine() {
 	if (this->currentLine->empty()) return ExpressionResult();
-	if(this->keywordBlockStack.empty() || this->keywordBlockStack.top()->getKeyword() != KEYWORD_FUN) {
-		this->analyzer.analyze(this->currentLine);
-		if (this->analyzer.hasErrors()) {
-			return this->analyzer.analyzeErrors();
-		}
+	if(!this->keywordBlockStack.empty() && this->keywordBlockStack.top()->getKeyword() == KEYWORD_FUN) {
+		return ExpressionResult();
 	}
 
+	this->analyzer.analyze(this->currentLine);
+	if (this->analyzer.hasErrors()) {
+		return this->analyzer.analyzeErrors();
+	}
+
+	this->analyzer.checkRemainingCount();
+	if (this->analyzer.hasErrors()) {
+		return this->analyzer.analyzeErrors();
+	}
+
+	return ExpressionResult();
+}
+
+/**
+ * @brief append current line to the current code block if there is one or to the global code queue otherwise
+ */
+void Lexer::pushLine() {
+	if (this->currentLine->empty()) return;
 	if (!this->keywordBlockStack.empty())
 		this->keywordBlockStack.top()->push(this->currentLine);
 	else
 		this->codeBlocks.push(this->currentLine);
 	
 	this->currentLine = new Line();
-	return ExpressionResult();
 }
 
 bool Lexer::hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const {
@@ -62,7 +78,8 @@ ExpressionResult Lexer::lex() {
 		switch (token->getType()) {
 			case TOKEN_TYPE_END_OF_LINE:
 			case TOKEN_TYPE_EXPRESSION_SEPARATOR:
-				result = this->pushLine();
+				result = this->checkLine();
+				this->pushLine();
 				break;
 			case TOKEN_TYPE_FSTRING:
 				result = this->parseFString(token);
@@ -140,7 +157,10 @@ ExpressionResult Lexer::lex() {
 			token->getRange(),
 			this->context
 		);
-	return this->pushLine();
+	
+	result = this->checkLine();
+	this->pushLine();
+	return result;
 };
 
 /**
@@ -408,8 +428,9 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 
 	// open a new block when encounter a block keyword like if, fun, while...
 	if (blockOpeners.contains(tokenKeyword)) {
-		ExpressionResult result = this->pushLine();
+		ExpressionResult result = this->checkKeywordLine(tokenKeyword, token->getRange());
 		if (result.error()) return result;
+		this->pushLine();
 		this->keywordBlockStack.push(new CodeBlock(static_cast<KeywordToken*>(token)));
 		this->integrated = true;
 		return ExpressionResult();
@@ -436,6 +457,120 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 	}
 
 	return ExpressionResult();	
+}
+
+ExpressionResult Lexer::checkKeywordLine(KeywordEnum keyword, const TextRange &keywordRange) {
+	std::stack<AnalyzerValueType> types;
+	std::string typeStr;
+	switch (keyword) {
+		case KEYWORD_IF:
+		case KEYWORD_WHILE:
+			return this->checkLine();
+		case KEYWORD_FOR:
+			// check the patern of the remaining tokens: var from to step
+			this->analyzer.analyze(this->currentLine);
+			if (this->analyzer.hasErrors()) return this->analyzer.analyzeErrors();
+			types = this->analyzer.getStack();
+			if (types.size() != 4) {
+				return ExpressionResult(
+					"For loop must have 4 arguments : variable, from value, to value and step",
+					keywordRange,
+					this->context
+				);
+			}
+			if (types.top().type.index() != 1 || std::get<ValueType>(types.top().type) != INT) {
+				typeStr = types.top().type.index() == 0 ? std::get<std::string>(types.top().type) : Value::stringType(std::get<ValueType>(types.top().type));
+				return ExpressionResult(
+					"Step must be an integer but got " + typeStr,
+					types.top().range,
+					this->context
+				);
+			}
+			types.pop();
+			if (types.top().type.index() != 1 || std::get<ValueType>(types.top().type) != INT) {
+				typeStr = types.top().type.index() == 0 ? std::get<std::string>(types.top().type) : Value::stringType(std::get<ValueType>(types.top().type));
+				return ExpressionResult(
+					"To value must be an integer but got " + typeStr,
+					types.top().range,
+					this->context
+				);
+			}
+			types.pop();
+			if (types.top().type.index() != 1 || std::get<ValueType>(types.top().type) != INT) {
+				typeStr = types.top().type.index() == 0 ? std::get<std::string>(types.top().type) : Value::stringType(std::get<ValueType>(types.top().type));
+				return ExpressionResult(
+					"From value must be an integer but got " + typeStr,
+					types.top().range,
+					this->context
+				);
+			}
+			types.pop();
+			if (!types.top().isVariable) {
+				return ExpressionResult(
+					"Expected a literal for the variable name",
+					types.top().range,
+					this->context
+				);
+			}
+			this->analyzer.declareVariable(std::get<std::string>(types.top().type), INT, types.top().range);
+			types.pop();
+			if (!types.empty()) {
+				return ExpressionResult(
+					"For loop must have 4 arguments : variable, from value, to value and step",
+					types.top().range,
+					this->context
+				);
+			}
+			return ExpressionResult();
+		case KEYWORD_TRY:
+			this->analyzer.analyze(this->currentLine);
+			if (this->analyzer.hasErrors()) return this->analyzer.analyzeErrors();
+			types = this->analyzer.getStack();
+			if (types.size() != 1) {
+				return ExpressionResult(
+					"Try block must have 1 argument : a literal for the error name",
+					keywordRange,
+					this->context
+				);
+			}
+			if (!types.top().isVariable) {
+				return ExpressionResult(
+					"Expected a literal for the error name",
+					types.top().range,
+					this->context
+				);
+			}
+			return ExpressionResult();
+		case KEYWORD_STRUCT:
+			this->analyzer.analyze(this->currentLine);
+			if (this->analyzer.hasErrors()) return this->analyzer.analyzeErrors();
+			types = this->analyzer.getStack();
+			if (types.size() != 1) {
+				return ExpressionResult(
+					"Struct block must have 1 argument : a literal for the struct name",
+					keywordRange,
+					this->context
+				);
+			}
+			if (types.top().type.index() != 0) {
+				return ExpressionResult(
+					"Expected a struct name but got " + Value::stringType(std::get<ValueType>(types.top().type)) + " instead",
+					types.top().range,
+					this->context
+				);
+			}
+			if (types.top().isVariable) {
+				return ExpressionResult(
+					"Struct name must have its first letter capitalized",
+					types.top().range,
+					this->context
+				);
+			}
+			return ExpressionResult();
+		default:
+			return ExpressionResult();
+	}
+	return ExpressionResult();
 }
 
 /**

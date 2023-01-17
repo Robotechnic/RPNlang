@@ -42,7 +42,8 @@ class Lexer {
 		);
 
 	private:
-		ExpressionResult pushLine();
+		ExpressionResult checkLine();
+		void pushLine();
 		bool hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const;
 		ExpressionResult parseBinNumber(Token *token);
 		ExpressionResult parseHexNumber(Token *token);
@@ -55,6 +56,8 @@ class Lexer {
 		std::pair<ExpressionResult, FunctionBlock*> parseFunction(CodeBlock *block);
 		ExpressionResult parseStruct(CodeBlock *block);
 		ExpressionResult parseFunctionCall(const Token *token);
+
+		ExpressionResult checkKeywordLine(KeywordEnum keyword, const TextRange &keywordRange);
 
 	private:
 		ContextPtr context;

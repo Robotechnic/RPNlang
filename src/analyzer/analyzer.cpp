@@ -24,8 +24,44 @@ ExpressionResult Analyzer::analyzeErrors() const {
 	return this->error;
 }
 
-RPNValueType Analyzer::getLastType() const {
-	return this->lastType;
+RPNValueType Analyzer::getLastType() {
+	if (this->stack.size() != 1)
+		throw std::runtime_error("Stack size is not 1");
+	
+	if (this->stack.top().isVariable) {
+		std::string name = std::get<std::string>(this->stack.top().type);
+		if (this->variables.find(name) == this->variables.end()) {
+			this->error = ExpressionResult(
+				"Variable '" + name + "' is not defined",
+				this->stack.top().range,
+				this->context
+			);
+			return NONE;
+		}
+		return this->variables.at(name).type;
+	} else {
+		return this->stack.top().type;
+	}
+}
+
+std::stack<AnalyzerValueType>& Analyzer::getStack() {
+	return this->stack;
+}
+
+void Analyzer::checkRemainingCount() {
+	if (stack.size() > 1) {
+		TextRange range = stack.top().range;
+		size_t size = stack.size();
+		while (stack.size() > 1) {
+			stack.pop();
+			range = TextRange::merge(range, stack.top().range);
+		}
+		this->error = ExpressionResult(
+			"To much remaining values in the memory (" + std::to_string(size) + ")",
+			range,
+			this->context	
+		);
+	}
 }
 
 void Analyzer::analyze(Line *line) {
@@ -67,31 +103,12 @@ void Analyzer::analyze(Line *line) {
 			case TOKEN_TYPE_STRUCT_NAME:
 				this->analyzeStructCreation(*it);
 				break;
+			case TOKEN_TYPE_KEYWORD:
+				this->analyzeKeyword(static_cast<const KeywordToken *>(*it));
+				break;
 			default:
 				throw std::runtime_error("Lexer didn't create a valid token " + Token::stringType(it->getType()));
 		}
-	}
-
-	if (this->hasErrors()) {
-		return;
-	}
-
-	if (stack.size() > 1) {
-		TextRange range = stack.top().range;
-		size_t size = stack.size();
-		while (stack.size() > 1) {
-			stack.pop();
-			range = TextRange::merge(range, stack.top().range);
-		}
-		this->error = ExpressionResult(
-			"To much remaining values in the memory (" + std::to_string(size) + ")",
-			range,
-			this->context	
-		);
-	}
-
-	if (stack.size() == 1) {
-		this->lastType = this->topVariable().type;
 	}
 }
 
@@ -136,6 +153,14 @@ void Analyzer::analyseFunctionsBody() {
 		this->analyze(functionBlocks.front());
 		functionBlocks.pop();
 	}
+}
+
+void Analyzer::declareVariable(const std::string &name, RPNValueType type, const TextRange &range) {
+	this->variables[name] = {
+		type,
+		range,
+		false
+	};
 }
 
 void Analyzer::analyzeOperator(const OperatorToken *token) {
@@ -445,6 +470,41 @@ void Analyzer::analyzeStructCreation(const Token *token) {
 		range,
 		false
 	});
+}
+
+void Analyzer::analyzeKeyword(const KeywordToken *token) {
+	switch (token->getKeyword()) {
+		case KEYWORD_BREAK:
+		case KEYWORD_CONTINUE:
+			if (this->stack.size() != 0) {
+				this->error = ExpressionResult(
+					"Break and continue can't have any value",
+					token->getRange(),
+					this->context
+				);
+				return;
+			}
+			break;
+		case KEYWORD_RETURN:
+			if (this->stack.size() > 1) {
+				this->error = ExpressionResult(
+					"Return can't have more than one value",
+					token->getRange(),
+					this->context
+				);
+				return;
+			}
+			if (this->stack.size() == 0) {
+				this->error = ExpressionResult(
+					"Return must have a value",
+					token->getRange(),
+					this->context
+				);
+			}
+			break;
+		default:
+			throw std::runtime_error("The keyword " + token->getStringValue() + " is not implemented");
+	}
 }
 
 bool Analyzer::isBinaryOperator(OperatorToken::OperatorTypes operatorType) {

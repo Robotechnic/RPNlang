@@ -15,6 +15,7 @@
 #include "tokens/tokens/operatortoken.hpp"
 #include "tokens/tokens/valuetoken.hpp"
 #include "tokens/tokens/fstringtoken.hpp"
+#include "tokens/tokens/keywordtoken.hpp"
 
 class FunctionBlock;
 class Line;
@@ -33,15 +34,17 @@ class Analyzer final {
 		void analyze(Line *line);
 		void analyze(CodeBlock *codeblock);
 		void analyseFunctionsBody();
+		void declareVariable(const std::string &name, RPNValueType type, const TextRange &range);
 
 		bool hasErrors() const;
+		void checkRemainingCount();
 		ExpressionResult analyzeErrors() const;
-		RPNValueType getLastType() const;
+		RPNValueType getLastType();
+		std::stack<AnalyzerValueType>& getStack();
 
 	private:
 		ExpressionResult error;
 		ContextPtr context;
-		RPNValueType lastType;
 
 		Line *currentLine;
 		std::stack<AnalyzerValueType> stack;
@@ -59,6 +62,7 @@ class Analyzer final {
 		void analyzeTypeCast(const TypeToken *token);
 		void analyzeListCreation(const TypeToken *token);
 		void analyzeStructCreation(const Token *token);
+		void analyzeKeyword(const KeywordToken *token);
 
 		static bool isBinaryOperator(OperatorToken::OperatorTypes operatorType);
 		static bool isComparisonOperator(OperatorToken::OperatorTypes operatorType);

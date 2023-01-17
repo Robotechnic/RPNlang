@@ -17,32 +17,33 @@ Value*& Memory::pop() {
 	return value;
 }
 
-ExpressionResult Memory::popVariableValue(Value *&value, const ContextPtr &context) {
+Value *& Memory::popVariableValue(const ContextPtr &context) {
 	if (this->stack.top()->getType() != VARIABLE && this->stack.top()->getType() != PATH && this->stack.top()->getType() != STRUCT_ACCESS) {
-		value = this->pop();
-		return ExpressionResult();
+		return this->pop();
 	}
 	
 	ExpressionResult result;
+	Value **value;
 	if (this->stack.top()->getType() == VARIABLE) {
-		result = context->getValue(this->stack.top(), value);
+		value = &context->getValue(this->stack.top());
 	} else if (this->stack.top()->getType() == PATH) {
-		result = Module::getModuleValue(this->stack.top(), value, context);
+		throw std::runtime_error("Path access not implemented for now");
+		// result = Module::getModuleValue(this->stack.top(), value, context);
 	} else {
-		const Path* path = static_cast<Path*>(this->stack.top());
-		Value *structVaue;
-		result = Struct::getStruct(path, structVaue, context);
-		if (result.error()) return result;
-		result = static_cast<Struct*>(structVaue)->getMember(
-			path, value, context
-		);
+		throw std::runtime_error("Struct access not implemented for now");
+		// const Path* path = static_cast<Path*>(this->stack.top());
+		// Value *structVaue;
+		// result = Struct::getStruct(path, structVaue, context);
+		// if (result.error()) return result;
+		// result = static_cast<Struct*>(structVaue)->getMember(
+		// 	path, value, context
+		// );
 	}
-	if (result.error()) return result;
 	TextRange range = this->stack.top()->getRange();
 	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);
 	this->stack.pop();
-	value->setVariableRange(range);
-	return result;
+	(*value)->setVariableRange(range);
+	return *value;
 }
 
 Value*& Memory::top() {

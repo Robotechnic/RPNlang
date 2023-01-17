@@ -13,7 +13,7 @@ class Memory {
 
 		void push(Value* value);
 		Value*& pop();
-		ExpressionResult popVariableValue(Value *&value, const ContextPtr &context);
+		Value*& popVariableValue(const ContextPtr &context);
 		Value*& top();
 		void clear(size_t offset = 0);
 		bool empty();

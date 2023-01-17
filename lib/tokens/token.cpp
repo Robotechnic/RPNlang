@@ -74,6 +74,8 @@ std::string Token::stringType(TokenType type) {
 			return "struct name";
 		case TOKEN_TYPE_STRUCT_ACCESS:
 			return "struct access";
+		case TOKEN_TYPE_KEYWORD:
+			return "keyword";
 		default:
 			return "unknown";
 	}

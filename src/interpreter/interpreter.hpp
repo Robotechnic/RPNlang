@@ -43,14 +43,14 @@ class Interpreter {
 		Value *getLastValue() const;
 
 	private:
-		ExpressionResult checkMemory();
+		void checkMemory();
 		ExpressionResult interpretLine(Line &line, bool clearMemory = true);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
-		ExpressionResult interpretFString(const FStringToken *token);
+		void interpretFString(const FStringToken *token);
 		ExpressionResult interpretOperator(const OperatorToken *operatorToken);
 		ExpressionResult interpretKeyword(const Token *keywordToken);
 		ExpressionResult interpretValueType(const Token *typeToken);
-		ExpressionResult interpretAssignment(const Token *operatorToken);
+		void interpretAssignment(const Token *operatorToken);
 		ExpressionResult getFunction(const Value *functionName, const RPNFunction *&function);
 		ExpressionResult interpretFunctionCall(Token *functionToken);
 		ExpressionResult interpretIf(Line &line, CodeBlock &block);

@@ -20,18 +20,18 @@ ValueType Value::getType() const {
 }
 
 bool Value::isCastableTo(ValueType from, ValueType to) {
-	if (from == to || to == ANY || to == STRING || to == BOOL) {
+	if (from == to || to == ANY || to == BOOL) {
 		return true;
 	}
 	switch (from) {
 		case INT:
 		case FLOAT:
 		case BOOL:
-			return to == INT || to == FLOAT || to == BOOL;
+			return to == INT || to == FLOAT || to == BOOL || to == STRING;
 		case STRING:
 			return to == STRING || to == BOOL;
 		case LIST:
-			return to == LIST || to == STRING;
+			return to == LIST || to == STRING || to == BOOL;
 		default:
 			return false;
 	}

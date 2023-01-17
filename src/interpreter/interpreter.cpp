@@ -102,8 +102,8 @@ ExpressionResult Interpreter::interpretLine(std::string_view line, int lineNumbe
 	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 	result = this->interpret(lexer.getBlocks());
 	if (result.error()) return result;
-
-	return this->checkMemory();
+	this->checkMemory();
+	return ExpressionResult();
 }
 
 /**
@@ -120,15 +120,15 @@ Value *Interpreter::getLastValue() const {
  * 
  * @return ExpressionResult error if memory contains more than 1 value
  */
-ExpressionResult Interpreter::checkMemory() {	
+void Interpreter::checkMemory() {	
 	if (this->memory.empty()) {
 		Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 		this->lastValue = None::empty();
-		return ExpressionResult();
+		return;
 	}
 
 	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
-	return this->memory.popVariableValue(this->lastValue, this->context);
+	this->lastValue = this->memory.popVariableValue(this->context);
 }
 
 /**
@@ -194,10 +194,10 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 				result = this->interpretFunctionCall(*it);
 				break;
 			case TOKEN_TYPE_FSTRING:
-				result = this->interpretFString(static_cast<FStringToken*>(*it));
+				this->interpretFString(static_cast<FStringToken*>(*it));
 				break;
 			case TOKEN_TYPE_ASSIGNMENT:
-				result = this->interpretAssignment(*it);
+				this->interpretAssignment(*it);
 				break;
 			case TOKEN_TYPE_KEYWORD:
 				result = this->interpretKeyword(*it);
@@ -220,10 +220,7 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 	}
 	if (result.error()) return result;
 	if (clearMemory) {
-		ExpressionResult memory = this->checkMemory();
-		if (memory.error()) {
-			return memory;
-		}
+		this->checkMemory();
 	}
 	return result;
 }
@@ -255,13 +252,12 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
+void Interpreter::interpretFString(const FStringToken *token) {
 	TextRange range = token->getRange();
 	std::string str;
 	Value *value;
 	for (size_t i = token->size() - 1; i > 0; i--) {
-		ExpressionResult result = this->memory.popVariableValue(value, this->context);
-		if (result.error()) return result;
+		value = this->memory.popVariableValue(this->context);
 		str = value->getStringValue() + token->at(i) + str;
 		if (i == 1) range.merge(value->getRange());
 		Value::deleteValue(&value, Value::INTERPRETER);
@@ -272,13 +268,11 @@ ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
 		range,
 		Value::INTERPRETER
 	));
-	return ExpressionResult();
 }
 
 ExpressionResult Interpreter::interpretOperator(const OperatorToken *operatorToken) {
 	Value *right, *left;
-	ExpressionResult result = this->memory.popVariableValue(right, this->context);
-	if (result.error()) return result;
+	right = this->memory.popVariableValue(this->context);
 
 	// check for 0 division error
 	if (operatorToken->getOperatorType() == OperatorToken::OP_DIV || operatorToken->getOperatorType() == OperatorToken::OP_MOD) {
@@ -294,8 +288,7 @@ ExpressionResult Interpreter::interpretOperator(const OperatorToken *operatorTok
 			);
 		}
 	}
-	result = this->memory.popVariableValue(left, this->context);
-	if (result.error()) return result;
+	left = this->memory.popVariableValue(this->context);
 
 	if (left->getType() == STRING || left->getType() == LIST) {
 		if (static_cast<Int*>(right)->getValue() < 0) {
@@ -345,9 +338,7 @@ ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
 		return this->interpretList(typeToken);
 	}
 
-	Value *top;
-	result = this->memory.popVariableValue(top, this->context);
-	if (result.error()) return result;
+	Value *top = this->memory.popVariableValue(this->context);
 
 	if (!Value::isCastableTo(top->getType(), type)) {
 		return ExpressionResult(
@@ -363,47 +354,31 @@ ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretAssignment(const Token *operatorToken) {
-	ExpressionResult result = this->memory.sizeExpected(
-		2,
-		"Not enough values for assignement",
-		operatorToken->getRange(),
-		this->context
-	);
+void Interpreter::interpretAssignment(const Token *operatorToken) {
 	bool copy = this->memory.top()->getType() == VARIABLE || 
 				this->memory.top()->getType() == PATH ||
 				this->memory.top()->getOwner() == Value::OBJECT_VALUE;
-	if (result.error()) return result;
-	Value *left;
-	result = this->memory.popVariableValue(left, this->context);
-	if (result.error()) return result;
-	if (this->memory.top()->getType() != VARIABLE && this->memory.top()->getType() != STRUCT_ACCESS) {
-		return ExpressionResult(
-			"Can't assign value to a non variable",
-			this->memory.top()->getRange(),
-			this->context
-		);
-	}
+	
+	Value *left = this->memory.popVariableValue(this->context);
 	Value *hold = nullptr;
 	if (this->memory.top()->getType() == VARIABLE) {
 		this->context->setValue(this->memory.top(), copy ? left->copy() : left, &hold);
 	} else {
-		Path *path = static_cast<Path *>(this->memory.top());
-		Value *structValue;
-		result = Struct::getStruct(path, structValue, this->context);
-		if (result.error()) return result;
-		result = static_cast<Struct *>(structValue)->setMember(
-			path,
-			copy ? left->copy() : left,
-			this->context,
-			&hold
-		);
-		if (result.error()) return result;
+		throw std::runtime_error("Not implemented");
+		// Path *path = static_cast<Path *>(this->memory.top());
+		// Value *structValue;
+		// result = Struct::getStruct(path, structValue, this->context);
+		// if (result.error()) return result;
+		// result = static_cast<Struct *>(structValue)->setMember(
+		// 	path,
+		// 	copy ? left->copy() : left,
+		// 	this->context,
+		// 	&hold
+		// );
+		// if (result.error()) return result;
 	}
 	if (this->lastValue == hold)
 		this->lastValue = nullptr;
-	
-	return result;
 }
 
 ExpressionResult Interpreter::getFunction(const Value *functionName, const RPNFunction *&function) {
@@ -434,23 +409,10 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 	Value *functionName = static_cast<ValueToken *>(functionToken)->getValue();
 	ExpressionResult result = this->getFunction(functionName, function);
 	if (result.error()) return result;
-	result = this->memory.sizeExpected(
-		function->getArgumentsCount(),
-		"Invalid number of arguments for function " + functionName->getStringValue() +
-		" got " + std::to_string(this->memory.size()) +
-		" but expected " + std::to_string(function->getArgumentsCount()) + " arguments",
-		functionName->getRange(),
-		this->context
-	);
-	if (result.error()) return result;
 
 	std::vector<Value*> arguments;
-	Value *value;
-	for (size_t i = 0; i < function->getArgumentsCount(); i++) {
-		result = this->memory.popVariableValue(value, this->context);
-		if (result.error()) return result;
-		arguments.insert(arguments.begin(), value);
-	}
+	for (size_t i = 0; i < function->getArgumentsCount(); i++)
+		arguments.insert(arguments.begin(), this->memory.popVariableValue(this->context));
 	
 	RPNFunctionResult callResult;
 	if (functionToken->getType() == TOKEN_TYPE_FUNCTION_CALL) {
@@ -514,38 +476,15 @@ ExpressionResult Interpreter::interpretWhile(Line &line, CodeBlock &block) {
 ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 	ExpressionResult result = this->interpretLine(line, false);
 	if (result.error()) return result;
-	result = this->memory.sizeExpected(
-		4,
-		"Invalid number of arguments for for loop, expected 4 but got " + std::to_string(this->memory.size()),
-		block.getRange(),
-		this->context
-	);
-	if (result.error()) return result;
+
 	std::vector<Int*> forParams;
 	Value *param;
 	for (int i = 0; i < 3; i++) {
-		result = this->memory.popVariableValue(param, this->context);
-		if (result.error()) return result;
-		if (param->getType() != INT) {
-			return ExpressionResult(
-				"Invalid type for for loop parameter, expected int but got " + param->getStringType(),
-				block.getRange(),
-				this->context
-			);
-		}
+		param = this->memory.popVariableValue(this->context);
 		forParams.emplace(forParams.begin(), static_cast<Int*>(param));
 	}
 
 	Value *variable = this->memory.pop();
-	if (variable->getType() != VARIABLE) {
-		TextRange range = variable->getRange();
-		Value::deleteValue(&variable, Value::INTERPRETER);
-		return ExpressionResult(
-			"Can't assign value to a non variable",
-			range,
-			this->context
-		);
-	}
 	Int zero {0, TextRange(), Value::PARENT_FUNCTION};
 	CPPInterface step {forParams.at(2)};
 	if (step == &zero) {
@@ -660,8 +599,7 @@ ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
 	std::vector<Value*> values;
 	Value *value;
 	for (int i = 0; i < size->getValue(); i++) {
-		result = this->memory.popVariableValue(value, this->context);
-		if (result.error()) return result;
+		value = this->memory.popVariableValue(this->context);
 		if (value->getOwner() == Value::OBJECT_VALUE)
 			value = value->copy();
 		value->setOwner(Value::OBJECT_VALUE);
@@ -693,8 +631,8 @@ ExpressionResult Interpreter::interpretStruct(const Token *keywordToken) {
 	std::vector<Value *> members(count, nullptr);
 	TextRange range = keywordToken->getRange();
 	for (size_t i = 0; i < count; i++) {
-		result = this->memory.popVariableValue(members.at(count - i - 1), this->context);
-		if (result.error()) return result;
+		members.at(count - i - 1) = this->memory.popVariableValue(this->context);
+
 		if (members.at(count - i - 1)->getOwner() == Value::OBJECT_VALUE)
 			members.at(count - i - 1) = members.at(count - i - 1)->copy();
 		members.at(count - i - 1)->setOwner(Value::OBJECT_VALUE);

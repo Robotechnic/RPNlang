@@ -292,16 +292,20 @@ bool Context::hasValue(std::string_view name) const {
  * @param name the name of the value
  * @return Value the desired value
  */
-Value *Context::getValue(const Value *name) {
-	Value *value;
-	ExpressionResult result = this->getValue(name, value);
-	if (result.error()) {
-		throw result.getErrorMessage();
+Value *&Context::getValue(const Value *name) {
+	std::string nameStr = name->getStringValue();
+	if (this->symbols.find(nameStr) != this->symbols.end()) {
+		return this->symbols.at(nameStr);
 	}
-	return value;
+
+	if (this->root) {
+		return this->root->getValue(name);
+	}
+	
+	throw std::runtime_error("Undefined variable name : " + nameStr);
 }
 
-Value *Context::getValue(const std::string &name) {
+Value *&Context::getValue(const std::string &name) {
 	return this->symbols.at(name);
 }
 

@@ -78,10 +78,12 @@ void List::clear() {
 }
 
 Value *List::to(ValueType type, ValueOwner owner) const {
-	if (type == ValueType::LIST || type == ValueType::ANY) {
+	if (type == LIST || type == ANY) {
 		return copy(owner);
-	} else if (type == ValueType::STRING) {
+	} else if (type == STRING) {
 		return new String(this->getStringValue(), range, owner);
+	} else if (type == BOOL) {
+		return new Bool(this->size() > 0, range, owner);
 	} else {
 		throw std::runtime_error("Cannot cast list to " + std::string(Value::stringType(type)));
 	}
