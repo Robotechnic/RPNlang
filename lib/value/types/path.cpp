@@ -37,134 +37,50 @@ Value* Path::copy(ValueOwner owner) const {
 	return new Path(this->path, this->range, this->type);
 }
 
-operatorResult Path::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }
 
-operatorResult Path::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"path object just hold path name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Path::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("path object just hold path name in memory, replace it by another value to use it");
 }

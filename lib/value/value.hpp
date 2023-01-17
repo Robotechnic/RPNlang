@@ -14,8 +14,6 @@ class Value;
 #include "textutilities/textrange.hpp"
 #include "context/typedef.hpp"
 
-typedef std::pair<ExpressionResult, Value*> operatorResult;
-
 
 class Value {
 	public:
@@ -57,21 +55,21 @@ class Value {
 		ValueOwner getOwner() const;
 		void setOwner(ValueOwner owner, bool overwrite = false);
 
-		operatorResult applyOperator(const Value *other, const Token *operatorToken, const ContextPtr &context);
+		Value *applyOperator(const Value *other, const Token *operatorToken, const ContextPtr &context);
 	
-		virtual operatorResult opadd(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult opsub(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult opmul(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult opmod(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult oppow(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opadd(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opsub(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opmul(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opmod(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *oppow(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
 		
-		virtual operatorResult opgt(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult opge(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult oplt(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult ople(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult opne(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
-		virtual operatorResult opeq(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opgt(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opge(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *oplt(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *ople(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opne(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
+		virtual Value *opeq(const Value *other, const TextRange &range, const ContextPtr &context) const = 0;
 
 		static void deleteValue(Value **val, ValueOwner deleter);
 

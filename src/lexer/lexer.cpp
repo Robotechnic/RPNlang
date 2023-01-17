@@ -13,17 +13,22 @@ Lexer::~Lexer() {
 /**
  * @brief append current line to the current code block if there is one or to the global code queue otherwise
  */
-void Lexer::pushLine() {
-	if (this->currentLine->empty()) return;
+ExpressionResult Lexer::pushLine() {
+	if (this->currentLine->empty()) return ExpressionResult();
+	if(this->keywordBlockStack.empty() || this->keywordBlockStack.top()->getKeyword() != KEYWORD_FUN) {
+		this->analyzer.analyze(this->currentLine);
+		if (this->analyzer.hasErrors()) {
+			return this->analyzer.analyzeErrors();
+		}
+	}
+
 	if (!this->keywordBlockStack.empty())
 		this->keywordBlockStack.top()->push(this->currentLine);
 	else
 		this->codeBlocks.push(this->currentLine);
-
-	// if(this->keywordBlockStack.top()->getKeyword() != KEYWORD_FUN)
-	// 	this->analyzer.analyze(this->currentLine);
-
+	
 	this->currentLine = new Line();
+	return ExpressionResult();
 }
 
 bool Lexer::hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const {
@@ -57,7 +62,7 @@ ExpressionResult Lexer::lex() {
 		switch (token->getType()) {
 			case TOKEN_TYPE_END_OF_LINE:
 			case TOKEN_TYPE_EXPRESSION_SEPARATOR:
-				this->pushLine();
+				result = this->pushLine();
 				break;
 			case TOKEN_TYPE_FSTRING:
 				result = this->parseFString(token);
@@ -135,10 +140,7 @@ ExpressionResult Lexer::lex() {
 			token->getRange(),
 			this->context
 		);
-	this->pushLine();
-
-	
-	return ExpressionResult();
+	return this->pushLine();
 };
 
 /**
@@ -406,7 +408,8 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 
 	// open a new block when encounter a block keyword like if, fun, while...
 	if (blockOpeners.contains(tokenKeyword)) {
-		this->pushLine();
+		ExpressionResult result = this->pushLine();
+		if (result.error()) return result;
 		this->keywordBlockStack.push(new CodeBlock(static_cast<KeywordToken*>(token)));
 		this->integrated = true;
 		return ExpressionResult();

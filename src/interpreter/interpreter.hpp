@@ -47,7 +47,7 @@ class Interpreter {
 		ExpressionResult interpretLine(Line &line, bool clearMemory = true);
 		ExpressionResult interpretBlock(Line &line, CodeBlock &block);
 		ExpressionResult interpretFString(const FStringToken *token);
-		ExpressionResult interpretOperator(const Token *operatorToken);
+		ExpressionResult interpretOperator(const OperatorToken *operatorToken);
 		ExpressionResult interpretKeyword(const Token *keywordToken);
 		ExpressionResult interpretValueType(const Token *typeToken);
 		ExpressionResult interpretAssignment(const Token *operatorToken);
@@ -59,7 +59,6 @@ class Interpreter {
 		ExpressionResult interpretTry(Line &line, CodeBlock &block);
 		ExpressionResult interpretList(const Token *keywordToken);
 		ExpressionResult interpretStruct(const Token *keywordToken);
-		TextRange mergeRanges(const std::vector<Value*> &values);
 
 		Value *lastValue;
 		Memory memory;

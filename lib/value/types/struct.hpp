@@ -66,19 +66,19 @@ class Struct : public Value {
 		void setData(const std::shared_ptr<void> &data);
 		std::shared_ptr<void> getData() const;
 
-		operatorResult opadd(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult opsub(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult opmul(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult opmod(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult oppow(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opadd(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opsub(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opmul(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opmod(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *oppow(const Value *other, const TextRange &range, const ContextPtr &context) const;
 		
-		operatorResult opgt(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult opge(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult oplt(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult ople(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult opne(const Value *other, const TextRange &range, const ContextPtr &context) const;
-		operatorResult opeq(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opgt(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opge(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *oplt(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *ople(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opne(const Value *other, const TextRange &range, const ContextPtr &context) const;
+		Value *opeq(const Value *other, const TextRange &range, const ContextPtr &context) const;
 
 		static void addStructDefinition(StructDefinition &definition);
 		static int  getStructMembersCount(std::string_view structName);

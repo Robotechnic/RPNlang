@@ -136,7 +136,7 @@ void Value::concatValueRange(const Token *other) {
  * @param variables variables to use in the operation
  * @return ExpressionResult if the operation was successful
  */
-operatorResult Value::applyOperator(const Value *other, const Token *operatorToken, const ContextPtr &context) {
+Value* Value::applyOperator(const Value *other, const Token *operatorToken, const ContextPtr &context) {
 	OperatorToken::OperatorTypes op = static_cast<const OperatorToken*>(operatorToken)->getOperatorType();
 
 	TextRange range = TextRange::merge(this->getRange(), other->getRange());
@@ -181,14 +181,7 @@ operatorResult Value::applyOperator(const Value *other, const Token *operatorTok
 			break;
 	}
 
-	return std::make_pair(
-		ExpressionResult(
-			"Invalid operator " + op,
-			this->getRange(),
-			context
-		),
-		nullptr
-	);
+	throw std::runtime_error("This operator doesn't exist");
 }
 
 Value::ValueOwner Value::getOwner() const {

@@ -42,7 +42,7 @@ class Lexer {
 		);
 
 	private:
-		void pushLine();
+		ExpressionResult pushLine();
 		bool hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const;
 		ExpressionResult parseBinNumber(Token *token);
 		ExpressionResult parseHexNumber(Token *token);

@@ -54,8 +54,11 @@ RPNFunctionResult BuiltinRPNFunction::call(
 			delete converted.at(i);
 	}
 	
-
-	if (result = *std::get_if<ExpressionResult>(&callResult); result.error()) return callResult;
+	
+	if (
+		auto callExpressionResult = std::get_if<ExpressionResult>(&callResult); 
+		callExpressionResult && callExpressionResult->error()
+	) return callResult;
 
 	if (this->returnType.index() == 0) {
 		if (std::get<Value*>(callResult)->getType() != STRUCT)

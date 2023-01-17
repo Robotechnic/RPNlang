@@ -21,126 +21,50 @@ Value *None::to(ValueType type, ValueOwner owner) const {
 	return new None(range, owner);
 }
 
-operatorResult None::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot add value of type " + other->getStringType() + " to NONE",
-			other->getRange(),
-			context
-		),
-		nullptr
-	);
+Value *None::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot add value of type " + other->getStringType() + " to NONE");
 }
 
-operatorResult None::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot subtract value of type " + other->getStringType() + " from NONE",
-			other->getRange(),
-			context
-		),
-		nullptr
-	);
+Value *None::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot substract value of type " + other->getStringType() + " from NONE");
 }
 
-operatorResult None::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot multiply value of type " + other->getStringType() + " with NONE",
-			other->getRange(),
-			context
-		),
-		nullptr
-	);
+Value *None::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot multiply value of type NONE by value of type " + other->getStringType());
 }
 
-operatorResult None::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot divide None value by value of type " + other->getStringType(),
-			other->getRange(),
-			context
-		),
-		nullptr
-	);	
+Value *None::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot divide value of type NONE by value of type " + other->getStringType());
 }
 
-operatorResult None::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot modulo None value by value of type " + other->getStringType(),
-			other->getRange(),
-			context
-		),
-		nullptr
-	);
+Value *None::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot mod value of type NONE by value of type " + other->getStringType());
 }
 
-operatorResult None::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot power None value by value of type " + other->getStringType(),
-			other->getRange(),
-			context
-		),
-		nullptr
-	);	
+Value *None::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot power value of type NONE by value of type " + other->getStringType());
 }
 
-operatorResult None::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot compare None value with value of type " + other->getStringType(),
-			other->getRange(),
-			context
-		),
-		nullptr
-	);		
+Value *None::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot compare value of type NONE with value of type " + other->getStringType());		
 }
 
-operatorResult None::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot compare None value with value of type " + other->getStringType(),
-			other->getRange(),
-			context
-		),
-		nullptr
-	);			
+Value *None::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot compare value of type NONE with value of type " + other->getStringType());		
 }
 
-operatorResult None::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot compare None value with value of type " + other->getStringType(),
-			other->getRange(),
-			context
-		),
-		nullptr
-	);				
+Value *None::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot compare value of type NONE with value of type " + other->getStringType());			
 }
 
-operatorResult None::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"Cannot compare None value with value of type " + other->getStringType(),
-			other->getRange(),
-			context
-		),
-		nullptr
-	);						
+Value *None::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot compare value of type NONE with value of type " + other->getStringType());					
 }
 
-operatorResult None::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(),
-		new Bool(other->getType() != NONE, other->getRange(), Value::INTERPRETER)
-	);
+Value *None::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	return new Bool(other->getType() != NONE, other->getRange(), Value::INTERPRETER);
 }
 
-operatorResult None::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(),
-		new Bool(other->getType() == NONE, other->getRange(), Value::INTERPRETER)
-	);
+Value *None::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	return new Bool(other->getType() == NONE, other->getRange(), Value::INTERPRETER);
 }

@@ -35,444 +35,158 @@ inline std::string Bool::getStringValue() const {
 	return  value ? "true" : "false";
 }
 
-operatorResult Bool::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot add value of type " + other->getStringType() + " to Bool",
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
+Value *Bool::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value + static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(value + static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value + static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(value + static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Float(value + static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Float(value + static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot add value of type " + other->getStringType() + " to Bool");
 	};
 }
 
-operatorResult Bool::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot subtract value of type " + other->getStringType() + " from Int",
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
+Value *Bool::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value - static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(value - static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value - static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(value - static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Float(value - static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Float(value - static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot subtract value of type " + other->getStringType() + " from Bool");
 	};
 }
 
-operatorResult Bool::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot multiply INT by value of type " + other->getStringType(),
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
+Value *Bool::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value * static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(value * static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value * static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(value * static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Float(value * static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Float(value * static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot multiply value of type " + other->getStringType() + " by Bool");
 	};
 }
 
-operatorResult Bool::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot divide INT number by value of type " + other->getStringType(),
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
-	switch (other->getType()) {
-		case INT: {
-			int64_t otherValue = static_cast<Int const*>(other)->getValue();
-			if (otherValue == 0)
-				return std::make_pair(
-					ExpressionResult(
-						"Division by 0",
-						other->getRange(),
-						context
-					),
-					Int::empty()
-				);
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value / otherValue, range, Value::INTERPRETER)
-			);
-		}
-		case BOOL: {
-			bool otherValue = static_cast<Bool const*>(other)->getValue();
-			if (!otherValue)
-				return std::make_pair(
-					ExpressionResult(
-						"Division by false",
-						other->getRange(),
-						context
-					),
-					Int::empty()
-				);
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value / otherValue, range, Value::INTERPRETER)
-			);
-		}
-		case FLOAT: {
-			float otherValue = static_cast<Float const*>(other)->getValue();
-			if (otherValue == 0.0)
-				return std::make_pair(
-					ExpressionResult(
-						"Division by 0.0",
-						other->getRange(),
-						context
-					),
-					Float::empty()
-				);
-			return std::make_pair(
-				ExpressionResult(),
-				new Float(value / otherValue, range, Value::INTERPRETER)
-			);
-		}
-		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
-	};
-}
-
-operatorResult Bool::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot modulo INT by value of type " + other->getStringType(),
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
-	switch (other->getType()) {
-		case INT: {
-			int64_t otherValue = static_cast<Int const*>(other)->getValue();
-			if (otherValue == 0)
-				return std::make_pair(
-					ExpressionResult(
-						"Modulo by 0",
-						other->getRange(),
-						context
-					),
-					nullptr
-				);
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value % otherValue, range, Value::INTERPRETER)
-			);
-		}
-		case BOOL: {
-			bool otherValue = static_cast<Bool const*>(other)->getValue();
-			if (!otherValue)
-				return std::make_pair(
-					ExpressionResult(
-						"Modulo by false",
-						other->getRange(),
-						context
-					),
-					nullptr
-				);
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(value % otherValue, range, Value::INTERPRETER)
-			);
-		}
-		case FLOAT: {
-			float otherValue = static_cast<Float const*>(other)->getValue();
-			if (otherValue == 0.0)
-				return std::make_pair(
-					ExpressionResult(
-						"Modulo by 0.0",
-						other->getRange(),
-						context
-					),
-					Float::empty()
-				);
-			return std::make_pair(
-				ExpressionResult(),
-				new Float(std::fmod(value, otherValue), range, Value::INTERPRETER)
-			);
-		}
-		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
-	};
-}
-
-operatorResult Bool::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot raise value of type " + other->getStringType() + " to Bool",
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
+Value *Bool::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(std::pow(value, static_cast<Int const*>(other)->getValue()), range, Value::INTERPRETER)
-			);
+			return new Int(value / static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Int(std::pow(value, static_cast<Bool const*>(other)->getValue()), range, Value::INTERPRETER)
-			);
+			return new Int(value / static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Float(std::pow(value, static_cast<Float const*>(other)->getValue()), range, Value::INTERPRETER)
-			);
+			return new Float(value / static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot divide value of type " + other->getStringType() + " by Bool");
 	};
 }
 
-operatorResult Bool::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot compare value of type " + other->getStringType() + " to Bool",
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
+Value *Bool::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
-		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value > static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+		case INT: 
+			return new Int(value % static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value > static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(value % static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value > static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Float(std::fmod(value, static_cast<Float const*>(other)->getValue()), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot modulo value of type " + other->getStringType() + " by Bool");
 	};
 }
 
-operatorResult Bool::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot compare value of type " + other->getStringType() + " to Bool",
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
+Value *Bool::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value >= static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(std::pow(value, static_cast<Int const*>(other)->getValue()), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value >= static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Int(std::pow(value, static_cast<Bool const*>(other)->getValue()), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value >= static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Float(std::pow(value, static_cast<Float const*>(other)->getValue()), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot raise Bool to the power of value of type " + other->getStringType());
 	};
 }
 
-operatorResult Bool::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot compare value of type " + other->getStringType() + " to Bool",
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
+Value *Bool::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value < static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value > static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value < static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value > static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value < static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value > static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot compare value of type " + other->getStringType() + " to Bool");
 	};
 }
 
-operatorResult Bool::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(
-				"Cannot compare value of type " + other->getStringType() + " to Bool",
-				other->getRange(),
-				context
-			),
-			nullptr
-		);
-	
+Value *Bool::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value <= static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value >= static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value <= static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value >= static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value <= static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value >= static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot compare value of type " + other->getStringType() + " to Bool");
 	};
 }
 
-operatorResult Bool::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(true, range, Value::INTERPRETER)
-		);
-	
+Value *Bool::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value != static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value < static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value != static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value < static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value != static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value < static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot compare value of type " + other->getStringType() + " to Bool");
 	};
 }
 
-operatorResult Bool::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	if (!other->isNumber())
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(false, range, Value::INTERPRETER)
-		);
-	
+Value *Bool::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	switch (other->getType()) {
 		case INT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value == static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value <= static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
 		case BOOL:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value == static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value <= static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
 		case FLOAT:
-			return std::make_pair(
-				ExpressionResult(),
-				new Bool(value == static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER)
-			);
+			return new Bool(value <= static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
 		default:
-			return std::make_pair(ExpressionResult(),	nullptr);
+			throw std::runtime_error("Cannot compare value of type " + other->getStringType() + " to Bool");
+	};
+}
+
+Value *Bool::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	switch (other->getType()) {
+		case INT:
+			return new Bool(value != static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
+		case BOOL:
+			return new Bool(value != static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
+		case FLOAT:
+			return new Bool(value != static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
+		default:
+			return new Bool(true, range, Value::INTERPRETER);
+	};
+}
+
+Value *Bool::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	switch (other->getType()) {
+		case INT:
+			return new Bool(value == static_cast<Int const*>(other)->getValue(), range, Value::INTERPRETER);
+		case BOOL:
+			return new Bool(value == static_cast<Bool const*>(other)->getValue(), range, Value::INTERPRETER);
+		case FLOAT:
+			return new Bool(value == static_cast<Float const*>(other)->getValue(), range, Value::INTERPRETER);
+		default:
+			return new Bool(false, range, Value::INTERPRETER);
 	};
 }

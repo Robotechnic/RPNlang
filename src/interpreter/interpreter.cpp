@@ -63,8 +63,11 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 			const RPNFunction* func = val->getValue();
 			RPNFunctionArgs args;
 			RPNFunctionResult mainResult = func->call(args, mainRange, this->context);
-			if (result = *std::get_if<ExpressionResult>(&mainResult); result.error()) {
-				result.display();
+			if (
+				auto callExpressionResult = std::get_if<ExpressionResult>(&mainResult); 
+				callExpressionResult && callExpressionResult->error()
+			) {
+				callExpressionResult->display();
 				return false;
 			}
 			Value::deleteValue(&std::get<Value*>(mainResult), Value::INTERPRETER);
@@ -113,23 +116,6 @@ Value *Interpreter::getLastValue() const {
 }
 
 /**
- * @brief get the minimum and maximum text range of value list
- * 
- * @param values values that the text range will be calculated from
- * @return TextRange text range of the tokens list
- */
-TextRange Interpreter::mergeRanges(const std::vector<Value*> &values) {
-	if (values.size() == 0) return TextRange();
-	
-	TextRange range = values[0]->getRange();
-	for (const Value *value : values) {
-		range.merge(value->getRange());
-	}
-	
-	return range;
-}
-
-/**
  * @brief check if memory contains less than 1 value at the end of the interpretation
  * 
  * @return ExpressionResult error if memory contains more than 1 value
@@ -139,20 +125,6 @@ ExpressionResult Interpreter::checkMemory() {
 		Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 		this->lastValue = None::empty();
 		return ExpressionResult();
-	}
-
-	if (this->memory.size() > 1) {
-		int size = this->memory.size();
-		TextRange range = this->memory.top()->getRange();
-		this->memory.clear(1);
-		ExpressionResult result(
-			"To much remaining values in the memory (" + std::to_string(size) + ")",
-			range.merge(this->memory.top()->getRange()),
-			this->context
-		);
-		Value::deleteValue(&this->memory.pop(), Value::INTERPRETER);
-
-		return result;
 	}
 
 	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
@@ -215,7 +187,7 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 				break;
 			case TOKEN_TYPE_OPERATOR:
 			case TOKEN_TYPE_BOOLEAN_OPERATOR:
-				result = this->interpretOperator(*it);
+				result = this->interpretOperator(static_cast<OperatorToken*>(*it));
 				break;
 			case TOKEN_TYPE_FUNCTION_CALL:
 			case TOKEN_TYPE_MODULE_FUNCTION_CALL:
@@ -284,15 +256,7 @@ ExpressionResult Interpreter::interpretBlock(Line &line, CodeBlock &block) {
 }
 
 ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
-	ExpressionResult sizeOk = this->memory.sizeExpected(
-		token->getParts().size() - 1,
-		"missing fString parameters expected " + std::to_string(token->getParts().size() - 1) + 
-								   " but got " + std::to_string(this->memory.size()),
-		token->getRange(),
-		this->context
-	);
 	TextRange range = token->getRange();
-	if (sizeOk.error()) return sizeOk;
 	std::string str;
 	Value *value;
 	for (size_t i = token->size() - 1; i > 0; i--) {
@@ -311,31 +275,43 @@ ExpressionResult Interpreter::interpretFString(const FStringToken *token) {
 	return ExpressionResult();
 }
 
-ExpressionResult Interpreter::interpretOperator(const Token *operatorToken) {
-	ExpressionResult result = this->memory.sizeExpected(
-		2,
-		"Not enough values for operator " + operatorToken->getStringValue(), 
-		operatorToken->getRange(),
-		this->context
-	);
-	if (result.error()) return result;
+ExpressionResult Interpreter::interpretOperator(const OperatorToken *operatorToken) {
 	Value *right, *left;
-	result = this->memory.popVariableValue(right, this->context);
+	ExpressionResult result = this->memory.popVariableValue(right, this->context);
 	if (result.error()) return result;
-	result = this->memory.popVariableValue(left, this->context);
-	if (result.error()) {
-		Value::deleteValue(&right, Value::INTERPRETER);
-		return result;
+
+	// check for 0 division error
+	if (operatorToken->getOperatorType() == OperatorToken::OP_DIV || operatorToken->getOperatorType() == OperatorToken::OP_MOD) {
+		if (
+			(right->getType() == INT && static_cast<Int*>(right)->getValue() == 0) ||
+			(right->getType() == FLOAT && static_cast<Float*>(right)->getValue() == 0) ||
+			(right->getType() == BOOL && static_cast<Bool*>(right)->getValue() == 0)
+		) {
+			return ExpressionResult(
+				"Division by 0",
+				right->getRange(),
+				this->context
+			);
+		}
 	}
-	operatorResult opResult = left->applyOperator(right, operatorToken, this->context);
+	result = this->memory.popVariableValue(left, this->context);
+	if (result.error()) return result;
+
+	if (left->getType() == STRING || left->getType() == LIST) {
+		if (static_cast<Int*>(right)->getValue() < 0) {
+			return ExpressionResult(
+				"Cannot multiply list like object by a negative number",
+				right->getRange(),
+				this->context
+			);
+		}
+	}
+
+	this->memory.push(left->applyOperator(right, operatorToken, this->context));
 	Value::deleteValue(&right, Value::INTERPRETER);
 	if (right != left)
 		Value::deleteValue(&left, Value::INTERPRETER);
-	if (std::get<0>(opResult).error()) {
-		return std::get<0>(opResult);
-	}
 	
-	this->memory.push(opResult.second);
 	return ExpressionResult();
 }
 
@@ -485,7 +461,10 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 		if (result.error()) return result;
 		callResult = function->call(arguments, functionName->getRange(), ctx);
 	}
-	if (result = *std::get_if<0>(&callResult); result.error()) return result;
+	if (
+		auto callExpressionResult = std::get_if<ExpressionResult>(&callResult); 
+		callExpressionResult && callExpressionResult->error()
+	) return *callExpressionResult;
 	Value *callReturnValue = std::get<Value*>(callResult);
 	if (arguments.size() > 0)
 		callReturnValue->setVariableRange(TextRange::merge(functionName->getRange(), arguments.front()->getRange()));

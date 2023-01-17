@@ -302,179 +302,79 @@ ExpressionResult Struct::getStruct(const Path *path, Value *&structValue, Contex
 }
 
 
-operatorResult Struct::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot add element of type " + Value::stringType(other->getType()) + " to struct",
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot add value to struct");
 }
 
-operatorResult Struct::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot subtract element of type " + Value::stringType(other->getType()) + " from struct",
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot subtract value from struct");
 }
 
-operatorResult Struct::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot multiply struct by element of type " + Value::stringType(other->getType()),
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot multiply struct by value");
 }
 
-operatorResult Struct::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot divide struct by element of type " + Value::stringType(other->getType()),
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot divide struct by value");
 }
 
-operatorResult Struct::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot mod struct by element of type " + Value::stringType(other->getType()),
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot mod struct by value");
 }
 
-operatorResult Struct::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot raise struct to the power of element of type " + Value::stringType(other->getType()),
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot raise struct to power of value");
 }
 
 
-operatorResult Struct::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot compare struct to element of type " + Value::stringType(other->getType()),
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot compare struct to element of type " + Value::stringType(other->getType()));
 }
 
-operatorResult Struct::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot compare struct to element of type " + Value::stringType(other->getType()),
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot compare struct to element of type " + Value::stringType(other->getType()));
 }
 
-operatorResult Struct::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot compare struct to element of type " + Value::stringType(other->getType()),
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot compare struct to element of type " + Value::stringType(other->getType()));
 }
 
-operatorResult Struct::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair<ExpressionResult, Value*>(
-		ExpressionResult(
-			"Cannot compare struct to element of type " + Value::stringType(other->getType()),
-			range,
-			context
-		),
-		nullptr
-	);
+Value *Struct::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("Cannot compare struct to element of type " + Value::stringType(other->getType()));
 }
 
-operatorResult Struct::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
+Value *Struct::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (other->getType() != STRUCT) {
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(true, this->getRange(), Value::INTERPRETER)
-		);
+		return new Bool(true, this->getRange(), Value::INTERPRETER);
 	}
 	const Struct *otherStruct = static_cast<const Struct*>(other);
 	if (this->definition->name != otherStruct->definition->name) {
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(true, this->getRange(), Value::INTERPRETER)
-		);
+		return new Bool(true, this->getRange(), Value::INTERPRETER);
 	}
 	for (auto it = this->members->begin(); it != this->members->end(); it++) {
 		auto otherIt = otherStruct->members->find(it->first);
-		operatorResult result = it->second->opne(otherIt->second, range, context);
-		if (result.first.error()) {
+		Value *result = it->second->opne(otherIt->second, range, context);
+		if (static_cast<Bool*>(result)->getValue()) {
 			return result;
 		}
-		if (static_cast<Bool*>(result.second)->getValue()) {
-			return std::make_pair(
-				ExpressionResult(),
-				result.second
-			);
-		}
 	}
-	return std::make_pair(
-		ExpressionResult(),
-		new Bool(false, this->getRange(), Value::INTERPRETER)
-	);
+	return new Bool(false, this->getRange(), Value::INTERPRETER);
 }
 
-operatorResult Struct::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
+Value *Struct::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	if (other->getType() != STRUCT) {
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(false, this->getRange(), Value::INTERPRETER)
-		);
+		return new Bool(false, this->getRange(), Value::INTERPRETER);
 	}
 	const Struct *otherStruct = static_cast<const Struct*>(other);
 	if (this->definition->name != otherStruct->definition->name) {
-		return std::make_pair(
-			ExpressionResult(),
-			new Bool(false, this->getRange(), Value::INTERPRETER)
-		);
+		return new Bool(false, this->getRange(), Value::INTERPRETER);
 	}
 	for (auto it = this->members->begin(); it != this->members->end(); it++) {
 		auto otherIt = otherStruct->members->find(it->first);
-		operatorResult result = it->second->opeq(otherIt->second, range, context);
-		if (result.first.error()) {
+		Value *result = it->second->opeq(otherIt->second, range, context);
+		if (!static_cast<Bool*>(result)->getValue()) {
 			return result;
 		}
-		if (!static_cast<Bool*>(result.second)->getValue()) {
-			return std::make_pair(
-				ExpressionResult(),
-				result.second
-			);
-		}
 	}
-	return std::make_pair(
-		ExpressionResult(),
-		new Bool(true, this->getRange(), Value::INTERPRETER)
-	);
+	return new Bool(true, this->getRange(), Value::INTERPRETER);
 }

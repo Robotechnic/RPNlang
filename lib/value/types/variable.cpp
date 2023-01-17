@@ -17,134 +17,50 @@ inline Value *Variable::copy(ValueOwner owner) const {
 	return new Variable(value, this->range);
 }
 
-operatorResult Variable::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opsub(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opmul(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opmod(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::oppow(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
 
-operatorResult Variable::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	return std::make_pair(
-		ExpressionResult(
-			"variable object just hold variable name in memory, replace it by another value to use it",
-			range,
-			context	
-		),
-		nullptr
-	);
+Value *Variable::opeq(const Value *other, const TextRange &range, const ContextPtr &context) const {
+	throw std::runtime_error("variable object just hold variable name in memory, replace it by another value to use it");
 }
