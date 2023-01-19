@@ -61,7 +61,7 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 		TextRange mainRange = val->getRange();
 		if (val->getType() == FUNCTION) {
 			const RPNFunction* func = val->getValue();
-			RPNFunctionArgs args;
+			RPNFunctionArgsValue args;
 			RPNFunctionResult mainResult = func->call(args, mainRange, this->context);
 			if (
 				auto callExpressionResult = std::get_if<ExpressionResult>(&mainResult); 
@@ -522,21 +522,6 @@ ExpressionResult Interpreter::interpretFor(Line &line, CodeBlock &block) {
 }
 
 ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
-	if (line.size() != 1) {
-		return ExpressionResult(
-			"Invalid number of arguments for try, expected 1 but got " + std::to_string(line.size()),
-			line.lastRange(),
-			this->context
-		);
-	}
-	if (line.top()->getType() != TOKEN_TYPE_LITERAL) {
-		return ExpressionResult(
-			"Invalid type for try, expected literal but got " + line.top()->getStringType(),
-			line.top()->getRange(),
-			this->context
-		);
-	}
-
 	// try
 	ExpressionResult result = this->interpret(block.getBlocks());
 	if (block.getNext() == nullptr)

@@ -17,15 +17,14 @@ class BuiltinRPNFunction : public RPNFunction {
 		BuiltinRPNFunction();
 		BuiltinRPNFunction(
 			std::string_view name,
-			std::vector<std::string> argsName,
-			RPNFunctionArgTypes argumentsTypes,
+			RPNFunctionArgs arguments,
 			RPNValueType returnType,
 			BuiltinRPNFunctionType function
 		);
 		~BuiltinRPNFunction();
 
 		RPNFunctionResult call(
-			RPNFunctionArgs &args,
+			RPNFunctionArgsValue &args,
 			const TextRange &range,
 			ContextPtr context
 		) const override;

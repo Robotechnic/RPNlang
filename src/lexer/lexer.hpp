@@ -42,7 +42,6 @@ class Lexer {
 		);
 
 	private:
-		ExpressionResult checkLine();
 		void pushLine();
 		bool hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const;
 		ExpressionResult parseBinNumber(Token *token);
@@ -57,15 +56,12 @@ class Lexer {
 		ExpressionResult parseStruct(CodeBlock *block);
 		ExpressionResult parseFunctionCall(const Token *token);
 
-		ExpressionResult checkKeywordLine(KeywordEnum keyword, const TextRange &keywordRange);
-
 	private:
 		ContextPtr context;
 		Line *currentLine;
 		std::queue<Token*> tokens;
 		std::stack<CodeBlock*> keywordBlockStack;
 		BlockQueue codeBlocks;
-		Analyzer analyzer;
 		/**
 		 * @brief this member allow to track if the last token was used directly by the lexer so,
 		 * it allow to know it is necessary to clean the memory after token usage

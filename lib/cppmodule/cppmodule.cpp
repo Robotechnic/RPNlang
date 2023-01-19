@@ -71,8 +71,7 @@ ExpressionResult CppModule::load(TextRange imortRange) {
  */
 void CppModule::addFunction(
 		const std::string &name,
-		const std::vector<std::string> &argsName,
-		const RPNFunctionArgTypes &argumentsTypes,
+		const RPNFunctionArgs &arguments,
 		RPNValueType returnType,
 		BuiltinRPNFunctionType function
 ) {
@@ -80,7 +79,7 @@ void CppModule::addFunction(
 		this->moduleFunctions.begin(), 
 		std::pair<std::string, BuiltinRPNFunction>(
 			name,
-			BuiltinRPNFunction(name, argsName, argumentsTypes, returnType, function)
+			BuiltinRPNFunction(name, arguments, returnType, function)
 		)
 	);
 	context->setValue(

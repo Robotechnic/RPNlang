@@ -10,8 +10,7 @@ class FunctionBlock : public BaseBlock {
 	public:
 		FunctionBlock(
 			const std::string &name,
-			const std::vector<std::string> &argsName,
-			const RPNFunctionArgTypes &argsTypes,
+			const RPNFunctionArgs arguments,
 			const RPNValueType &returnType,
 			CodeBlock *body
 		);
@@ -24,7 +23,7 @@ class FunctionBlock : public BaseBlock {
 		const RPNFunction *getFunction() const;
 
 		RPNValueType getReturnType() const;
-		RPNFunctionArgTypes getArgsTypes() const;
+		RPNFunctionArgs getArgs() const;
 		CodeBlock *getBody() const;
 
 		TextRange lastRange() const;

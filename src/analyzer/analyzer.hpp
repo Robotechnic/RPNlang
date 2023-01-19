@@ -16,6 +16,11 @@
 #include "tokens/tokens/valuetoken.hpp"
 #include "tokens/tokens/fstringtoken.hpp"
 #include "tokens/tokens/keywordtoken.hpp"
+#include "codeblocks/line.hpp"
+#include "codeblocks/codeblock.hpp"
+#include "codeblocks/functionblock.hpp"
+#include "codeblocks/blockqueue.hpp"
+
 
 class FunctionBlock;
 class Line;
@@ -25,44 +30,47 @@ struct AnalyzerValueType {
 	RPNValueType type;
 	TextRange range;
 	bool isVariable;
+	int conditionalLevel;
 };
 
 class Analyzer final {
 	public:
 		Analyzer(ContextPtr context);
 
-		void analyze(Line *line);
-		void analyze(CodeBlock *codeblock);
-		void analyseFunctionsBody();
-		void declareVariable(const std::string &name, RPNValueType type, const TextRange &range);
-
+		void analyze(BlockQueue &blocks, bool entryPoint = false);
+		
 		bool hasErrors() const;
-		void checkRemainingCount();
 		ExpressionResult analyzeErrors() const;
-		RPNValueType getLastType();
-		std::stack<AnalyzerValueType>& getStack();
 
 	private:
 		ExpressionResult error;
 		ContextPtr context;
+		int conditionalLevel;
+		bool inFunctionBlock;
 
 		Line *currentLine;
 		std::stack<AnalyzerValueType> stack;
-		std::queue<CodeBlock*> functionBlocks;
+		std::stack<CodeBlock*> functionBlocks;
 		std::unordered_map<std::string, AnalyzerValueType> variables;
-		std::unordered_map<std::string, std::pair<RPNFunctionArgTypes, RPNValueType>> functions;
-
+		std::unordered_map<std::string, AnalyzerValueType> functionVariables;
+		std::unordered_map<std::string, std::pair<std::vector<RPNValueType>, RPNValueType>> functions;
+		
 		AnalyzerValueType& topVariable();
+		void analyze(Line *line);
+		void analyze(CodeBlock *codeblock);
 		void analyze(FunctionBlock *functionBlock);
+		void analyzeFunctionsBody();
+		void checkRemainingCount();
 		void analyzeOperator(const OperatorToken *token);
 		void analyzeFString(const FStringToken *token);
-		void analyzeFunctionCall(std::pair<RPNFunctionArgTypes, RPNValueType> function, const Token *token);
+		void analyzeFunctionCall(std::pair<std::vector<RPNValueType>, RPNValueType> function, const Token *token);
 		void analyzeFunctionCall(const Token *token);
 		void analyzeAssignment(const Token *token);
 		void analyzeTypeCast(const TypeToken *token);
 		void analyzeListCreation(const TypeToken *token);
 		void analyzeStructCreation(const Token *token);
 		void analyzeKeyword(const KeywordToken *token);
+		void checkKeywordLine(const KeywordToken *token);
 
 		static bool isBinaryOperator(OperatorToken::OperatorTypes operatorType);
 		static bool isComparisonOperator(OperatorToken::OperatorTypes operatorType);
@@ -70,6 +78,3 @@ class Analyzer final {
 };
 
 
-#include "codeblocks/line.hpp"
-#include "codeblocks/codeblock.hpp"
-#include "codeblocks/functionblock.hpp"

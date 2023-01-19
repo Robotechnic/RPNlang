@@ -2,12 +2,11 @@
 
 FunctionBlock::FunctionBlock(
 	const std::string &name,
-	const std::vector<std::string> &argsName,
-	const RPNFunctionArgTypes &argsTypes,
+	const RPNFunctionArgs arguments,
 	const RPNValueType &returnType,
 	CodeBlock *body
 ) : BaseBlock(FUNCTION_BLOCK) {
-	this->function = UserRPNFunction::addFunction(name, argsName, argsTypes, returnType, body);
+	this->function = UserRPNFunction::addFunction(name, arguments, returnType, body);
 }
 
 bool FunctionBlock::empty() const {
@@ -40,8 +39,8 @@ RPNValueType FunctionBlock::getReturnType() const {
 	return this->function->getReturnType();
 }
 
-RPNFunctionArgTypes FunctionBlock::getArgsTypes() const {
-	return this->function->getArgsTypes();
+RPNFunctionArgs FunctionBlock::getArgs() const {
+	return this->function->getArgs();
 }
 
 CodeBlock *FunctionBlock::getBody() const {

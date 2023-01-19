@@ -1,19 +1,18 @@
 #include "rpnfunctions/userrpnfunction.hpp"
 
-UserRPNFunction::UserRPNFunction() : RPNFunction("",{},{},NONE), body(nullptr) {}
+UserRPNFunction::UserRPNFunction() : RPNFunction("",{},NONE), body(nullptr) {}
 UserRPNFunction::UserRPNFunction(const UserRPNFunction &other) :
-	RPNFunction(other.name, other.argsName, other.argsTypes, other.returnType),
+	RPNFunction(other.name, other.arguments, other.returnType),
 	body(other.body)
 {}
 
 UserRPNFunction::UserRPNFunction(
 	const std::string &name,
-	const std::vector<std::string> &argsName,
-	const RPNFunctionArgTypes &argsTypes,
+	const RPNFunctionArgs &arguments,
 	const RPNValueType &returnType,
 	CodeBlock *body
 ):
-	RPNFunction(name, argsName, argsTypes, returnType),
+	RPNFunction(name, arguments, returnType),
 	body(body) {}
 
 UserRPNFunction::~UserRPNFunction() {
@@ -23,31 +22,27 @@ UserRPNFunction::~UserRPNFunction() {
 }
 
 RPNFunctionResult UserRPNFunction::call(
-	RPNFunctionArgs &args,
+	RPNFunctionArgsValue &args,
 	const TextRange &range,
 	ContextPtr context
 ) const {
-	ExpressionResult result = this->checkTypes(args, context);
-	if (result.error()) return result;
-
 	ContextPtr functionContext = std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
 	for (size_t i = 0; i < args.size(); i++) {
-		if (this->argsTypes[i].index() == 0) {
+		if (this->arguments.at(i).second.index() == 0) {
 			functionContext->setValue(
-				this->argsName[i],
+				this->arguments.at(i).first,
 				args[i]->copy(Value::CONTEXT_VARIABLE)
 			);
 		} else {
 			functionContext->setValue(
-				this->argsName[i], 
-				args[i]->to(std::get<ValueType>(this->argsTypes[i]), Value::CONTEXT_VARIABLE)
+				this->arguments.at(i).first, 
+				args[i]->to(std::get<ValueType>(this->arguments.at(i).second), Value::CONTEXT_VARIABLE)
 			);
 		}
 	}
 
 	Interpreter interpreter(functionContext);
-	result = interpreter.interpret(this->body->getBlocks());
-
+	ExpressionResult result = interpreter.interpret(this->body->getBlocks());
 	if (result.error()) return result;
 
 
@@ -110,13 +105,12 @@ RPNFunctionResult UserRPNFunction::call(
 
 std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(
 			const std::string &name,
-			const std::vector<std::string> &argsName,
-			const RPNFunctionArgTypes &argsTypes,
+			const RPNFunctionArgs &arguments,
 			RPNValueType returnType, 
 			CodeBlock *body
 		) 
 {
-	userFunctions[name] = std::make_shared<UserRPNFunction>(name, argsName, argsTypes, returnType, body);
+	userFunctions[name] = std::make_shared<UserRPNFunction>(name, arguments, returnType, body);
 	return userFunctions.at(name);
 }
 

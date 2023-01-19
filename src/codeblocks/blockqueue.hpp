@@ -52,6 +52,10 @@ class BlockQueueIterator {
 		BlockQueueIterator &operator=(const BlockQueueIterator &it);
 		BlockQueueIterator &operator++();
 		BlockQueueIterator operator++(int);
+		BlockQueueIterator operator+(long unsigned int n);
+		BlockQueueIterator operator-(long unsigned int n);
+		bool operator<(const BlockQueueIterator &it) const;
+		bool operator>(const BlockQueueIterator &it) const;
 		bool operator==(const BlockQueueIterator &it) const;
 		bool operator!=(const BlockQueueIterator &it) const;
 		BaseBlock *operator*() const;

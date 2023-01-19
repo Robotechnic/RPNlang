@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "ctre/ctre.hpp"
+#include "value/valuetypes.hpp"
 
 constexpr auto keywordsRegex = ctre::match<"^("
 	"fun|"
@@ -75,4 +76,11 @@ const std::unordered_map<KeywordEnum, std::vector<KeywordEnum>> parentDependency
 	{KEYWORD_RETURN  , {KEYWORD_FUN}},
 	{KEYWORD_CONTINUE, {KEYWORD_WHILE, KEYWORD_FOR}},
 	{KEYWORD_BREAK   , {KEYWORD_WHILE, KEYWORD_FOR}}
+};
+
+const std::unordered_map<KeywordEnum, std::vector<RPNValueType>> linePatern = {
+	{KEYWORD_FOR, {VARIABLE, INT, INT, INT}},
+	{KEYWORD_WHILE, {BOOL}},
+	{KEYWORD_IF, {BOOL}},
+	{KEYWORD_TRY, {VARIABLE}}
 };

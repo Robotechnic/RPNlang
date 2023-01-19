@@ -2,19 +2,13 @@
 
 RPNFunction::RPNFunction(
 	std::string_view name,
-	const std::vector<std::string> &argsName,
-	const RPNFunctionArgTypes &argsTypes,
+	const RPNFunctionArgs &arguments,
 	const RPNValueType &returnType
 ):
 	name(name),
-	argsName(argsName),
-	argsTypes(argsTypes),
+	arguments(arguments),
 	returnType(returnType)
-{
-	if (argsName.size() != argsTypes.size()) {
-		throw std::runtime_error("RPNFunction: argsName and argsTypes must have the same size");
-	}
-}
+{}
 
 RPNFunction::~RPNFunction() {}
 
@@ -26,7 +20,7 @@ RPNFunction::~RPNFunction() {}
  * @return RPNFunctionResult If the function was executed successfully and value if it is the case
  */
 RPNFunctionResult RPNFunction::call(
-	RPNFunctionArgs &args,
+	RPNFunctionArgsValue &args,
 	const TextRange &range,
 	ContextPtr context
 ) const {
@@ -45,51 +39,8 @@ RPNFunctionResult RPNFunction::call(
 	);
 }
 
-/**
- * @brief check if all provided arguments have the correct types or if they can be converted to the correct types
- * 
- * @param args the arguments provided by the user
- * @return ExpressionResult if the arguments are correct
- */
-ExpressionResult RPNFunction::checkTypes(RPNFunctionArgs &args, const ContextPtr &context) const {
-	for (size_t i = 0; i < args.size(); i++) {
-		if (const auto structName (std::get_if<std::string>(&this->argsTypes[i])); structName) {
-			if (args[i]->getType() != STRUCT) {
-				return ExpressionResult(
-					"Function call argument type mismatch, expected struct" +
-					*structName + " but got " + args[i]->getStringType(),
-					args[i]->getRange(),
-					context
-				);
-			}
-			if (static_cast<Struct*>(args[i])->getStructName() != *structName) {
-				return ExpressionResult(
-					"Function call argument type mismatch, expected struct " +
-					*structName + " but got struct " + std::string(static_cast<Struct*>(args[i])->getStructName()),
-					args[i]->getRange(),
-					context
-				);
-			}
-			continue;
-		}
-		
-		ValueType type = std::get<ValueType>(this->argsTypes[i]);
-		if (args[i]->getType() == type || type == ANY) continue;
-		if (!Value::isCastableTo(args[i]->getType(), type)) {
-			return ExpressionResult(
-				"Function call argument type mismatch, expected " + 
-				std::string(Value::stringType(type)) + 
-				" but got " + args[i]->getStringType(),
-				args[i]->getRange(),
-				context
-			);
-		}
-	}
-	return ExpressionResult();
-}
-
 size_t RPNFunction::getArgumentsCount() const {
-	return this->argsName.size();
+	return this->arguments.size();
 }
 
 std::string RPNFunction::getName() const {
@@ -104,6 +55,6 @@ RPNValueType RPNFunction::getReturnType() const {
 	return this->returnType;
 }
 
-RPNFunctionArgTypes RPNFunction::getArgsTypes() const {
-	return this->argsTypes;
+RPNFunctionArgs RPNFunction::getArgs() const {
+	return this->arguments;
 }

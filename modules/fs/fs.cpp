@@ -41,13 +41,13 @@ ExpressionResult checkOpenMode(std::string_view strMode, const TextRange &range,
 }
 
 ExpressionResult loader(CppModule *module) {
-	module->addFunction("exists", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("exists", {{"filename", STRING}}, BOOL, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		return new Bool(
 			fs::exists(args[0]->getStringValue()), range, Value::INTERPRETER
 		);
 	});
 
-	module->addFunction("currentPath", {}, {}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("currentPath", {}, STRING, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		std::string path = fs::current_path(ec);
 		
@@ -62,7 +62,7 @@ ExpressionResult loader(CppModule *module) {
 		return new String(path, range, Value::INTERPRETER);
 	});
 	
-	module->addFunction("size", {"filename"}, {STRING}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("size", {{"filename", STRING}}, INT, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		uintmax_t size = fs::file_size(args[0]->getStringValue(), ec);
 		
@@ -77,7 +77,7 @@ ExpressionResult loader(CppModule *module) {
 		return new Int(size, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("createDirectory", {"dirName"}, {STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("createDirectory", {{"dirName", STRING}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool success = fs::create_directory(args[0]->getStringValue(), ec);
 		
@@ -92,7 +92,7 @@ ExpressionResult loader(CppModule *module) {
 		return None::empty();
 	});
 
-	module->addFunction("remove", {"filename"}, {STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("remove", {{"filename", STRING}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool success = fs::remove(args[0]->getStringValue(), ec);
 		
@@ -107,7 +107,7 @@ ExpressionResult loader(CppModule *module) {
 		return None::empty();
 	});
 
-	module->addFunction("rename", {"oldName", "newName"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("rename", {{"oldName", STRING}, {"newName", STRING}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		fs::rename(args[0]->getStringValue(), args[1]->getStringValue(), ec);
 		
@@ -122,7 +122,7 @@ ExpressionResult loader(CppModule *module) {
 		return None::empty();
 	});
 
-	module->addFunction("copy", {"source", "destination"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("copy", {{"source", STRING}, {"destination", STRING}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		fs::copy(
 			args[0]->getStringValue(), 
@@ -142,7 +142,7 @@ ExpressionResult loader(CppModule *module) {
 		return None::empty();
 	});
 
-	module->addFunction("copyFile", {"source", "destination"}, {STRING, STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("copyFile", {{"source", STRING}, {"destination", STRING}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool success = fs::copy_file(args[0]->getStringValue(), args[1]->getStringValue(), ec);
 		
@@ -157,7 +157,7 @@ ExpressionResult loader(CppModule *module) {
 		return None::empty();
 	});
 
-	module->addFunction("isFile", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("isFile", {{"filename", STRING}}, BOOL, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool result = fs::is_regular_file(args[0]->getStringValue(), ec);
 		if (ec) {
@@ -170,7 +170,7 @@ ExpressionResult loader(CppModule *module) {
 		return new Bool(result, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("isDir", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("isDir", {{"filename", STRING}}, BOOL, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool result = fs::is_directory(args[0]->getStringValue(), ec);
 		if (ec) {
@@ -183,7 +183,7 @@ ExpressionResult loader(CppModule *module) {
 		return new Bool(result, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("isSymlink", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("isSymlink", {{"filename", STRING}}, BOOL, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool result = fs::is_symlink(args[0]->getStringValue(), ec);
 		if (ec) {
@@ -196,7 +196,7 @@ ExpressionResult loader(CppModule *module) {
 		return new Bool(result, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("isEmpty", {"filename"}, {STRING}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("isEmpty", {{"filename", STRING}}, BOOL, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::error_code ec;
 		bool result = fs::is_empty(args[0]->getStringValue(), ec);
 		if (ec) {
@@ -219,7 +219,7 @@ ExpressionResult loader(CppModule *module) {
 	fileDefinition.addMember("append", BOOL);
 	Struct::addStructDefinition(fileDefinition);
 
-	module->addFunction("open", {"filename", "mode"}, {STRING, STRING}, "File", [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("open", {{"filename", STRING}, {"mode", STRING}}, "File", [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		std::ios_base::openmode mode;
 		std::string modeStr = args[1]->getStringValue();
 		ExpressionResult result = checkOpenMode(modeStr, range, context, mode);
@@ -269,7 +269,7 @@ ExpressionResult loader(CppModule *module) {
 		return fileStruct;
 	});
 
-	module->addFunction("eof", {"file"}, {"File"}, BOOL, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("eof", {{"file","File"}}, BOOL, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		
@@ -287,7 +287,7 @@ ExpressionResult loader(CppModule *module) {
 	 * READ FUNCTIONS
 	*/
 
-	module->addFunction("charCount", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("charCount", {{"file","File"}}, INT, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is readable
 		if (!static_cast<Bool*>(fileStruct->getMember("readable"))->getValue()) {
@@ -313,7 +313,7 @@ ExpressionResult loader(CppModule *module) {
 		return new Int(size, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("get", {"file"}, {"File"}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("get", {{"file","File"}}, STRING, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is readable
 		if (!static_cast<Bool*>(fileStruct->getMember("readable"))->getValue()) {
@@ -338,7 +338,7 @@ ExpressionResult loader(CppModule *module) {
 		return new String(std::string(1, c), range, Value::INTERPRETER);
 	});
 
-	module->addFunction("getb", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("getb", {{"file","File"}}, INT, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is readable
 		if (!static_cast<Bool*>(fileStruct->getMember("readable"))->getValue()) {
@@ -363,7 +363,7 @@ ExpressionResult loader(CppModule *module) {
 		return new Int(c, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("getLine", {"file"}, {"File"}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("getLine", {{"file","File"}}, STRING, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is readable
 		if (!static_cast<Bool*>(fileStruct->getMember("readable"))->getValue()) {
@@ -393,7 +393,7 @@ ExpressionResult loader(CppModule *module) {
 		return new String(line, range, Value::INTERPRETER);
 	});
 
-	module->addFunction("tellg", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("tellg", {{"file","File"}}, INT, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
@@ -406,7 +406,7 @@ ExpressionResult loader(CppModule *module) {
 		return new Int(file->tellg(), range, Value::INTERPRETER);
 	});
 
-	module->addFunction("seekg", {"file", "pos", "beg"}, {"File", INT, BOOL}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("seekg", {{"file", "File"}, {"pos", INT}, {"beg", BOOL}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
@@ -423,7 +423,7 @@ ExpressionResult loader(CppModule *module) {
 	/*
 	 * WRITE FUNCTIONS
 	 */
-	module->addFunction("write", {"file", "value"}, {"File", STRING}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("write", {{"file", "File"}, {"value", STRING}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is writable
 		if (!static_cast<Bool*>(fileStruct->getMember("writable"))->getValue()) {
@@ -447,7 +447,7 @@ ExpressionResult loader(CppModule *module) {
 		return None::empty();
 	});
 
-	module->addFunction("put", {"file", "value"}, {"File", INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("put", {{"file", "File"}, {"value", INT}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		// check if file is writable
 		if (!static_cast<Bool*>(fileStruct->getMember("writable"))->getValue()) {
@@ -471,7 +471,7 @@ ExpressionResult loader(CppModule *module) {
 		return None::empty();
 	});
 
-	module->addFunction("tellp", {"file"}, {"File"}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("tellp", {{"file","File"}}, INT, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
@@ -484,7 +484,7 @@ ExpressionResult loader(CppModule *module) {
 		return new Int(file->tellp(), range, Value::INTERPRETER);
 	});
 
-	module->addFunction("seekp", {"file", "pos", "beg"}, {"File", INT, BOOL}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("seekp", {{"file", "File"}, {"pos", INT}, {"beg", BOOL}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
@@ -500,7 +500,7 @@ ExpressionResult loader(CppModule *module) {
 		return None::empty();
 	});
 
-	module->addFunction("flush", {"file"}, {"File"}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("flush", {{"file","File"}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {
@@ -518,7 +518,7 @@ ExpressionResult loader(CppModule *module) {
 	 * CLOSE FUNCTIONS
 	 */
 	
-	module->addFunction("close", {"file"}, {"File"}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+	module->addFunction("close", {{"file","File"}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 		Struct *fileStruct = static_cast<Struct*>(args[0]);
 		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
 		if (!file->is_open()) {

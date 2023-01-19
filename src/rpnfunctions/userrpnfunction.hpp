@@ -12,23 +12,21 @@ class UserRPNFunction : public RPNFunction {
 		UserRPNFunction(const UserRPNFunction &other);
 		UserRPNFunction(
 			const std::string &name,
-			const std::vector<std::string> &argsName,
-			const RPNFunctionArgTypes &argsTypes,
+			const RPNFunctionArgs &arguments,
 			const RPNValueType &returnType,
 			CodeBlock *body
 		);
 		~UserRPNFunction() override;
 
 		RPNFunctionResult call(
-			RPNFunctionArgs &args,
+			RPNFunctionArgsValue &args,
 			const TextRange &range,
 			ContextPtr context
 		) const override;
 
 		static std::shared_ptr<UserRPNFunction> addFunction(
 			const std::string &name,
-			const std::vector<std::string> &argsName,
-			const RPNFunctionArgTypes &argsTypes,
+			const RPNFunctionArgs &arguments,
 			RPNValueType returnType, 
 			CodeBlock *body
 		);

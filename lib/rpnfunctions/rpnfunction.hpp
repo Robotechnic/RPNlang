@@ -14,14 +14,13 @@ class RPNFunction {
 	public:
 		RPNFunction(
 			std::string_view name,
-			const std::vector<std::string> &argsName,
-			const RPNFunctionArgTypes &argsTypes,
+			const RPNFunctionArgs &arguments,
 			const RPNValueType &returnType
 		);
 		virtual ~RPNFunction();
 
 		virtual RPNFunctionResult call(
-			RPNFunctionArgs &args,
+			RPNFunctionArgsValue &args,
 			const TextRange &range,
 			ContextPtr context
 		) const;
@@ -31,14 +30,11 @@ class RPNFunction {
 		TextRange getRange() const;
 
 		RPNValueType getReturnType() const;
-		RPNFunctionArgTypes getArgsTypes() const;
+		RPNFunctionArgs getArgs() const;
 
 	protected:
-		ExpressionResult checkTypes(RPNFunctionArgs &args, const ContextPtr &context) const;		
-
 		std::string name;
-		std::vector<std::string> argsName;
-		RPNFunctionArgTypes argsTypes;
+		RPNFunctionArgs arguments;
 		RPNValueType returnType;
 };
 

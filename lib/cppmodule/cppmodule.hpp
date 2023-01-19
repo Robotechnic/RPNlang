@@ -37,8 +37,7 @@ class CppModule {
 
 		void addFunction(
 			const std::string &name,
-			const std::vector<std::string> &argsName,
-			const RPNFunctionArgTypes &argumentsTypes,
+			const RPNFunctionArgs &arguments,
 			RPNValueType returnType,
 			BuiltinRPNFunctionType function
 		);

@@ -6,7 +6,7 @@ ExpressionResult loader(CppModule *module) {
 	ExpressionResult result;
 	
 	module->addFunction(
-		"width", {}, {}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"width", {}, INT, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			struct winsize w;
 			ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 			return new Int(w.ws_col, range, Value::INTERPRETER);
@@ -14,7 +14,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"height", {}, {}, INT, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"height", {}, INT, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			struct winsize w;
 			ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
 			return new Int(w.ws_row, range, Value::INTERPRETER);
@@ -22,7 +22,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"clear", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"clear", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// reset color and clear screen
 			std::cout << "\033[0m";
 			std::cout << "\033[2J";
@@ -36,7 +36,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"home", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"home", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// set cursor to top left of screen and reset colors
 			std::cout << "\033[0;0H";
 			std::cout << "\033[0m";
@@ -45,7 +45,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"end", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"end", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// set cursor to bottom of screen
 			std::cout << "\033[9999;9999H";
 			return None::empty();
@@ -53,7 +53,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"flush", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"flush", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// flush output
 			std::cout << std::flush;
 			return None::empty();
@@ -61,7 +61,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"setPixelColor", {"x", "y", "color"}, {INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"setPixelColor", {{"x", INT}, {"y", INT}, {"color", INT}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			int pixel = static_cast<Int*>(args[2])->getValue();
@@ -79,7 +79,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"setRGBPixelColor", {"x","y","red", "blue", "green"}, {INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"setRGBPixelColor", {{"x", INT}, {"y", INT}, {"red", INT}, {"blue", INT}, {"green", INT}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			int red = static_cast<Int*>(args[2])->getValue();
 			int blue = static_cast<Int*>(args[3])->getValue();
 			int green = static_cast<Int*>(args[4])->getValue();
@@ -99,7 +99,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"setAscii", {"x", "y", "letter", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"setAscii", {{"x", INT}, {"y", INT}, {"letter", STRING}, {"color", INT}, {"background", INT}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			const std::string letter = args[2]->getStringValue();
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
@@ -126,8 +126,8 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"setRGBAscii", {"x", "y", "letter", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
-			const std::string letter = args[2]->getStringValue();
+		"setRGBAscii", {{"x", INT}, {"y", INT},  {"letter", INT}, {"red", INT}, {"blue", INT}, {"green", INT}, {"backgroundRed", INT}, {"backgroundBlue", INT}, {"backgroundGreen", INT}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+			int letter = static_cast<Int*>(args[2])->getValue();
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			int red = static_cast<Int*>(args[3])->getValue();
@@ -150,22 +150,15 @@ ExpressionResult loader(CppModule *module) {
 					context
 				);
 			}
-			if (letter.size() != 1) {
-				return ExpressionResult(
-					"Letter must be a single character",
-					args[0]->getRange(),
-					context
-				);
-			}
 			std::cout << "\033[" << y << ";" << x << "H";
 			std::cout << "\033[38;2;" << red << ";" << green << ";" << blue << "m";
-			std::cout << "\033[48;2;" << backgroundRed << ";" << backgroundGreen << ";" << backgroundBlue << "m" << letter;
+			std::cout << "\033[48;2;" << backgroundRed << ";" << backgroundGreen << ";" << backgroundBlue << "m" << char(letter);
 			return None::empty();
 		}
 	);
 
 	module->addFunction(
-		"drawRect", {"x", "y", "width", "height", "color"}, {INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"drawRect", {{"x", INT}, {"y", INT}, {"width", INT}, {"height", INT}, {"color", INT}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
 			int width = static_cast<Int*>(args[2])->getValue();
@@ -191,7 +184,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"drawText", {"x", "y", "text", "color", "background"}, {INT, INT, STRING, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"drawText", {{"x", INT}, {"y", INT}, {"text", STRING}, {"color", INT}, {"background", INT}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			const std::string text = args[2]->getStringValue();
 			int x = static_cast<Int*>(args[0])->getValue();
 			int y = static_cast<Int*>(args[1])->getValue();
@@ -218,7 +211,7 @@ ExpressionResult loader(CppModule *module) {
 	);
 
 	module->addFunction(
-		"drawTextRGB", {"x", "y", "text", "red", "blue", "green", "backgroundRed", "backgroundBlue", "backgroundGreen"}, {INT, INT, STRING, INT, INT, INT, INT, INT, INT}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"drawTextRGB", {{"x", INT}, {"y", INT},  {"text", STRING}, {"red", INT}, {"blue", INT}, {"green", INT}, {"backgroundRed", INT}, {"backgroundBlue", INT}, {"backgroundGreen", INT}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			const std::string text = args[0]->getStringValue();
 			int x = static_cast<Int*>(args[1])->getValue();
 			int y = static_cast<Int*>(args[2])->getValue();
@@ -254,7 +247,7 @@ ExpressionResult loader(CppModule *module) {
 	 * 
 	 */
 	module->addFunction(
-		"rawMode", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"rawMode", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			struct termios raw;
 			tcgetattr(STDIN_FILENO, &holdTermios);
 			raw = holdTermios;
@@ -274,7 +267,7 @@ ExpressionResult loader(CppModule *module) {
 	 * 
 	 */
 	module->addFunction(
-		"normalMode", {}, {}, NONE, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"normalMode", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			tcsetattr(STDIN_FILENO, TCSANOW , &holdTermios);
 			//show the cursor
 			std::cout << "\033[?25h";
@@ -287,7 +280,7 @@ ExpressionResult loader(CppModule *module) {
 	 * 
 	 */
 	module->addFunction(
-		"getKey", {}, {}, STRING, [](RPNFunctionArgs &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
+		"getKey", {}, STRING, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			char input;
 			if (read(STDIN_FILENO, &input, 1) == 1) {
 				return new String(std::string(1, input), TextRange(), Value::INTERPRETER);
