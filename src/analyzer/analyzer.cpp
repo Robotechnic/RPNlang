@@ -111,25 +111,31 @@ void Analyzer::analyze(Line *line) {
 				this->analyzeKeyword(static_cast<const KeywordToken *>(*it));
 				break;
 			default:
-				throw std::runtime_error("Lexer didn't create a valid token " + Token::stringType(it->getType()));
+				throw std::runtime_error("Lexer didn't create a valid token : " + Token::stringType(it->getType()));
 		}
+		lastToken = *it;
 	}
 }
 
 AnalyzerValueType& Analyzer::topVariable() {
 	if (stack.top().isVariable) {
 		AnalyzerValueType top = stack.top();
+		TextRange range = top.range;
 		stack.pop();
-		if (this->variables.find(std::get<std::string>(top.type)) == this->variables.end()) {
-			this->error = ExpressionResult(
-				"Variable " + std::get<std::string>(top.type) + " is not defined",
-				top.range,
-				this->context
-			);
-			this->stack.push(top);
-			return stack.top();
+		std::unordered_map<std::string, AnalyzerValueType> *variablesMap = &this->functionVariables;
+		if (this->functionVariables.find(std::get<std::string>(top.type)) == this->variables.end()) {
+			variablesMap = &this->variables;
+			if (this->variables.find(std::get<std::string>(top.type)) == this->variables.end()) {
+				this->error = ExpressionResult(
+					"Variable " + std::get<std::string>(top.type) + " is not defined",
+					top.range,
+					this->context
+				);
+				this->stack.push(top);
+				return stack.top();
+			}
 		}
-		if (this->variables[std::get<std::string>(top.type)].conditionalLevel > this->conditionalLevel) {
+		if (variablesMap->at(std::get<std::string>(top.type)).conditionalLevel > this->conditionalLevel) {
 			this->error = ExpressionResult(
 				"Variable " + std::get<std::string>(top.type) + 
 				" has been declared conditionally and cannot be used outside of the condition scope",
@@ -139,8 +145,9 @@ AnalyzerValueType& Analyzer::topVariable() {
 			this->stack.push(top);
 			return stack.top();
 		}
-		this->stack.push(this->variables[std::get<std::string>(top.type)]);
+		this->stack.push(variablesMap->at(std::get<std::string>(top.type)));
 		this->stack.top().isVariable = false;
+		this->stack.top().range = range;
 	}
 	return stack.top();
 }
@@ -157,18 +164,28 @@ void Analyzer::analyze(FunctionBlock *functionBlock) {
 	std::vector<RPNValueType> argsTypes;
 	for (auto valuesType : functionBlock->getArgs())
 		argsTypes.push_back(valuesType.second);
+	
 	functions[functionBlock->getName()] = std::pair<std::vector<RPNValueType>, RPNValueType>(
 		argsTypes,
 		functionBlock->getReturnType()
 	);
-	functionBlocks.push(functionBlock->getBody());
+	functionBlocks.push(functionBlock);
 }
 
 void Analyzer::analyzeFunctionsBody() {
 	while (!this->functionBlocks.empty() && !this->hasErrors()) {
-		
+		RPNFunctionArgs args = this->functionBlocks.top()->getArgs();
+		for (const auto &arg : args) {
+			this->functionVariables[arg.first] = {
+				arg.second,
+				this->functionBlocks.top()->lastRange(),
+				true,
+				0
+			};
+		}
 		this->analyze(this->functionBlocks.top()->getBlocks());
 		this->functionBlocks.pop();
+		this->functionVariables.clear();
 	}
 }
 
@@ -434,7 +451,7 @@ void Analyzer::analyzeTypeCast(const TypeToken *token) {
 }
 
 void Analyzer::analyzeListCreation(const TypeToken *token) {
-	int size = static_cast<const Int*>(static_cast<ValueToken*>(this->currentLine->last())->getValue())->getValue();
+	int size = static_cast<const Int*>(static_cast<ValueToken*>(this->lastToken)->getValue())->getValue();
 	if (size < 0) {
 		this->error = ExpressionResult(
 			"List size can't be negative",
@@ -634,6 +651,7 @@ void Analyzer::checkKeywordLine(const KeywordToken *token) {
 				};
 				continue;
 			}
+			this->topVariable();
 			if (stack.top().type.index() != 1) {
 				this->error = ExpressionResult(
 					"Keyword " + token->getStringValue() + " require a value of type " + Value::stringType(std::get<ValueType>(types[i])) + " but got " + std::get<std::string>(stack.top().type),

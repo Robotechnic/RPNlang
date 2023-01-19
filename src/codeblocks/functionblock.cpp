@@ -23,6 +23,10 @@ void FunctionBlock::display() const {
 	std::cout << "End of FunctionBlock" << std::endl;
 }
 
+BlockQueue& FunctionBlock::getBlocks() {
+	return this->function->getBody()->getBlocks();
+}
+
 std::string FunctionBlock::getName() const {
 	return this->function->getName();
 }

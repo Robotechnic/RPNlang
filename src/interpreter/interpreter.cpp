@@ -327,27 +327,10 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 
 ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
 	ValueType type = static_cast<const TypeToken *>(typeToken)->getValueType();
-	ExpressionResult result = this->memory.sizeExpected(
-		1,
-		"Not enough values for type conversion",
-		typeToken->getRange(),
-		this->context
-	);
-	if (result.error()) return result;
 	if (type == LIST && !Value::isCastableTo(this->memory.top()->getType(), LIST)) {
 		return this->interpretList(typeToken);
 	}
-
-	Value *top = this->memory.popVariableValue(this->context);
-
-	if (!Value::isCastableTo(top->getType(), type)) {
-		return ExpressionResult(
-			"Can't cast " + top->getStringType() + " to " + Value::stringType(type),
-			typeToken->getRange(),
-			this->context
-		);
-	}
-	
+	Value *top = this->memory.popVariableValue(this->context);	
 	Value *value = top->to(type, Value::INTERPRETER);
 	Value::deleteValue(&top, Value::INTERPRETER);
 	this->memory.push(value);
@@ -557,13 +540,6 @@ ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
 }
 
 ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
-	ExpressionResult result = this->memory.sizeExpected(
-		1,
-		"Expected list size before list keyword",
-		keywordToken->getRange(),
-		this->context
-	);
-	if (result.error()) return result;
 	Int *size = static_cast<Int*>(this->memory.pop());
 	if (size->getValue() < 0) {
 		return ExpressionResult(
@@ -572,14 +548,6 @@ ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
 			this->context
 		);
 	}
-	result = this->memory.sizeExpected(
-		size->getValue(),
-		"Not enough values to create list, expected " + std::to_string(size->getValue()) + 
-		" but got " + std::to_string(this->memory.size()),
-		keywordToken->getRange().merge(size->getRange()),
-		this->context
-	);
-	if (result.error()) return result;
 	TextRange range = keywordToken->getRange().merge(size->getRange());
 	std::vector<Value*> values;
 	Value *value;

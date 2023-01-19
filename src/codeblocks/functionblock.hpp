@@ -18,6 +18,7 @@ class FunctionBlock : public BaseBlock {
 		bool empty() const;
 		void clear();
 		void display() const;
+		BlockQueue& getBlocks();
 
 		std::string getName() const;
 		const RPNFunction *getFunction() const;

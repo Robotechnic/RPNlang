@@ -48,9 +48,10 @@ class Analyzer final {
 		int conditionalLevel;
 		bool inFunctionBlock;
 
+		Token *lastToken;
 		Line *currentLine;
 		std::stack<AnalyzerValueType> stack;
-		std::stack<CodeBlock*> functionBlocks;
+		std::stack<FunctionBlock*> functionBlocks;
 		std::unordered_map<std::string, AnalyzerValueType> variables;
 		std::unordered_map<std::string, AnalyzerValueType> functionVariables;
 		std::unordered_map<std::string, std::pair<std::vector<RPNValueType>, RPNValueType>> functions;

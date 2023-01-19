@@ -1,6 +1,5 @@
 simpleFunction -> none fun
 	"simpleFunction ok\n" :print
-	"ok"
 nuf
 
 paramFunction string param -> none fun
