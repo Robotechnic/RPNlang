@@ -8,9 +8,8 @@ fizzBuz int nb -> string fun
 	fi
 	result "" == if
 		nb :toString return
-	else
-		result return
 	fi
+	result return
 nuf
 
 i 0 20 1 for

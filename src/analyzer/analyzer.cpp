@@ -66,14 +66,7 @@ void Analyzer::checkRemainingCount() {
 	}
 	if (this->stack.empty()) return;
 	if (!this->stack.top().isVariable) return;
-	std::string name = std::get<std::string>(this->stack.top().type);
-	if (this->variables.find(name) == this->variables.end()) {
-		this->error = ExpressionResult(
-			"Variable '" + name + "' is not defined",
-			this->stack.top().range,
-			this->context
-		);
-	}
+	this->topVariable();
 }
 
 void Analyzer::analyze(Line *line) {
@@ -181,6 +174,7 @@ void Analyzer::analyze(FunctionBlock *functionBlock) {
 }
 
 void Analyzer::analyzeFunctionsBody() {
+	this->inFunctionBlock = true;
 	while (!this->functionBlocks.empty() && !this->hasErrors()) {
 		RPNFunctionArgs args = this->functionBlocks.top()->getArgs();
 		for (const auto &arg : args) {
@@ -195,6 +189,7 @@ void Analyzer::analyzeFunctionsBody() {
 		this->functionBlocks.pop();
 		this->functionVariables.clear();
 	}
+	this->inFunctionBlock = false;
 }
 
 void Analyzer::analyzeOperator(const OperatorToken *token) {
@@ -376,10 +371,12 @@ void Analyzer::analyzeAssignment(const Token *token) {
 		);
 		return;
 	}
+	std::unordered_map<std::string, AnalyzerValueType> *variables = &this->variables;
+	if (this->inFunctionBlock) variables = &this->functionVariables;
 	std::string name = std::get<std::string>(variable.type);
-	if (this->conditionalLevel > 0 && this->variables.find(name) != this->variables.end()) {
+	if (this->conditionalLevel > 0 && variables->find(name) != variables->end()) {
 		// check if the type is the same or equivalent
-		AnalyzerValueType holdVariable = this->variables.at(name);
+		AnalyzerValueType holdVariable = variables->at(name);
 		if (holdVariable.type.index() == 0) {
 			if (type.index() != 0) {
 				this->error = ExpressionResult(
@@ -412,7 +409,7 @@ void Analyzer::analyzeAssignment(const Token *token) {
 			);
 			return;
 		}
-		this->variables[name] = {
+		(*variables)[name] = {
 			type,
 			variable.range,
 			true,
@@ -421,7 +418,7 @@ void Analyzer::analyzeAssignment(const Token *token) {
 		};
 		return;
 	}
-	this->variables[name] = {
+	(*variables)[name] = {
 		type,
 		variable.range,
 		false,
