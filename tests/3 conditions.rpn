@@ -38,4 +38,14 @@ else
 	1 :exit
 fi
 
+"Test 5\n" :print
+# analyzer prevent from conditional variable creation but in this case it is ok
+true if
+	ifVar 5 =
+else
+	ifVar 6.5 =
+fi
+
+ifVar 5 +
+
 "conditions ok\n" :print

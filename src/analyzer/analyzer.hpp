@@ -31,6 +31,7 @@ struct AnalyzerValueType {
 	TextRange range;
 	bool isVariable;
 	int conditionalLevel;
+	int conditionalNextLevel;
 };
 
 class Analyzer final {
@@ -47,6 +48,7 @@ class Analyzer final {
 		ContextPtr context;
 		int conditionalLevel;
 		bool inFunctionBlock;
+		int nextConditionalLevel;
 
 		Token *lastToken;
 		Line *currentLine;

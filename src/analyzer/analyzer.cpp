@@ -27,11 +27,19 @@ void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 
 void Analyzer::analyze(CodeBlock *block) {
 	this->conditionalLevel++;
+	this->nextConditionalLevel = 1;
 	this->analyze(block->getBlocks());
 	while ((block = block->getNext()) && !this->hasErrors()) {
+		this->nextConditionalLevel++;
 		this->analyze(block->getBlocks());
 	}
 	this->conditionalLevel--;
+	if (this->nextConditionalLevel == 1) return;
+	for (auto &variable : this->variables) {
+		if (variable.second.conditionalNextLevel == this->nextConditionalLevel) {
+			variable.second.conditionalLevel = this->conditionalLevel;
+		}
+	}
 }
 
 bool Analyzer::hasErrors() const {
@@ -408,7 +416,8 @@ void Analyzer::analyzeAssignment(const Token *token) {
 			type,
 			variable.range,
 			true,
-			holdVariable.conditionalLevel
+			holdVariable.conditionalLevel,
+			this->nextConditionalLevel - 1 == holdVariable.conditionalLevel ? holdVariable.conditionalLevel + 1 : holdVariable.conditionalLevel
 		};
 		return;
 	}
@@ -416,7 +425,8 @@ void Analyzer::analyzeAssignment(const Token *token) {
 		type,
 		variable.range,
 		false,
-		this->conditionalLevel
+		this->conditionalLevel,
+		this->nextConditionalLevel == 1 ? 1 : 0
 	};
 }
 
