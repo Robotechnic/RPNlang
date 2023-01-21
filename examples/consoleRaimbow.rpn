@@ -1,7 +1,7 @@
-"terminal" :import
-"random" :import
-"math" :import
-"time" :import
+"terminal" import
+"random" import
+"math" import
+"time" import
 
 randomTerminalColor -> none fun
 	:terminal.clear

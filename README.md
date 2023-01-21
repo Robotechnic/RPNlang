@@ -93,7 +93,7 @@ divide nb float -> float fun nb .5 / return nuf =
 **Module import**:
 By default, RPNlang modules are namespaced with the module name (or file name in case of custom module)
 ```
-"math" :import
+"math" import
 math.pi :print
 5 :math.sqrt :print
 math.pi 2 / math.cos :print
@@ -101,7 +101,7 @@ math.pi 2 / math.cos :print
 
 But you can also import a module with a custom namespace:
 ```
-"math" "mymath" :importAs
+"math" "mymath" importAs
 mymath.pi :print
 5 :mymath.sqrt :print
 mymath.pi 2 / mymath.cos :print

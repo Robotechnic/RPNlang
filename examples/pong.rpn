@@ -1,5 +1,5 @@
-"terminal" :import
-"time" :import
+"terminal" import
+"time" import
 
 drawPaddle list pos -> none fun
 	pos 0 :at pos 1 :at pos 2 :at pos 3 :at terminal.WHITE_BACKGROUND :terminal.drawRect

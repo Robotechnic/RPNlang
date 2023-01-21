@@ -1,6 +1,6 @@
-"terminal" :import
-"time" :import
-"random" :import
+"terminal" import
+"time" import
+"random" import
 
 drawSnake list rings -> none fun
 	rings :top 0 :at rings :top 1 :at terminal.YELLOW_BACKGROUND :terminal.setPixelColor

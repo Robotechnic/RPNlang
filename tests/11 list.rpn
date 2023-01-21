@@ -1,5 +1,5 @@
-"random" :import
-"math" :import
+"random" import
+"math" import
 "Create lists of elements\n" :print
 
 test 1 2 3 4 5 7 8 9 8 list =

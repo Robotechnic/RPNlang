@@ -1,5 +1,5 @@
-"fs" :import
-"terminal" :import
+"fs" import
+"terminal" import
 
 main -> none fun
 	filename "Source file : " :input =

@@ -1,5 +1,5 @@
-"time" :import
-"random" :import
+"time" import
+"random" import
 
 chrono function toChrono -> float fun
 	start :time.timeMicros =

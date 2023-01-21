@@ -1,4 +1,4 @@
-"./10 mutualImport/test2.rpn" :import
+"./10 mutualImport/test2.rpn" import
 
 name "test1" =
 

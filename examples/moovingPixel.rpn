@@ -1,5 +1,5 @@
-"terminal" :import
-"time" :import
+"terminal" import
+"time" import
 
 drawCharacter int x int y -> none fun
 	x 1 + y 1 - "o" terminal.RED terminal.DEFAULT_BACKGROUND :terminal.drawText

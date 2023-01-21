@@ -1,8 +1,8 @@
 # this programm draw mandelbrot set with ascii characters in given format
 # it allow to benchmark the language
 
-"math" :import
-"time" :import
+"math" import
+"time" import
 
 intInput string prompt -> int fun
 	result prompt :input =

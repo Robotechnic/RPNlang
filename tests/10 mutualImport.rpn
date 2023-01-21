@@ -1,4 +1,4 @@
-"./10 mutualImport/test1.rpn" :import
+"./10 mutualImport/test1.rpn" import
 
 test1.name f"{}\n" :print
 

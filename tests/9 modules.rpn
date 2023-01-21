@@ -1,6 +1,6 @@
 # builtins modules
 "test builtin module\n" :print
-"test" :import
+"test" import
 
 test.testValue f"Test value : {}\n" :print
 test.testValue "testValueOk" == :assert
@@ -8,7 +8,7 @@ test.testValue "testValueOk" == :assert
 
 # math functions
 "test math module\n" :print
-"math" :import
+"math" import
 math.PI f"Pi : {}\n" :print
 x 0 10 1 for
 	x 0.0 10.0 0.0 1.0 :math.map f"{} " :print
@@ -19,7 +19,7 @@ rof
 
 # user defined modules
 "test user defined module\n" :print
-"./9Import.rpn" "testUser" :importAs
+"./9Import.rpn" "testUser" importAs
 "Import done\n" :print
 
 testUser.test f"{}\n" :print

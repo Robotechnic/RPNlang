@@ -1,4 +1,4 @@
-"fs" :import
+"fs" import
 
 path :fs.currentPath = f"Current path : {}\n" :print
 

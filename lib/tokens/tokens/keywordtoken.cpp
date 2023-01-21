@@ -37,6 +37,10 @@ KeywordToken::KeywordToken(TextRange range, std::string_view keyword) : Token(ra
 		this->keyword = KEYWORD_STRUCT;
 	} else if (keyword == "tcurts") {
 		this->keyword = KEYWORD_TCURTS;
+	} else if (keyword == "import") {
+		this->keyword = KEYWORD_IMPORT;
+	} else if (keyword == "importAs") {
+		this->keyword = KEYWORD_IMPORTAS;
 	} else {
 		throw std::runtime_error("Invalid keyword");
 	}
@@ -84,6 +88,10 @@ std::string KeywordToken::keywordString(KeywordEnum keyword) {
 			return "struct";
 		case KEYWORD_TCURTS:
 			return "tcurts";
+		case KEYWORD_IMPORT:
+			return "import";
+		case KEYWORD_IMPORTAS:
+			return "importas";
 		default:
 			throw std::runtime_error("Invalid keyword");
 	}

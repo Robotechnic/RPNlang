@@ -200,50 +200,6 @@ const std::unordered_map<std::string, BuiltinRPNFunction> builtins::builtinFunct
 			return None::empty();
 		}
 	)},
-	{"import", BuiltinRPNFunction(
-		"import",
-		{{"path", STRING}},
-		NONE,
-		[](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
-			const std::string path = args[0]->getStringValue();
-			if (path.size() == 0) {
-				return ExpressionResult(
-					"import path cannot be empty",
-					args[0]->getRange(), 
-					context
-				);
-			}
-			ExpressionResult result = Module::addModule(path, extractFileName(path), args[0]->getRange(), context->getParent());
-			if (result.error()) return result;
-			return None::empty();
-		}
-	)},
-	{"importAs", BuiltinRPNFunction(
-		"importAs",
-		{{"path", STRING}, {"name", STRING}},
-		NONE,
-		[](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
-			const std::string path = args[0]->getStringValue();
-			const std::string name = args[1]->getStringValue();
-			if (path.size() == 0) {
-				return ExpressionResult(
-					"import path cannot be empty",
-					args[0]->getRange(), 
-					context
-				);
-			}
-			if (!literalMatch(name.data())) {
-				return ExpressionResult(
-					"Module name must be a valid identifier",
-					args[1]->getRange(), 
-					context
-				);
-			}
-			ExpressionResult result = Module::addModule(path, name, args[0]->getRange(), context->getParent());
-			if (result.error()) return result;
-			return None::empty();
-		}
-	)},
 	{"at", BuiltinRPNFunction(
 		"at",
 		{{"value", ANY}, {"index", INT}},
