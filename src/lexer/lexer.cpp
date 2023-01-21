@@ -453,13 +453,17 @@ ExpressionResult Lexer::parseFunctionCall(const Token *token) {
 	
 	Token *literal = this->tokens.front();
 	this->tokens.pop();
+	TextRange literalRange = literal->getRange();
 	ExpressionResult result = this->parseLiteral(literal);
 	delete literal;
 	if (result.error()) return result;
-	if (this->currentLine->size() < 1) {
+	if (this->currentLine->size() < 1 || (
+		this->currentLine->back()->getType() != TOKEN_TYPE_LITERAL && 
+		this->currentLine->back()->getType() != TOKEN_TYPE_PATH
+	)) {
 		return ExpressionResult(
 			"Expected function name after colon token",
-			token->getRange().merge(this->tokens.front()->getRange()),
+			token->getRange().merge(literalRange),
 			this->context
 		);
 	}
