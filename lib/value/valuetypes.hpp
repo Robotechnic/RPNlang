@@ -11,6 +11,7 @@ enum ValueType {
 	FUNCTION,
 	BOOL,
 	PATH,
+	BUILTIN_PATH,
 	STRUCT_ACCESS,
 	LIST,
 	STRUCT,

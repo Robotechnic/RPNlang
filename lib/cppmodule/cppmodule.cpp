@@ -30,7 +30,7 @@ CppModule::~CppModule() {
  */
 ExpressionResult CppModule::load(TextRange imortRange) {
 	CppModule::openModulesCount++;
-	this->handle = dlopen((CppModule::builtinModulesPath + "/" + name + ".so").c_str(), RTLD_LAZY);
+	this->handle = dlopen((CppModule::builtinModulesPath + "/lib" + name + ".so").c_str(), RTLD_LAZY);
 	if (!this->handle) {
 		return ExpressionResult(
 			"Error while loading module " + name + ": " + dlerror(),
@@ -114,7 +114,7 @@ ContextPtr  CppModule::getModuleContext() {
  * @return false if the module is not builtin
  */
 bool CppModule::isBuiltin(const std::string &name) {
-	return std::filesystem::exists(CppModule::builtinModulesPath + "/" + name + ".so");
+	return std::filesystem::exists(CppModule::builtinModulesPath + "/lib" + name + ".so");
 }
 
 /**

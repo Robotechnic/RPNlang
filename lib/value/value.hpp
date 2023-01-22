@@ -47,6 +47,7 @@ class Value {
 		void setVariableRange(const TextRange &range);
 		void setVariableRange(const TextRange &&range);
 		ValueType getType() const;
+		void setType(ValueType type);
 		std::string getStringType() const;
 
 		void concatValueRange(const Value *other);

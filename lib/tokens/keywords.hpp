@@ -23,6 +23,8 @@ constexpr auto keywordsRegex = ctre::match<"^("
 	"catch|"
 	"finally|"
 	"yrt|"
+	"import|"
+	"importAs|"
 	"struct|"
 	"tcurts"
 ")$">;
@@ -44,6 +46,8 @@ enum KeywordEnum {
 	KEYWORD_CATCH,
 	KEYWORD_FINALLY,
 	KEYWORD_YRT,
+	KEYWORD_IMPORT,
+	KEYWORD_IMPORTAS,
 	KEYWORD_STRUCT,
 	KEYWORD_TCURTS
 };
@@ -75,12 +79,16 @@ const std::unordered_map<KeywordEnum, KeywordEnum> blockClosers = {
 const std::unordered_map<KeywordEnum, std::vector<KeywordEnum>> parentDependency = {
 	{KEYWORD_RETURN  , {KEYWORD_FUN}},
 	{KEYWORD_CONTINUE, {KEYWORD_WHILE, KEYWORD_FOR}},
-	{KEYWORD_BREAK   , {KEYWORD_WHILE, KEYWORD_FOR}}
+	{KEYWORD_BREAK   , {KEYWORD_WHILE, KEYWORD_FOR}},
+	{KEYWORD_IMPORT  , {}},
+	{KEYWORD_IMPORTAS, {}}
 };
 
 const std::unordered_map<KeywordEnum, std::vector<RPNValueType>> linePatern = {
 	{KEYWORD_FOR, {VARIABLE, INT, INT, INT}},
 	{KEYWORD_WHILE, {BOOL}},
 	{KEYWORD_IF, {BOOL}},
-	{KEYWORD_TRY, {VARIABLE}}
+	{KEYWORD_TRY, {VARIABLE}},
+	{KEYWORD_IMPORT, {STRING}},
+	{KEYWORD_IMPORTAS, {STRING, STRING}}
 };

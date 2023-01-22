@@ -1,7 +1,7 @@
 "./10 mutualImport/test2.rpn" import
 
-name "test1" =
+name "Module 1 imported string" =
 
 moduleCalculation -> string fun
-	test2.bidule " " + name +  return
+	"String from module 1 function : " test2.bidule + " + " + name +  return
 nuf

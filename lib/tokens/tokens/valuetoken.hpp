@@ -8,6 +8,7 @@ class ValueToken : public Token {
 		ValueToken(Value *value, TokenType type = TOKEN_TYPE_VALUE);
 		~ValueToken();
 
+		Value *getValue() const;
 		Value *&getValue();
 		ValueType getValueType() const;
 

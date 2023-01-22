@@ -316,6 +316,9 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 			return ExpressionResult(ExpressionResult::CONTINUE);
 		case KEYWORD_RETURN:
 			return ExpressionResult(ExpressionResult::RETURN);
+		case KEYWORD_IMPORT:
+		case KEYWORD_IMPORTAS: // this case is handle by analyser
+			return ExpressionResult();
 		default:
 			return ExpressionResult(
 				"Unknow keyword " + keywordToken->getStringValue(),
@@ -364,34 +367,23 @@ void Interpreter::interpretAssignment(const Token *operatorToken) {
 		this->lastValue = nullptr;
 }
 
-ExpressionResult Interpreter::getFunction(const Value *functionName, const RPNFunction *&function) {
+const RPNFunction *Interpreter::getFunction(const Value *functionName) {
 	if (functionName->getType() != PATH && builtins::builtinFunctions.contains(functionName->getStringValue())) {
-		function = &builtins::builtinFunctions.at(functionName->getStringValue());
-	} else {
-		Value *value;
-		ExpressionResult result;
-		if (functionName->getType() == VARIABLE) {
-			result = this->context->getValue(functionName, value);
-		} else {
-			result = Module::getModuleValue(functionName, value, context);
-		}
-		if (result.error()) return result;
-		if (value->getType() != FUNCTION)
-			return ExpressionResult(
-				functionName->getStringValue() + " is not a function",
-				functionName->getRange(),
-				this->context
-			);
-		function = static_cast<const Function*>(value)->getValue();
+		return &builtins::builtinFunctions.at(functionName->getStringValue());
 	}
-	return ExpressionResult();
+	Value *value;
+	if (functionName->getType() == VARIABLE) {
+		value = this->context->getValue(functionName);
+	} else {
+		value = Module::getModuleValue(functionName);
+	}
+	return static_cast<Function*>(value)->getValue();
 }
 
 ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 	const RPNFunction *function;
 	Value *functionName = static_cast<ValueToken *>(functionToken)->getValue();
-	ExpressionResult result = this->getFunction(functionName, function);
-	if (result.error()) return result;
+	function = this->getFunction(functionName);
 
 	std::vector<Value*> arguments;
 	for (size_t i = 0; i < function->getArgumentsCount(); i++)
@@ -401,9 +393,7 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 	if (functionToken->getType() == TOKEN_TYPE_FUNCTION_CALL) {
 		callResult = function->call(arguments, functionName->getRange(), this->context);
 	} else {
-		ContextPtr ctx;
-		ExpressionResult result = Module::getModuleContext(functionName, this->context, ctx);
-		if (result.error()) return result;
+		ContextPtr ctx = Module::getModuleContext(functionName, this->context);
 		callResult = function->call(arguments, functionName->getRange(), ctx);
 	}
 	if (

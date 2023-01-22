@@ -18,6 +18,7 @@ class Function : public Value {
 		inline std::string getStringValue() const;
 
 		const RPNFunction* getValue() const;
+		const RPNFunction *&getValue();
 
 		Value *opadd(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 		Value *opsub(const Value *other, const TextRange &range, const ContextPtr &context) const override;

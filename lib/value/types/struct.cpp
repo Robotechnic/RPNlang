@@ -274,8 +274,7 @@ StructDefinition Struct::getStructDefinition(std::string_view structName) {
 }
 
 ExpressionResult Struct::getStruct(const Path *path, Value *&structValue, ContextPtr context) {
-	ExpressionResult result = context->getValue(path->ats(0), path->getRange(), structValue);
-	if (result.error()) return result;
+	structValue = context->getValue(path->ats(0));
 	if (structValue->getType() != STRUCT) {
 		return ExpressionResult(
 			"Can't access member of non struct",
@@ -283,6 +282,7 @@ ExpressionResult Struct::getStruct(const Path *path, Value *&structValue, Contex
 			context
 		);
 	}
+	ExpressionResult result;
 	for (size_t i = 1; i < path->size() - 1; i++) {
 		Value *value;
 		result = static_cast<Struct *>(structValue)->getMember(

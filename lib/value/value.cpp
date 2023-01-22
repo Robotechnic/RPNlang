@@ -19,6 +19,10 @@ ValueType Value::getType() const {
 	return this->type;
 }
 
+void Value::setType(ValueType type) {
+	this->type = type;
+}
+
 bool Value::isCastableTo(ValueType from, ValueType to) {
 	if (from == to || to == ANY || to == BOOL) {
 		return true;

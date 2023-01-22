@@ -10,6 +10,10 @@ ValueToken::~ValueToken() {
 	Value::deleteValue(&this->value, Value::VALUE_TOKEN);
 }
 
+Value *ValueToken::getValue() const {
+	return this->value;
+}
+
 Value *&ValueToken::getValue() {
 	return this->value;
 }

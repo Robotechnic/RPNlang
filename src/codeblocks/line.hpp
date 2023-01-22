@@ -16,6 +16,7 @@ class Line : public BaseBlock {
 		Token *top();
 		Token *back();
 		Token *last();
+		void goBack();
 		void clear();
 		void display() const;
 		void reset();

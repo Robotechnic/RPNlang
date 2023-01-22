@@ -42,10 +42,6 @@ class Context : public std::enable_shared_from_this<Context> {
 		void setValue(const Token *name, Value *value, Value **hold = nullptr, bool takeOwnership = false);
 		void setValue(const Value *name, Value *value, Value **hold = nullptr, bool takeOwnership = false);
 		
-		ExpressionResult getValue(const Value *name, Value *&value);
-		ExpressionResult getValue(const Token *name, Value *&value);
-		ExpressionResult getValue(const std::string &name, TextRange range, Value *&value);
-		ExpressionResult getModuleValue(std::vector<std::string> path, TextRange range, Value *&value, ContextPtr parentContext);
 		Value *&getValue(const Value *name);
 		Value *&getValue(const std::string &name);
 

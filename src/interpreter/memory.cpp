@@ -18,7 +18,11 @@ Value*& Memory::pop() {
 }
 
 Value *& Memory::popVariableValue(const ContextPtr &context) {
-	if (this->stack.top()->getType() != VARIABLE && this->stack.top()->getType() != PATH && this->stack.top()->getType() != STRUCT_ACCESS) {
+	if (
+		this->stack.top()->getType() != VARIABLE && 
+		this->stack.top()->getType() != PATH &&
+		this->stack.top()->getType() != BUILTIN_PATH &&
+		this->stack.top()->getType() != STRUCT_ACCESS) {
 		return this->pop();
 	}
 	
@@ -26,9 +30,8 @@ Value *& Memory::popVariableValue(const ContextPtr &context) {
 	Value **value;
 	if (this->stack.top()->getType() == VARIABLE) {
 		value = &context->getValue(this->stack.top());
-	} else if (this->stack.top()->getType() == PATH) {
-		throw std::runtime_error("Path access not implemented for now");
-		// result = Module::getModuleValue(this->stack.top(), value, context);
+	} else if (this->stack.top()->getType() == PATH || this->stack.top()->getType() == BUILTIN_PATH) {
+		value = &Module::getModuleValue(this->stack.top());
 	} else {
 		throw std::runtime_error("Struct access not implemented for now");
 		// const Path* path = static_cast<Path*>(this->stack.top());

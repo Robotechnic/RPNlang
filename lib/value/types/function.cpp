@@ -30,7 +30,11 @@ inline std::string Function::getStringValue() const {
 
 const RPNFunction* Function::getValue() const {
 	return this->function;
-}	
+}
+
+const RPNFunction *&Function::getValue() {
+	return this->function;
+}
 
 
 Value *Function::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {

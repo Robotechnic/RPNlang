@@ -72,49 +72,54 @@ void Analyzer::checkRemainingCount() {
 void Analyzer::analyze(Line *line) {
 	stack = std::stack<AnalyzerValueType>();
 	this->currentLine = line;
-
-	for (auto it = line->begin(); it != line->end() && !this->hasErrors(); it++) {
-		switch (it->getType()) {
+	Token *token;
+	while (!this->currentLine->empty()) {
+		token = this->currentLine->top();
+		switch (token->getType()) {
 			case TOKEN_TYPE_VALUE:
 				stack.push({
-					static_cast<const ValueToken *>(*it)->getValueType(),
-					it->getRange(),
+					static_cast<const ValueToken *>(token)->getValueType(),
+					token->getRange(),
 					false
 				});
 				break;
 			case TOKEN_TYPE_OPERATOR:
 			case TOKEN_TYPE_BOOLEAN_OPERATOR:
-				this->analyzeOperator(static_cast<const OperatorToken *>(*it));
+				this->analyzeOperator(static_cast<const OperatorToken *>(token));
 				break;
 			case TOKEN_TYPE_FSTRING:
-				this->analyzeFString(static_cast<const FStringToken *>(*it));
+				this->analyzeFString(static_cast<const FStringToken *>(token));
 				break;
 			case TOKEN_TYPE_FUNCTION_CALL:
-				this->analyzeFunctionCall(*it);
+			case TOKEN_TYPE_MODULE_FUNCTION_CALL:
+				this->analyzeFunctionCall(token);
 				break;
 			case TOKEN_TYPE_LITERAL:
 				stack.push({
-					it->getStringValue(),
-					it->getRange(),
+					token->getStringValue(),
+					token->getRange(),
 					true
 				});
 				break;
 			case TOKEN_TYPE_ASSIGNMENT:
-				this->analyzeAssignment(*it);
+				this->analyzeAssignment(token);
 				break;
 			case TOKEN_TYPE_VALUE_TYPE:
-				this->analyzeTypeCast(static_cast<const TypeToken *>(*it));
+				this->analyzeTypeCast(static_cast<const TypeToken *>(token));
 				break;
 			case TOKEN_TYPE_STRUCT_NAME:
-				this->analyzeStructCreation(*it);
+				this->analyzeStructCreation(token);
 				break;
 			case TOKEN_TYPE_KEYWORD:
-				this->analyzeKeyword(static_cast<const KeywordToken *>(*it));
+				this->analyzeKeyword(static_cast<const KeywordToken *>(token));
+				break;
+			case TOKEN_TYPE_PATH:
+				this->analyzePath(token);
 				break;
 			default:
-				throw std::runtime_error("Lexer didn't create a valid token : " + Token::stringType(it->getType()));
+				throw std::runtime_error("Lexer didn't create a valid token : " + Token::stringType(token->getType()));
 		}
-		lastToken = *it;
+		this->currentLine->pop();
 	}
 }
 
@@ -153,6 +158,10 @@ AnalyzerValueType& Analyzer::topVariable() {
 	return stack.top();
 }
 
+std::unordered_map<std::string, AnalyzerValueType> *Analyzer::getVariables() {
+	return this->inFunctionBlock ? &this->functionVariables : &this->variables;
+}
+
 void Analyzer::analyze(FunctionBlock *functionBlock) {
 	if (functions.find(functionBlock->getName()) != functions.end()) {
 		this->error = ExpressionResult(
@@ -166,10 +175,10 @@ void Analyzer::analyze(FunctionBlock *functionBlock) {
 	for (auto valuesType : functionBlock->getArgs())
 		argsTypes.push_back(valuesType.second);
 	
-	functions[functionBlock->getName()] = std::pair<std::vector<RPNValueType>, RPNValueType>(
+	functions[functionBlock->getName()] = {
 		argsTypes,
 		functionBlock->getReturnType()
-	);
+	};
 	functionBlocks.push(functionBlock);
 }
 
@@ -323,24 +332,23 @@ void Analyzer::analyzeFunctionCall(std::pair<std::vector<RPNValueType>, RPNValue
 	});
 }
 
-void Analyzer::analyzeFunctionCall(const Token *token) {
+void Analyzer::analyzeFunctionCall(Token *token) {
 	std::string name = token->getStringValue();
 	if (functions.find(name) != functions.end()) {
 		this->analyzeFunctionCall(functions[name], token);
+		return;
+	}
+	const RPNFunction *function = nullptr;
+	if (token->getType() == TOKEN_TYPE_MODULE_FUNCTION_CALL) {
+		this->analyzePath(token, false);
+		if (this->hasErrors()) return;
+		function = static_cast<const Function*>(Module::getModuleValue(
+			static_cast<const ValueToken*>(token)->getValue()
+		))->getValue();
 	} else if (builtins::builtinFunctions.find(name) != builtins::builtinFunctions.end()) {
-		std::vector<RPNValueType> argsTypes;
-		for (auto valuesType : builtins::builtinFunctions.at(name).getArgs())
-			argsTypes.push_back(valuesType.second);
-		
-		auto function = std::make_pair(
-			argsTypes,
-			builtins::builtinFunctions.at(name).getReturnType()
-		);
-		this->functions[name] = function;
-		this->analyzeFunctionCall(function, token);
-	} else if (functions.find(name) != functions.end()) {
-		this->analyzeFunctionCall(functions[name], token);
-	} else {
+		function = &builtins::builtinFunctions.at(name);
+	}
+	if (function == nullptr) {
 		this->error = ExpressionResult(
 			"Function " + name + " is not defined",
 			token->getRange(),
@@ -348,6 +356,16 @@ void Analyzer::analyzeFunctionCall(const Token *token) {
 		);
 		return;
 	}
+	std::vector<RPNValueType> argsTypes;
+	for (auto valuesType : function->getArgs())
+		argsTypes.push_back(valuesType.second);
+	
+	auto functionValue = std::make_pair(
+		argsTypes,
+		function->getReturnType()
+	);
+	this->functions[name] = functionValue;
+	this->analyzeFunctionCall(functionValue, token);
 }
 
 void Analyzer::analyzeAssignment(const Token *token) {
@@ -371,8 +389,7 @@ void Analyzer::analyzeAssignment(const Token *token) {
 		);
 		return;
 	}
-	std::unordered_map<std::string, AnalyzerValueType> *variables = &this->variables;
-	if (this->inFunctionBlock) variables = &this->functionVariables;
+	std::unordered_map<std::string, AnalyzerValueType> *variables = this->getVariables();
 	std::string name = std::get<std::string>(variable.type);
 	if (this->conditionalLevel > 0 && variables->find(name) != variables->end()) {
 		// check if the type is the same or equivalent
@@ -458,7 +475,7 @@ void Analyzer::analyzeTypeCast(const TypeToken *token) {
 }
 
 void Analyzer::analyzeListCreation(const TypeToken *token) {
-	int size = static_cast<const Int*>(static_cast<ValueToken*>(this->lastToken)->getValue())->getValue();
+	int size = static_cast<const Int*>(static_cast<ValueToken*>(this->currentLine->last())->getValue())->getValue();
 	if (size < 0) {
 		this->error = ExpressionResult(
 			"List size can't be negative",
@@ -588,10 +605,76 @@ void Analyzer::analyzeKeyword(const KeywordToken *token) {
 					this->context
 				);
 			}
+			/// TODO: check if the value is correct and if the function return a value anyway
+			break;
+		case KEYWORD_IMPORT:
+			this->checkKeywordLine(token);
+			if (this->hasErrors()) return;
+			this->analyzeImport(token);
+			break;
+		case KEYWORD_IMPORTAS:
+			this->checkKeywordLine(token);
+			if (this->hasErrors()) return;
+			this->analyzeImportAs(token);
 			break;
 		default:
 			throw std::runtime_error("The keyword " + token->getStringValue() + " is not implemented");
 	}
+}
+
+void Analyzer::analyzeImport(const KeywordToken *token) {
+	this->checkKeywordLine(token);
+	const std::string path = this->currentLine->last()->getStringValue();
+	if (path.size() == 0) {
+		this->error = ExpressionResult(
+			"import path cannot be empty",
+			this->currentLine->last()->getRange(), 
+			this->context
+		);
+		return;
+	}
+	this->error = Module::addModule(path, extractFileName(path), this->currentLine->last()->getRange(), context);
+}
+
+void Analyzer::analyzeImportAs(const KeywordToken *token) {
+	this->checkKeywordLine(token);
+	const std::string name = this->currentLine->last()->getStringValue();
+	this->currentLine->goBack();
+	const std::string path = this->currentLine->last()->getStringValue();
+	this->currentLine->pop();
+	if (path.size() == 0) {
+		this->error = ExpressionResult(
+			"import path cannot be empty",
+			this->currentLine->last()->getRange(), 
+			this->context
+		);
+		return;
+	}
+	if (name.size() == 0) {
+		this->error = ExpressionResult(
+			"import name cannot be empty",
+			this->currentLine->last()->getRange(), 
+			this->context
+		);
+		return;
+	}
+	this->error = Module::addModule(path, name, this->currentLine->last()->getRange(), context);
+}
+
+void Analyzer::analyzePath(Token *path, bool addToStack) {
+	bool isBuiltin = false;
+	Path *p = static_cast<Path*>(static_cast<ValueToken *>(path)->getValue());
+	this->error = Module::checkPath(p, this->context, isBuiltin);
+	if (this->hasErrors()) return;
+	p->setType(isBuiltin ? BUILTIN_PATH : PATH);
+	if (!addToStack) return;
+	Value *variable = Module::getModuleValue(p);
+	this->stack.push({
+		variable->getType(),
+		p->getRange(),
+		false,
+		0, 0
+	});
 }
 
 void Analyzer::checkKeywordLine(const KeywordToken *token) {

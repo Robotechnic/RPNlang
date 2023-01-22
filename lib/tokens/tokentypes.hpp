@@ -15,7 +15,7 @@ enum TokenType {
 	TOKEN_TYPE_LITERAL,
 	TOKEN_TYPE_STRUCT_NAME,
 
-	// this tokens are made with combination of others tokens by the lexer
+	// this tokens are made with combination of others tokens by the lexer or the analyzer
 	TOKEN_TYPE_FUNCTION_CALL,
 	TOKEN_TYPE_MODULE_FUNCTION_CALL,
 	TOKEN_TYPE_KEYWORD,

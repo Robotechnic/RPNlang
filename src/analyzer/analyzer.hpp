@@ -50,7 +50,6 @@ class Analyzer final {
 		bool inFunctionBlock;
 		int nextConditionalLevel;
 
-		Token *lastToken;
 		Line *currentLine;
 		std::stack<AnalyzerValueType> stack;
 		std::stack<FunctionBlock*> functionBlocks;
@@ -59,6 +58,7 @@ class Analyzer final {
 		std::unordered_map<std::string, std::pair<std::vector<RPNValueType>, RPNValueType>> functions;
 		
 		AnalyzerValueType& topVariable();
+		std::unordered_map<std::string, AnalyzerValueType> *getVariables();
 		void analyze(Line *line);
 		void analyze(CodeBlock *codeblock);
 		void analyze(FunctionBlock *functionBlock);
@@ -67,13 +67,16 @@ class Analyzer final {
 		void analyzeOperator(const OperatorToken *token);
 		void analyzeFString(const FStringToken *token);
 		void analyzeFunctionCall(std::pair<std::vector<RPNValueType>, RPNValueType> function, const Token *token);
-		void analyzeFunctionCall(const Token *token);
+		void analyzeFunctionCall(Token *token);
 		void analyzeAssignment(const Token *token);
 		void analyzeTypeCast(const TypeToken *token);
 		void analyzeListCreation(const TypeToken *token);
 		void analyzeStructCreation(const Token *token);
 		void analyzeKeyword(const KeywordToken *token);
 		void checkKeywordLine(const KeywordToken *token);
+		void analyzeImport(const KeywordToken *token);
+		void analyzeImportAs(const KeywordToken *token);
+		void analyzePath(Token *path, bool addToStack = true);
 
 		static bool isBinaryOperator(OperatorToken::OperatorTypes operatorType);
 		static bool isComparisonOperator(OperatorToken::OperatorTypes operatorType);

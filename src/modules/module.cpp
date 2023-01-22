@@ -67,12 +67,14 @@ std::string Module::getPath() const {
  * @brief check if a given string is a module name
  * 
  * @param moduleName the name to check
+ * @param isBuiltin if the module is builtin
  * @return bool true if the name is a module name
  */
-bool Module::isModule(const std::string &moduleName) {
+bool Module::isModule(const std::string &moduleName, bool &isBuiltin) {
+	isBuiltin = false;
 	return (
 		Module::modules.find(moduleName) != Module::modules.end() || 
-		Module::builtinModules.find(moduleName) != Module::builtinModules.end()
+		(isBuiltin = Module::builtinModules.find(moduleName) != Module::builtinModules.end())
 	);
 }
 
@@ -80,18 +82,28 @@ bool Module::isModule(const std::string &moduleName) {
  * @brief check if a given path is correct or not
  * 
  * @param path the path to check
+ * @param parentContext the parent context of the module
+ * @param isBuiltin if the module is builtin
  * @return std::string contains the error message, empty if there is not
  */
-std::string Module::checkPath(const Path* path) {
+ExpressionResult Module::checkPath(const Path* path, const ContextPtr &parentContext, bool &isBuiltin) {
 	if (path->size() > 2) {
-		return "Maximum path depth is 2";
+		return ExpressionResult(
+			"Module path can only be 2 tokens long",
+			path->getRange(),
+			parentContext
+		);
 	}
 
-	if (!Module::isModule(path->ats(0))) {
-		return "Module '" + path->ats(0) + "' does not exist";
+	if (!Module::isModule(path->ats(0), isBuiltin)) {
+		return ExpressionResult(
+			"Module " + path->ats(0) + " does not exist",
+			path->getRange(),
+			parentContext
+		);
 	}
 
-	return "";
+	return ExpressionResult();
 }
 
 /**
@@ -102,23 +114,15 @@ std::string Module::checkPath(const Path* path) {
  * @param parentContext the parent context of the module
  * @return ExpressionResult if the value exists
  */
-ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, const ContextPtr &parentContext) {
+Value *&Module::getModuleValue(const Value *valuePath) {
 	const Path* path = static_cast<const Path*>(valuePath);
-	std::string error = Module::checkPath(path);
-	if (error != "") {
-		return ExpressionResult(
-			error,
-			valuePath->getRange(),
-			parentContext
-		);
-	}
 
-	if (Module::modules.find(path->ats(0)) != Module::modules.end())
-		return Module::modules.at(path->ats(0))->getModuleContext()->getModuleValue(path->getPath(), valuePath->getRange(), value, parentContext);
-	else if (Module::builtinModules.find(path->ats(0)) != Module::builtinModules.end())
-		return Module::builtinModules.at(path->ats(0)).getModuleContext()->getModuleValue(path->getPath(), valuePath->getRange(), value, parentContext);
+	if (path->getType() == PATH)
+		return Module::modules.at(path->ats(0))->getModuleContext()->getValue(path->ats(1));
+	else if (path->getType() == BUILTIN_PATH)
+		return Module::builtinModules.at(path->ats(0)).getModuleContext()->getValue(path->ats(1));
 	else
-		throw std::runtime_error("Module::getModuleValue: module not found");
+		throw std::runtime_error("This path is not a module path");
 }
 
 /**
@@ -129,24 +133,17 @@ ExpressionResult Module::getModuleValue(const Value *valuePath, Value *&value, c
  * @param moduleContext the module context to put the module context in
  * @return ExpressionResult 
  */
-ExpressionResult Module::getModuleContext(const Value *valuePath, const ContextPtr &parentContext, ContextPtr &moduleContext) {
+ContextPtr Module::getModuleContext(const Value *valuePath, const ContextPtr &parentContext) {
 	const Path* path = static_cast<const Path*>(valuePath);
-	std::string error = Module::checkPath(path);
-	if (error != "") {
-		return ExpressionResult(
-			error,
-			valuePath->getRange(),
-			parentContext
-		);
-	}
-	if (Module::modules.find(path->ats(0)) != Module::modules.end())
+	ContextPtr moduleContext;
+	if (path->getType() == PATH)
 		moduleContext = Module::modules.at(path->ats(0))->getModuleContext();
-	else if (Module::builtinModules.find(path->ats(0)) != Module::builtinModules.end())
+	else if (path->getType() == BUILTIN_PATH)
 		moduleContext = Module::builtinModules.at(path->ats(0)).getModuleContext();
 	else
-		throw std::runtime_error("Module::getModuleContext: module not found");
+		throw std::runtime_error("This path is not a module path");
 	moduleContext->setParent(parentContext);
-	return ExpressionResult();
+	return moduleContext;
 }
 
 /**
