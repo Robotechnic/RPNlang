@@ -269,11 +269,16 @@ void Analyzer::analyzeFString(const FStringToken *token) {
 	});
 }
 
-void Analyzer::analyzeFunctionCall(std::pair<std::vector<RPNValueType>, RPNValueType> function, const Token *token) {
+void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
+	if (static_cast<ValueToken *>(token)->getValueType() == PATH)
+		static_cast<ValueToken *>(token)->getValue()->setType(
+			function.builtin ? BUILTIN_PATH : PATH
+		);
+	
 	std::string name = token->getStringValue();
-	if (this->stack.size() < function.first.size()) {
+	if (this->stack.size() < function.args.size()) {
 		this->error = ExpressionResult(
-			"Not enough values for function " + name + ", expected " + std::to_string(function.first.size()) + " but got " + std::to_string(this->stack.size()),
+			"Not enough values for function " + name + ", expected " + std::to_string(function.args.size()) + " but got " + std::to_string(this->stack.size()),
 			token->getRange(),
 			this->context
 		);
@@ -281,40 +286,40 @@ void Analyzer::analyzeFunctionCall(std::pair<std::vector<RPNValueType>, RPNValue
 	}
 	TextRange range = token->getRange();
 	RPNValueType type;
-	for (int i = function.first.size() - 1; i >= 0; i--) {
+	for (int i = function.args.size() - 1; i >= 0; i--) {
 		type = this->topVariable().type;
-		if (type.index() == 0 && function.first[i].index() != 0) {
+		if (type.index() == 0 && function.args[i].index() != 0) {
 			this->error = ExpressionResult(
 				"Function " + name + " expects value type " + 
-				Value::stringType(std::get<ValueType>(function.first[i])) + 
+				Value::stringType(std::get<ValueType>(function.args[i])) + 
 				" but got struct instead",
 				stack.top().range,
 				this->context
 			);
 			return;
-		} else if (type.index() != 0 && function.first[i].index() == 0) {
+		} else if (type.index() != 0 && function.args[i].index() == 0) {
 			this->error = ExpressionResult(
 				"Function " + name + " expects struct type " + 
-				std::get<std::string>(function.first[i]) + 
+				std::get<std::string>(function.args[i]) + 
 				" but got value instead",
 				stack.top().range,
 				this->context
 			);
 			return;
-		} else if (type.index() == 0 && function.first[i].index() == 0) {
-			if (std::get<std::string>(type) != std::get<std::string>(function.first[i]))
+		} else if (type.index() == 0 && function.args[i].index() == 0) {
+			if (std::get<std::string>(type) != std::get<std::string>(function.args[i]))
 				this->error = ExpressionResult(
 					"Function " + name + " expects struct type " + 
-					std::get<std::string>(function.first[i]) + 
+					std::get<std::string>(function.args[i]) + 
 					" but got " + std::get<std::string>(type) + " instead",
 					stack.top().range,
 					this->context
 				);
 			return;
-		} else if (!Value::isCastableTo(std::get<ValueType>(type), std::get<ValueType>(function.first[i]))) {
+		} else if (!Value::isCastableTo(std::get<ValueType>(type), std::get<ValueType>(function.args[i]))) {
 			this->error = ExpressionResult(
 				"Function " + name + " expects value type " + 
-				Value::stringType(std::get<ValueType>(function.first[i])) + 
+				Value::stringType(std::get<ValueType>(function.args[i])) + 
 				" but got " + Value::stringType(std::get<ValueType>(type)) + " instead",
 				stack.top().range,
 				this->context
@@ -326,7 +331,7 @@ void Analyzer::analyzeFunctionCall(std::pair<std::vector<RPNValueType>, RPNValue
 		stack.pop();
 	}
 	stack.push({
-		function.second,
+		function.returnType,
 		range,
 		false
 	});
@@ -360,10 +365,11 @@ void Analyzer::analyzeFunctionCall(Token *token) {
 	for (auto valuesType : function->getArgs())
 		argsTypes.push_back(valuesType.second);
 	
-	auto functionValue = std::make_pair(
+	FunctionSignature functionValue {
 		argsTypes,
-		function->getReturnType()
-	);
+		function->getReturnType(),
+		true
+	};
 	this->functions[name] = functionValue;
 	this->analyzeFunctionCall(functionValue, token);
 }

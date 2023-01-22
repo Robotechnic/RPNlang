@@ -34,6 +34,12 @@ struct AnalyzerValueType {
 	int conditionalNextLevel;
 };
 
+struct FunctionSignature {
+	std::vector<RPNValueType> args;
+	RPNValueType returnType;
+	bool builtin;
+};
+
 class Analyzer final {
 	public:
 		Analyzer(ContextPtr context);
@@ -55,7 +61,7 @@ class Analyzer final {
 		std::stack<FunctionBlock*> functionBlocks;
 		std::unordered_map<std::string, AnalyzerValueType> variables;
 		std::unordered_map<std::string, AnalyzerValueType> functionVariables;
-		std::unordered_map<std::string, std::pair<std::vector<RPNValueType>, RPNValueType>> functions;
+		std::unordered_map<std::string, FunctionSignature> functions;
 		
 		AnalyzerValueType& topVariable();
 		std::unordered_map<std::string, AnalyzerValueType> *getVariables();
@@ -66,7 +72,7 @@ class Analyzer final {
 		void checkRemainingCount();
 		void analyzeOperator(const OperatorToken *token);
 		void analyzeFString(const FStringToken *token);
-		void analyzeFunctionCall(std::pair<std::vector<RPNValueType>, RPNValueType> function, const Token *token);
+		void analyzeFunctionCall(FunctionSignature function, Token *token);
 		void analyzeFunctionCall(Token *token);
 		void analyzeAssignment(const Token *token);
 		void analyzeTypeCast(const TypeToken *token);
