@@ -87,7 +87,7 @@ std::string Token::getStringType() const {
 
 
 std::ostream &operator<<(std::ostream &os, const Token *token) {
-	os << "Token(" << token->getStringValue() << ", " << token->getStringType() << ")";
+	os << "Token(" << escapeCharacters(token->getStringValue()) << ", " << token->getStringType() << ")";
 	return os;
 }
 
