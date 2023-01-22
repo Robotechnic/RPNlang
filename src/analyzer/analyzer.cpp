@@ -768,6 +768,7 @@ bool Analyzer::isBinaryOperator(OperatorToken::OperatorTypes operatorType) {
 			operatorType == OperatorToken::OP_SUB ||
 			operatorType == OperatorToken::OP_MUL ||
 			operatorType == OperatorToken::OP_DIV ||
+			operatorType == OperatorToken::OP_POW ||
 			operatorType == OperatorToken::OP_MOD;
 }
 

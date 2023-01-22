@@ -12,6 +12,7 @@
 4.8 5 + f"{}\n" :print
 5 7.5 / f"{}\n" :print
 8 3.2 % f"{}\n" :print
+5 7 ^ f"{}\n" :print
 
 "check basic math with variables\n" :print
 a 8 =
