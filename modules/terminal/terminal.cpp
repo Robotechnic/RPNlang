@@ -24,13 +24,10 @@ ExpressionResult loader(CppModule *module) {
 	module->addFunction(
 		"clear", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// reset color and clear screen
+			std::cout << "\033[H";
+			std::cout << "\033[0J";
 			std::cout << "\033[0m";
-			std::cout << "\033[2J";
-			struct winsize w;
-			ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
-			for (int i = 0; i < w.ws_row; i++) {
-				std::cout << "\033[" << i << ";0H ";
-			}
+			
 			return None::empty();
 		}
 	);
@@ -38,16 +35,8 @@ ExpressionResult loader(CppModule *module) {
 	module->addFunction(
 		"home", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// set cursor to top left of screen and reset colors
-			std::cout << "\033[0;0H";
+			std::cout << "\033[H";
 			std::cout << "\033[0m";
-			return None::empty();
-		}
-	);
-
-	module->addFunction(
-		"end", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
-			// set cursor to bottom of screen
-			std::cout << "\033[9999;9999H";
 			return None::empty();
 		}
 	);

@@ -1,6 +1,6 @@
 #include "analyzer/analyzer.hpp"
 
-Analyzer::Analyzer(ContextPtr context) : context(context), conditionalLevel(0), inFunctionBlock(false) {}
+Analyzer::Analyzer(ContextPtr context) : context(context), conditionalLevel(0), inFunctionBlock(false), nextConditionalLevel(0) {}
 
 void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 	for (auto it = blocks.begin(); it != blocks.end() && !this->hasErrors(); it++) {
@@ -344,14 +344,18 @@ void Analyzer::analyzeFunctionCall(Token *token) {
 		return;
 	}
 	const RPNFunction *function = nullptr;
+	bool builtin = false;
 	if (token->getType() == TOKEN_TYPE_MODULE_FUNCTION_CALL) {
 		this->analyzePath(token, false);
 		if (this->hasErrors()) return;
+		Value *path = static_cast<const ValueToken*>(token)->getValue();
 		function = static_cast<const Function*>(Module::getModuleValue(
-			static_cast<const ValueToken*>(token)->getValue()
+			path
 		))->getValue();
+		builtin = path->getType() == BUILTIN_PATH;
 	} else if (builtins::builtinFunctions.find(name) != builtins::builtinFunctions.end()) {
 		function = &builtins::builtinFunctions.at(name);
+		builtin = true;
 	}
 	if (function == nullptr) {
 		this->error = ExpressionResult(
@@ -368,7 +372,7 @@ void Analyzer::analyzeFunctionCall(Token *token) {
 	FunctionSignature functionValue {
 		argsTypes,
 		function->getReturnType(),
-		true
+		builtin
 	};
 	this->functions[name] = functionValue;
 	this->analyzeFunctionCall(functionValue, token);
