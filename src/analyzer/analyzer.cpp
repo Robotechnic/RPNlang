@@ -814,7 +814,7 @@ void Analyzer::checkKeywordLine(const KeywordToken *token) {
 				);
 				return;
 			}
-			if (std::get<ValueType>(types[i]) != std::get<ValueType>(stack.top().type)) {
+			if (!Value::isCastableTo(std::get<ValueType>(stack.top().type), std::get<ValueType>(types[i]))) {
 				this->error = ExpressionResult(
 					"Keyword " + token->getStringValue() + " require a value of type " + Value::stringType(std::get<ValueType>(types[i])) + " but got " + Value::stringType(std::get<ValueType>(stack.top().type)),
 					stack.top().range,

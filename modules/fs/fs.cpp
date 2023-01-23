@@ -223,20 +223,18 @@ ExpressionResult loader(CppModule *module) {
 		std::ios_base::openmode mode;
 		std::string modeStr = args[1]->getStringValue();
 		ExpressionResult result = checkOpenMode(modeStr, range, context, mode);
-		if (result.error()) {
-			return result;
-		}
+		if (result.error()) return result;
 		std::shared_ptr<std::fstream> file = std::make_shared<std::fstream>();
 		file->open(args[0]->getStringValue(), mode);
 		if (file->bad()) {
 			return ExpressionResult(
-				"Failed to open file, can't read / write",
+				"Failed to open file, can't read / write : " + std::string(strerror(errno)),
 				range,
 				context
 			);
 		} else if (file->fail() || !file->is_open()) {
 			return ExpressionResult(
-				"Failed to open file",
+				"Failed to open file : " + std::string(strerror(errno)),
 				range,
 				context
 			);
