@@ -30,8 +30,8 @@ struct AnalyzerValueType {
 	RPNValueType type;
 	TextRange range;
 	bool isVariable;
-	int conditionalLevel;
-	int conditionalNextLevel;
+	unsigned int conditionalLevel;
+	unsigned int conditionalNextLevel;
 	bool isStructMember;
 };
 
@@ -53,9 +53,9 @@ class Analyzer final {
 	private:
 		ExpressionResult error;
 		ContextPtr context;
-		int conditionalLevel;
+		unsigned int conditionalLevel;
 		bool inFunctionBlock;
-		int nextConditionalLevel;
+		std::vector<unsigned int> nextConditionalLevel;
 
 		Line *currentLine;
 		std::stack<AnalyzerValueType> stack;

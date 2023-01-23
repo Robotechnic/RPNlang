@@ -1,7 +1,6 @@
 "fs" import
 
 path :fs.currentPath = f"Current path : {}\n" :print
-
 "Check if testFile.txt exists\n" :print
 filePath path "/testFile.txt" + = :fs.exists if
 	"testFile.txt exists\n" :print
@@ -25,3 +24,25 @@ elihw
 "\nEnd of file\n" :print
 
 file :fs.close
+
+openCountPath path "/openCount.txt" + =
+openCount 0 =
+openCountPath :fs.exists if
+	openCountFile openCountPath "rw" :fs.open =
+	openCountFile :fs.eof :not if 
+		line openCountFile :fs.getLine =
+		line :len 0 == if
+			"openCount.txt is empty\n" :print
+		else line :isNumber :not if
+			"openCount.txt is not a number\n" :print
+		else
+			openCount line :toInt =
+		fi fi
+	fi
+else
+	openCountFile openCountPath "w" :fs.open =
+fi
+openCount f"This file has been opened {} times\n" :print
+openCountFile 0 true :fs.seekg
+openCountFile openCount 1 + string :fs.write
+openCountFile :fs.close

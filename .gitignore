@@ -47,3 +47,5 @@ build
 .vscode
 vgcore.*
 *.csv
+
+examples/openCount.txt

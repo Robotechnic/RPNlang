@@ -1,6 +1,6 @@
 #include "analyzer/analyzer.hpp"
 
-Analyzer::Analyzer(ContextPtr context) : context(context), conditionalLevel(0), inFunctionBlock(false), nextConditionalLevel(0) {}
+Analyzer::Analyzer(ContextPtr context) : context(context), conditionalLevel(0), inFunctionBlock(false), nextConditionalLevel(1, 0) {}
 
 void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 	for (auto it = blocks.begin(); it != blocks.end() && !this->hasErrors(); it++) {
@@ -27,19 +27,23 @@ void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 
 void Analyzer::analyze(CodeBlock *block) {
 	this->conditionalLevel++;
-	this->nextConditionalLevel = 1;
+	if (this->nextConditionalLevel.size() <= this->conditionalLevel) {
+		this->nextConditionalLevel.push_back(1);
+	} else {
+		this->nextConditionalLevel[this->conditionalLevel] = 1;
+	}
 	this->analyze(block->getBlocks());
 	while ((block = block->getNext()) && !this->hasErrors()) {
-		this->nextConditionalLevel++;
+		this->nextConditionalLevel[this->conditionalLevel]++;
 		this->analyze(block->getBlocks());
 	}
-	this->conditionalLevel--;
-	if (this->nextConditionalLevel == 1) return;
+	if (this->nextConditionalLevel[this->conditionalLevel] == 1) return;
 	for (auto &variable : this->variables) {
-		if (variable.second.conditionalNextLevel == this->nextConditionalLevel) {
-			variable.second.conditionalLevel = this->conditionalLevel;
+		if (variable.second.conditionalNextLevel == this->nextConditionalLevel[this->conditionalLevel]) {
+			variable.second.conditionalLevel = this->conditionalLevel - 1;
 		}
 	}
+	this->conditionalLevel--;
 }
 
 bool Analyzer::hasErrors() const {
@@ -295,6 +299,7 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 	RPNValueType type;
 	for (int i = function.args.size() - 1; i >= 0; i--) {
 		type = this->topVariable().type;
+		if (this->hasErrors()) return;
 		if (type.index() == 0 && function.args[i].index() == 1) {
 			this->error = ExpressionResult(
 				"Function " + name + " expects value type " + 
@@ -434,25 +439,35 @@ void Analyzer::analyzeAssignment(const Token *token) {
 				);
 				return;
 			}
-		}
-		if (
-			!Value::isCastableTo(std::get<ValueType>(type),std::get<ValueType>(holdVariable.type)) ||
-			!Value::isCastableTo(std::get<ValueType>(holdVariable.type), std::get<ValueType>(type))
-		) {
-			this->error = ExpressionResult(
-				"Can't conditionally assign value of type " + Value::stringType(std::get<ValueType>(type)) + 
-				" to variable " + name + " of type " + Value::stringType(std::get<ValueType>(holdVariable.type)),
-				variable.range,
-				this->context
-			);
-			return;
+		} else {
+			if (type.index() == 0) {
+				this->error = ExpressionResult(
+					"Can't conditionally assign value of type " + std::get<std::string>(type) + 
+					" to variable " + name + " of type " + Value::stringType(std::get<ValueType>(holdVariable.type)),
+					variable.range,
+					this->context
+				);
+				return;
+			}
+			if (
+				!Value::isCastableTo(std::get<ValueType>(type),std::get<ValueType>(holdVariable.type)) ||
+				!Value::isCastableTo(std::get<ValueType>(holdVariable.type), std::get<ValueType>(type))
+			) {
+				this->error = ExpressionResult(
+					"Can't conditionally assign value of type " + Value::stringType(std::get<ValueType>(type)) + 
+					" to variable " + name + " of type " + Value::stringType(std::get<ValueType>(holdVariable.type)),
+					variable.range,
+					this->context
+				);
+				return;
+			}
 		}
 		(*variables)[name] = {
 			type,
 			variable.range,
 			true,
 			holdVariable.conditionalLevel,
-			this->nextConditionalLevel - 1 == holdVariable.conditionalLevel ? holdVariable.conditionalLevel + 1 : holdVariable.conditionalLevel
+			this->nextConditionalLevel.at(this->conditionalLevel) - 1 == holdVariable.conditionalLevel ? holdVariable.conditionalLevel + 1 : holdVariable.conditionalLevel
 		};
 		return;
 	}
@@ -461,7 +476,7 @@ void Analyzer::analyzeAssignment(const Token *token) {
 		variable.range,
 		false,
 		this->conditionalLevel,
-		this->nextConditionalLevel == 1 ? 1 : 0
+		this->nextConditionalLevel.at(this->conditionalLevel) == 1 ? 1U : 0U
 	};
 }
 
@@ -594,6 +609,7 @@ void Analyzer::analyzeStructCreation(const Token *token) {
 	for (auto it = members.end() - 1; it >= members.begin(); it--) {
 		RPNValueType type = def.getMemberType(*it);
 		this->topVariable();
+		if (this->hasErrors()) return;
 		if (type.index() == 0) {
 			if (stack.top().type.index() != 0) {
 				this->error = ExpressionResult(
@@ -806,6 +822,7 @@ void Analyzer::checkKeywordLine(const KeywordToken *token) {
 				continue;
 			}
 			this->topVariable();
+			if (this->hasErrors()) return;
 			if (stack.top().type.index() != 1) {
 				this->error = ExpressionResult(
 					"Keyword " + token->getStringValue() + " require a value of type " + Value::stringType(std::get<ValueType>(types[i])) + " but got " + std::get<std::string>(stack.top().type),

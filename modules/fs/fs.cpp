@@ -1,42 +1,58 @@
 #include "fs.hpp"
 
-ExpressionResult checkOpenMode(std::string_view strMode, const TextRange &range, ContextPtr context, std::ios_base::openmode &mode) {
-	for (const char &c : strMode) {
-		switch(c) {
-			case 'r':
-				mode |= std::ios_base::in;
-				break;
-			case 'w':
-				mode |= std::ios_base::out;
-				break;
-			case '+':
-				mode |= std::ios_base::in | std::ios_base::out;
-				break;
-			case 'b':
-				mode |= std::ios_base::binary;
-				break;
-			case 't':
-				mode |= std::ios_base::trunc;
-				if (mode & std::ios_base::ate) {
-					return ExpressionResult(
-						"Cannot set ate ('a') and trunc ('t') at the same time",
-						range,
-						context
-					);
-				}
-				break;
-			case 'a':
-				mode |= std::ios_base::ate;
-				if (mode & std::ios_base::trunc) {
-					return ExpressionResult(
-						"Cannot set ate ('a') and trunc ('t') at the same time",
-						range,
-						context
-					);
-				}
-				break;
-		}
+std::variant<std::ios_base::openmode, ExpressionResult> fromChar(char c, const TextRange &range, ContextPtr context, std::ios_base::openmode mode) {
+	switch(c) {
+		case 'r':
+			return std::ios_base::in;
+		case 'w':
+			return std::ios_base::out;
+		case '+':
+			return std::ios_base::in | std::ios_base::out;
+		case 'b':
+			return std::ios_base::binary;
+		case 't':
+			return std::ios_base::trunc;
+			if (mode & std::ios_base::ate) {
+				return ExpressionResult(
+					"Cannot set ate ('a') and trunc ('t') at the same time",
+					range,
+					context
+				);
+			}
+			break;
+		case 'a':
+			return std::ios_base::ate;
+			if (mode & std::ios_base::trunc) {
+				return ExpressionResult(
+					"Cannot set ate ('a') and trunc ('t') at the same time",
+					range,
+					context
+				);
+			}
+			break;
+		default:
+			return ExpressionResult(
+				"Invalid open mode: " + std::string(1, c),
+				range,
+				context
+			);
 	}
+}
+
+ExpressionResult checkOpenMode(std::string_view strMode, const TextRange &range, ContextPtr context, std::ios_base::openmode &mode) {
+	auto result = fromChar(strMode[0], range, context, mode);
+	if (auto *exprResult = std::get_if<ExpressionResult>(&result)) {
+		return *exprResult;
+	}
+	mode = std::get<std::ios_base::openmode>(result);
+	for (const char &c : strMode.substr(1)) {
+		auto result = fromChar(c, range, context, mode);
+		if (auto *exprResult = std::get_if<ExpressionResult>(&result)) {
+			return *exprResult;
+		}
+		mode |= std::get<std::ios_base::openmode>(result);
+	}
+
 	return ExpressionResult();
 }
 
@@ -381,7 +397,7 @@ ExpressionResult loader(CppModule *module) {
 			);
 		}
 		std::string line;
-		if (!std::getline(*file, line)) {
+		if (!std::getline(*file, line).eof()) {
 			return ExpressionResult(
 				"End of file",
 				args[0]->getRange(),
@@ -466,35 +482,6 @@ ExpressionResult loader(CppModule *module) {
 		}
 		// write the value
 		file->put(static_cast<Int*>(args[1])->getValue());
-		return None::empty();
-	});
-
-	module->addFunction("tellp", {{"file","File"}}, INT, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
-		Struct *fileStruct = static_cast<Struct*>(args[0]);
-		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
-		if (!file->is_open()) {
-			return ExpressionResult(
-				"File is not open",
-				args[0]->getRange(),
-				context
-			);
-		}
-		return new Int(file->tellp(), range, Value::INTERPRETER);
-	});
-
-	module->addFunction("seekp", {{"file", "File"}, {"pos", INT}, {"beg", BOOL}}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
-		Struct *fileStruct = static_cast<Struct*>(args[0]);
-		std::shared_ptr<std::fstream> file = static_pointer_cast<std::fstream>(fileStruct->getData());
-		if (!file->is_open()) {
-			return ExpressionResult(
-				"File is not open",
-				args[0]->getRange(),
-				context
-			);
-		}
-
-		file->seekp(static_cast<Int*>(args[1])->getValue(), static_cast<Bool*>(args[2])->getValue() ? std::ios::beg : std::ios::end);
-
 		return None::empty();
 	});
 
