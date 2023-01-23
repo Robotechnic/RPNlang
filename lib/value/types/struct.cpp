@@ -133,48 +133,8 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 	return ExpressionResult();
 }
 
-ExpressionResult Struct::setMember(const Path *member, Value *value, ContextPtr context, Value **hold) {
+void Struct::setMember(const Path *member, Value *value, ContextPtr context, Value **hold) {
 	RPNValueType memberType;
-	if (!this->definition->hasMember(member->ats(member->size() - 1), &memberType)) {
-		return ExpressionResult(
-			"Struct " + this->definition->name + " has no member named " + member->ats(member->size() - 1),
-			member->getRange(),
-			context
-		);
-	}
-	if (this->immutable) {
-		return ExpressionResult(
-			"Struct " + this->definition->name + " is immutable",
-			member->getRange(),
-			context
-		);
-	}
-	if (memberType.index() == 0) {
-		if (value->getType() != STRUCT) {
-			return ExpressionResult(
-				"Struct " + this->definition->name + " member " + member->ats(member->size() - 1) + 
-				" is of type struct but " + value->getStringType() + " was given",
-				value->getRange(),
-				context
-			);
-		}
-		Struct *structValue = static_cast<Struct*>(value);
-		if (structValue->definition->name != std::get<std::string>(memberType)) {
-			return ExpressionResult(
-				"Struct " + this->definition->name + " member " + member->ats(member->size() - 1) + 
-				" is of type " + std::get<std::string>(memberType) + " but " + std::string(structValue->getStructName()) + " was given",
-				value->getRange(),
-				context
-			);
-		}
-	} else if (std::get<ValueType>(memberType) != value->getType()) {
-		return ExpressionResult(
-			"Struct " + this->definition->name + " member " + member->ats(member->size() - 1) + 
-			" is of type " + Value::stringType(std::get<ValueType>(memberType)) + " but " + value->getStringType() + " was given",
-			value->getRange(),
-			context
-		);
-	}
 
 	Value **memberValue = &this->members->at(member->ats(member->size() - 1));
 	if (hold != nullptr) {
@@ -183,20 +143,10 @@ ExpressionResult Struct::setMember(const Path *member, Value *value, ContextPtr 
 	}
 	value->setOwner(Value::OBJECT_VALUE);
 	*memberValue = value;
-
-	return ExpressionResult();
 }
 
-ExpressionResult Struct::getMember(const Path *member, Value *&value, ContextPtr context) {
-	if (!this->definition->hasMember(member->ats(member->size() - 1), nullptr)) {
-		return ExpressionResult(
-			"Struct " + this->definition->name + " has no member named " + member->ats(member->size() - 1),
-			member->getRange(),
-			context
-		);
-	}
-	value = this->members->at(member->ats(member->size() - 1));
-	return ExpressionResult();
+Value *&Struct::getMember(const Path *member) {
+	return this->members->at(member->ats(member->size() - 1));
 }
 
 void Struct::setMember(std::string_view member, Value *value, ContextPtr context) {
@@ -206,7 +156,7 @@ void Struct::setMember(std::string_view member, Value *value, ContextPtr context
 	*memberValue = value;
 }
 
-Value* Struct::getMember(std::string_view member) {
+Value *&Struct::getMember(std::string_view member) {
 	return this->members->at(std::string(member));
 }
 
@@ -273,32 +223,14 @@ StructDefinition Struct::getStructDefinition(std::string_view structName) {
 	return Struct::definitions.at(std::string(structName));
 }
 
-ExpressionResult Struct::getStruct(const Path *path, Value *&structValue, ContextPtr context) {
-	structValue = context->getValue(path->ats(0));
-	if (structValue->getType() != STRUCT) {
-		return ExpressionResult(
-			"Can't access member of non struct",
-			path->getRange(),
-			context
-		);
-	}
-	ExpressionResult result;
+Value *&Struct::getStruct(const Path *path, const ContextPtr &context) {
+	Value *&structValue = context->getValue(path->ats(0));
+	
 	for (size_t i = 1; i < path->size() - 1; i++) {
-		Value *value;
-		result = static_cast<Struct *>(structValue)->getMember(
-			path, value, context
-		);
-		if (result.error()) return result;
-		if (value->getType() != STRUCT) {
-			return ExpressionResult(
-				"Can't access member of non struct",
-				path->getRange(),
-				context
-			);
-		}
+		Value *value = static_cast<Struct *>(structValue)->getMember(path);
 		structValue = value;
 	}
-	return result;
+	return structValue;
 }
 
 

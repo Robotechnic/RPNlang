@@ -33,14 +33,9 @@ Value *& Memory::popVariableValue(const ContextPtr &context) {
 	} else if (this->stack.top()->getType() == PATH || this->stack.top()->getType() == BUILTIN_PATH) {
 		value = &Module::getModuleValue(this->stack.top());
 	} else {
-		throw std::runtime_error("Struct access not implemented for now");
-		// const Path* path = static_cast<Path*>(this->stack.top());
-		// Value *structVaue;
-		// result = Struct::getStruct(path, structVaue, context);
-		// if (result.error()) return result;
-		// result = static_cast<Struct*>(structVaue)->getMember(
-		// 	path, value, context
-		// );
+		const Path* path = static_cast<Path*>(this->stack.top());
+		Value *structVaue = Struct::getStruct(path, context);
+		value = &static_cast<Struct*>(structVaue)->getMember(path);
 	}
 	TextRange range = this->stack.top()->getRange();
 	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);

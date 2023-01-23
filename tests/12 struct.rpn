@@ -20,7 +20,6 @@ a->name f"{} \n" :print
 a->e f"{} \n" :print
 a->age f"{} \n" :print
 
-
 a->name "Truc" =
 a->name f"{} \n" :print
 
@@ -29,7 +28,15 @@ a->name f"{} \n" :print
 a->e f"{} \n" :print
 a->age f"{} \n" :print
 
+a->name "TrucMultiplied" == :assert
+a->age 32 == :assert
+a->e 2.7 == :assert
+
 a :structCreate =
 a->name f"{} \n" :print
 a->e f"{} \n" :print
 a->age f"{} \n" :print
+
+a->name "Created by structCreate" == :assert
+a->age 42 == :assert
+a->e 3.14 == :assert

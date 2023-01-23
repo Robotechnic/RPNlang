@@ -350,18 +350,14 @@ void Interpreter::interpretAssignment(const Token *operatorToken) {
 	if (this->memory.top()->getType() == VARIABLE) {
 		this->context->setValue(this->memory.top(), copy ? left->copy() : left, &hold);
 	} else {
-		throw std::runtime_error("Not implemented");
-		// Path *path = static_cast<Path *>(this->memory.top());
-		// Value *structValue;
-		// result = Struct::getStruct(path, structValue, this->context);
-		// if (result.error()) return result;
-		// result = static_cast<Struct *>(structValue)->setMember(
-		// 	path,
-		// 	copy ? left->copy() : left,
-		// 	this->context,
-		// 	&hold
-		// );
-		// if (result.error()) return result;
+		Path *path = static_cast<Path *>(this->memory.top());
+		Value *structValue = Struct::getStruct(path, this->context);
+		static_cast<Struct *>(structValue)->setMember(
+			path,
+			copy ? left->copy() : left,
+			this->context,
+			&hold
+		);
 	}
 	if (this->lastValue == hold)
 		this->lastValue = nullptr;
@@ -371,13 +367,11 @@ const RPNFunction *Interpreter::getFunction(const Value *functionName) {
 	if (functionName->getType() != PATH && builtins::builtinFunctions.contains(functionName->getStringValue())) {
 		return &builtins::builtinFunctions.at(functionName->getStringValue());
 	}
-	Value *value;
-	if (functionName->getType() == VARIABLE) {
-		value = this->context->getValue(functionName);
-	} else {
-		value = Module::getModuleValue(functionName);
-	}
-	return static_cast<Function*>(value)->getValue();
+	return static_cast<Function*>(
+		functionName->getType() == VARIABLE ? 
+			this->context->getValue(functionName) :
+		    Module::getModuleValue(functionName)
+	)->getValue();
 }
 
 ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
@@ -563,14 +557,6 @@ ExpressionResult Interpreter::interpretStruct(const Token *keywordToken) {
 		);
 	};
 	size_t count = Struct::getStructMembersCount(name);
-	ExpressionResult result = this->memory.sizeExpected(
-		count,
-		"Not enough values to create struct, expected " + std::to_string(count) +
-		" but got " + std::to_string(this->memory.size()),
-		keywordToken->getRange(),
-		this->context
-	);
-	if (result.error()) return result;
 	std::vector<Value *> members(count, nullptr);
 	TextRange range = keywordToken->getRange();
 	for (size_t i = 0; i < count; i++) {
@@ -582,8 +568,7 @@ ExpressionResult Interpreter::interpretStruct(const Token *keywordToken) {
 	}
 	range.merge(members.at(0)->getRange());
 	Struct *s = new Struct(range, name, Value::INTERPRETER);
-	result = s->setMembers(members, this->context);
-	if (result.error()) return result;
+	s->setMembers(members, this->context);
 	this->memory.push(s);
 	return ExpressionResult();
 }

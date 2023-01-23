@@ -47,12 +47,12 @@ class Struct : public Value {
 		ExpressionResult setMembers(std::vector<Value*> members, ContextPtr context);
 
 		// this is for struct which are used by the interpreter
-		ExpressionResult setMember(const Path *member, Value *value, ContextPtr context, Value **hold);
-		ExpressionResult getMember(const Path *member, Value *&value, ContextPtr context);
+		void setMember(const Path *member, Value *value, ContextPtr context, Value **hold);
+		Value *&getMember(const Path *member);
 
 		// this is for struct which are used by the c++ code
 		void setMember(std::string_view member, Value *value, ContextPtr context);
-		Value* getMember(std::string_view member);
+		Value *&getMember(std::string_view member);
 
 		bool isNumber() const;
 
@@ -84,7 +84,7 @@ class Struct : public Value {
 		static int  getStructMembersCount(std::string_view structName);
 		static bool structExists(std::string_view structName);
 		static StructDefinition getStructDefinition(std::string_view structName);
-		static ExpressionResult getStruct(const Path *path, Value *&structValue, ContextPtr context);
+		static Value *&getStruct(const Path *path, const ContextPtr &context);
 
 		bool immutable;
 

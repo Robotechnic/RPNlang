@@ -215,6 +215,15 @@ std::ostream &operator<<(std::ostream &os, const Value *value) {
 	return os;
 }
 
+std::ostream &operator<<(std::ostream &os, const RPNValueType &type) {
+	if (type.index() == 0) {
+		os << std::get<std::string>(type);
+	} else {
+		os << Value::stringType(std::get<ValueType>(type));
+	}
+	return os;
+}
+
 std::string std::to_string(const Value *value) {
 	std::stringstream ss;
 	ss << value;

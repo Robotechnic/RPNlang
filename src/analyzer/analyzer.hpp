@@ -32,6 +32,7 @@ struct AnalyzerValueType {
 	bool isVariable;
 	int conditionalLevel;
 	int conditionalNextLevel;
+	bool isStructMember;
 };
 
 struct FunctionSignature {
@@ -75,6 +76,7 @@ class Analyzer final {
 		void analyzeFunctionCall(FunctionSignature function, Token *token);
 		void analyzeFunctionCall(Token *token);
 		void analyzeAssignment(const Token *token);
+		void anlyzeStructMemberAssignment(const Token *token, const RPNValueType &type);
 		void analyzeTypeCast(const TypeToken *token);
 		void analyzeListCreation(const TypeToken *token);
 		void analyzeStructCreation(const Token *token);
@@ -83,6 +85,7 @@ class Analyzer final {
 		void analyzeImport(const KeywordToken *token);
 		void analyzeImportAs(const KeywordToken *token);
 		void analyzePath(Token *path, bool addToStack = true);
+		void analyzeStructAccess(const Token *token);
 
 		static bool isBinaryOperator(OperatorToken::OperatorTypes operatorType);
 		static bool isComparisonOperator(OperatorToken::OperatorTypes operatorType);
@@ -90,3 +93,4 @@ class Analyzer final {
 };
 
 
+std::ostream& operator<<(std::ostream &stream, const AnalyzerValueType &valueType);

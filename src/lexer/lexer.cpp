@@ -516,7 +516,7 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(CodeBlock *bloc
 			if (current->getType() == TOKEN_TYPE_VALUE_TYPE)
 				type.second = static_cast<TypeToken*>(current)->getValueType();
 			else if (current->getType() == TOKEN_TYPE_STRUCT_NAME)
-				type.first = current->getStringValue();
+				type.second = current->getStringValue();
 			else
 				return std::make_pair(ExpressionResult(
 					"Expected value type or struct name",

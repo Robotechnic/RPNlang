@@ -92,4 +92,6 @@ namespace std {
 	std::string to_string(const Value *value);
 };
 
+std::ostream &operator<<(std::ostream &os, const RPNValueType &type);
+
 #include "expressionresult/expressionresult.hpp"
