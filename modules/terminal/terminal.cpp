@@ -24,9 +24,9 @@ ExpressionResult loader(CppModule *module) {
 	module->addFunction(
 		"clear", {}, NONE, [](RPNFunctionArgsValue &args, const TextRange &range, ContextPtr context) -> RPNFunctionResult {
 			// reset color and clear screen
+			std::cout << "\033[0m";
 			std::cout << "\033[H";
 			std::cout << "\033[0J";
-			std::cout << "\033[0m";
 			
 			return None::empty();
 		}

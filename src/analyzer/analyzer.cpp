@@ -681,6 +681,14 @@ void Analyzer::analyzePath(Token *path, bool addToStack) {
 	this->error = Module::checkPath(p, this->context, isBuiltin);
 	if (this->hasErrors()) return;
 	p->setType(isBuiltin ? BUILTIN_PATH : PATH);
+	if (!Module::hasValue(p)) {
+		this->error = ExpressionResult(
+			"Module " + p->ats(0) + " doesn't define the value " + p->ats(1),
+			path->getRange(),
+			this->context
+		);
+		return;
+	}
 	if (!addToStack) return;
 	Value *variable = Module::getModuleValue(p);
 	this->stack.push({

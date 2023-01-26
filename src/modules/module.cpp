@@ -79,6 +79,22 @@ bool Module::isModule(const std::string &moduleName, bool &isBuiltin) {
 }
 
 /**
+ * @brief check if a module has the given value
+ * 
+ * @param path the path to check
+ * @return true if the module has the value
+ * @return false if the module does not have the value
+ */
+bool Module::hasValue(const Path *path) {
+	if (path->getType() == PATH)
+		return Module::modules.at(path->ats(0))->getModuleContext()->hasValue(path->ats(1));
+	else if (path->getType() == BUILTIN_PATH)
+		return Module::builtinModules.at(path->ats(0)).getModuleContext()->hasValue(path->ats(1));
+	else
+		throw std::runtime_error("This path is not a module path");
+}
+
+/**
  * @brief check if a given path is correct or not
  * 
  * @param path the path to check

@@ -19,7 +19,7 @@
  */
 void signalHandler(int signum) {
 	if (signum == SIGINT) return;
-	std::cout<<std::endl;
+	std::cout<<"\033[0m"<<std::endl;
 	exit(signum);
 }
 
@@ -105,5 +105,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	std::cout<<"\033[0m"<<std::endl;
 	return result ? 0 : 1;
 }
