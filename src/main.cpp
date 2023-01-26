@@ -91,6 +91,9 @@ int main(int argc, char **argv) {
 		signal(SIGINT, signalHandler);
 		shellInput();
 	} else {
+		#ifndef TEST_FILE
+			std::string path = argv[1];
+		#endif
 		setWorkingDirectory(path);
 		std::string name = extractFileName(path);
 		path = path.substr(path.find_last_of('/') + 1);
