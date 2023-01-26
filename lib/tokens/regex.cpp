@@ -69,13 +69,13 @@ matchResult arrowMatch(std::string_view str) {
 	return std::nullopt;
 }
 matchResult leftBracket(std::string_view str) {
-	if (auto m = ctre::starts_with<"^((?:\\[))">(str)) {
+	if (auto m = ctre::starts_with<"^(\\[)">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;
 }
 matchResult rightBracket(std::string_view str) {
-	if (auto m = ctre::starts_with<"^((?:\\]))">(str)) {
+	if (auto m = ctre::starts_with<"^(\\])">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;
@@ -99,7 +99,7 @@ matchResult dotMatch(std::string_view str) {
 	return std::nullopt;
 }
 matchResult capsLiteralMatch(std::string_view str) {
-	if (auto m = ctre::starts_with<"^([A-Z][A-Z0-9_]*)(?=\\s|$)">(str)) {
+	if (auto m = ctre::starts_with<"^([A-Z][A-Z0-9_]*)(?=[^0-9a-zA-Z_]|$)">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;
@@ -111,7 +111,7 @@ matchResult literalMatch(std::string_view str) {
 	return std::nullopt;
 }
 matchResult structMatch(std::string_view str) {
-	if (auto m = ctre::starts_with<"^([A-Z][a-zA-Z0-9]*)(?=\\s|$)">(str)) {
+	if (auto m = ctre::starts_with<"^([A-Z][a-zA-Z0-9]*)(?=[^0-9a-zA-Z_]|$)">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;
