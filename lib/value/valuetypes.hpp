@@ -88,10 +88,11 @@ struct RPNValueType {
 			this->type.index() == 0 ? std::get<0>(this->type) == std::get<0>(other.type) :
 									  RPNValueType::isCastableTo(std::get<1>(this->type), std::get<1>(other.type))
 		) && (
+			(other.listType.index() == 1 && std::get<1>(other.listType) == ANY) || (
 			this->listType.index() == other.listType.index() && (
 				this->listType.index() == 0 ? std::get<0>(this->listType) == std::get<0>(other.listType) :
-											  (std::get<1>(other.listType) == ANY || RPNValueType::isCastableTo(std::get<1>(this->listType), std::get<1>(other.listType)))
-			)
+											  RPNValueType::isCastableTo(std::get<1>(this->listType), std::get<1>(other.listType))
+			))
 		);
 	};
 

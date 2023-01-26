@@ -192,10 +192,10 @@ StructDefinition Struct::getStructDefinition(std::string_view structName) {
 	return Struct::definitions.at(std::string(structName));
 }
 
-Value *&Struct::getStruct(const Path *path, const ContextPtr &context) {
-	Value *&structValue = context->getValue(path->ats(0));
+Value *&Struct::getStruct(const Value *name, const Path *path, const ContextPtr &context) {
+	Value *&structValue = context->getValue(name);
 	
-	for (size_t i = 1; i < path->size() - 1; i++) {
+	for (size_t i = 0; i < path->size() - 1; i++) {
 		Value *value = static_cast<Struct *>(structValue)->getMember(path);
 		structValue = value;
 	}

@@ -110,6 +110,9 @@ ExpressionResult Lexer::lex() {
 					this->context
 				);
 				break;
+			case TOKEN_TYPE_ARROW:
+				result = this->parseStructAccess(token);
+				break;
 			case TOKEN_TYPE_OPERATOR:
 			case TOKEN_TYPE_BOOLEAN_OPERATOR:
 				this->currentLine->push(
@@ -259,8 +262,6 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 		Token *next = this->tokens.front();
 		if (next->getType() == TOKEN_TYPE_DOT)
 			return this->parsePath(token);
-		if (next->getType() == TOKEN_TYPE_ARROW)
-			return this->parseStructAccess(token);
 	}
 
 	this->currentLine->push(new ValueToken(
@@ -304,47 +305,53 @@ ExpressionResult Lexer::parsePath(Token *token) {
 }
 
 /**
- * @brief check if a given struct access is correctly formatted and convert it to a struct access token
+ * @brief check if a given struct access is correctly formatted : ->name[->name...]
  * 
- * @param token the first literal of the path
+ * @param token the first arrow of the struct access
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
 ExpressionResult Lexer::parseStructAccess(Token *token) {
-	std::vector<std::string> path{token->getStringValue()};
+	std::vector<std::string> path;
 	TextRange range = token->getRange();
+	if (this->tokens.size() == 0) {
+		return ExpressionResult(
+			"Invalid struct access: expected value before arrow",
+			token->getRange(),
+			this->context
+		);
+	}
+	if (this->tokens.front()->getType() == TOKEN_TYPE_VALUE_TYPE || this->tokens.front()->getType() == TOKEN_TYPE_STRUCT_NAME) {
+		this->integrated = true;
+		this->currentLine->push(token);
+		return ExpressionResult();
+	}
+	if (this->tokens.front()->getType() != TOKEN_TYPE_LITERAL) {
+		return ExpressionResult(
+			"Invalid struct access: expected literal before arrow",
+			token->getRange(),
+			this->context
+		);
+	}
+	path.push_back(this->tokens.front()->getStringValue());
+	delete this->tokens.front();
+	this->tokens.pop();
+	TextRange arrowRange = token->getRange();
 	while (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_ARROW) {
-		Token *arrow = this->tokens.front();
+		arrowRange = this->tokens.front()->getRange();
+		delete this->tokens.front();
 		this->tokens.pop();
-		if (this->tokens.size() == 0) {
+		if (this->tokens.size() == 0 || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
 			return ExpressionResult(
-				"Invalid path: expected literal after arrow",
-				token->getRange(),
+				"Invalid struct access: expected literal after arrow",
+				arrowRange,
 				this->context
 			);
-		} 
-		if (this->tokens.front()->getType() == TOKEN_TYPE_VALUE_TYPE || this->tokens.front()->getType() == TOKEN_TYPE_STRUCT_NAME) {
-			this->currentLine->push(new ValueToken(
-				new Variable(
-					token->getStringValue(),
-					token->getRange()
-				),
-				TOKEN_TYPE_LITERAL
-			));
-			this->currentLine->push(arrow);
-			return ExpressionResult();
-		} else if (this->tokens.front()->getType() != TOKEN_TYPE_LITERAL) {
-			return ExpressionResult(
-				"Expected literal after '->' token",
-				this->tokens.front()->getRange(),
-				this->context
-			);
-		}
-		delete arrow;
 		path.push_back(this->tokens.front()->getStringValue());
 		range.merge(this->tokens.front()->getRange());
 		delete this->tokens.front();
 		this->tokens.pop();
 	}
+
 	this->currentLine->push(new ValueToken(
 		new Path(path, range, STRUCT_ACCESS),
 		TOKEN_TYPE_STRUCT_ACCESS
@@ -386,6 +393,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 			block = function;
 		} else if (name == KEYWORD_STRUCT) {
 			ExpressionResult result = this->parseStruct(static_cast<CodeBlock*>(block));
+			delete block;
 			return result;
 		}
 

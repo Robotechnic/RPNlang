@@ -17,33 +17,44 @@ Value*& Memory::pop() {
 	return value;
 }
 
-Value *& Memory::popVariableValue(const ContextPtr &context) {
+Value *&Memory::popVariableValue(const ContextPtr &context) {
 	ExpressionResult result;
 	Value **value;
-	switch (this->stack.top()->getType()) {
+	Value **name = &this->stack.top();
+	this->stack.pop();
+	switch ((*name)->getType()) {
 		case VARIABLE:
-			value = &context->getValue(this->stack.top());
+			value = &context->getValue(*name);
 			break;
 		case PATH:
 		case BUILTIN_PATH:
-			value = &Module::getModuleValue(this->stack.top());
+			value = &Module::getModuleValue(*name);
 			break;
 		case STRUCT_ACCESS:
-			value = &static_cast<Struct*>(
-				Struct::getStruct(static_cast<Path*>(this->stack.top()), context)
-			)->getMember(static_cast<Path*>(this->stack.top()));
+			value = &this->getStructureValue(*name, context);
 			break;
 		case LIST_ELEMENT:
-			value = &static_cast<ListElement*>(this->stack.top())->get();
+			value = &static_cast<ListElement*>(*name)->get();
 			break;
 		default:
-			return this->pop();
+			return *name;
 	}
-	TextRange range = this->stack.top()->getRange();
-	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);
-	this->stack.pop();
+	TextRange range = (*name)->getRange();
+	Value::deleteValue(name, Value::INTERPRETER);
 	(*value)->setVariableRange(range);
 	return *value;
+}
+
+Value *&Memory::getStructureValue(Value *pathValue, const ContextPtr &context) {
+	Path *path = static_cast<Path*>(pathValue);
+	if (this->stack.top()->getType() == VARIABLE) {
+		Value *name = this->pop();
+		return static_cast<Struct*>(
+			Struct::getStruct(name, path, context)
+		)->getMember(path);
+	}
+	Value *top = this->popVariableValue(context);
+	return static_cast<Struct*>(top)->getMember(path);
 }
 
 Value*& Memory::top() {

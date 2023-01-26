@@ -355,12 +355,16 @@ void Interpreter::interpretAssignment(const Token *operatorToken) {
 		this->context->setValue(this->memory.top(), copy ? left->copy() : left, &hold);
 	} else if (this->memory.top()->getType() == STRUCT_ACCESS) {
 		Path *path = static_cast<Path *>(this->memory.top());
-		Value *structValue = Struct::getStruct(path, this->context);
+		this->memory.pop();
+		Value *name = this->memory.pop();
+		Value *structValue = Struct::getStruct(name, path, this->context);
 		static_cast<Struct *>(structValue)->setMember(
 			path,
 			copy ? left->copy() : left,
 			&hold
 		);
+		this->memory.push(name);
+		this->memory.push(path);
 	} else {
 		ListElement *element = static_cast<ListElement *>(this->memory.top());
 		element->set(copy ? left->copy() : left, &hold);
@@ -572,7 +576,6 @@ ExpressionResult Interpreter::interpretStruct(const Token *keywordToken) {
 	TextRange range = keywordToken->getRange();
 	for (size_t i = count; i > 0U; i--) {
 		members.at(i - 1) = this->memory.popVariableValue(this->context);
-
 		if (members.at(i - 1)->getOwner() == Value::OBJECT_VALUE)
 			members.at(i - 1) = members.at(i - 1)->copy();
 		members.at(i - 1)->setOwner(Value::OBJECT_VALUE);

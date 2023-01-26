@@ -1,0 +1,14 @@
+Test struct
+	val -> int
+tcurts
+
+structList 0 list[Test] =
+structList 1 Test :push
+structList 2 Test :push
+structList 3 Test :push
+
+i 0 3 1 for
+	structList i get ->val f"{} \n" :print
+rof
+
+"Done !\n" :print

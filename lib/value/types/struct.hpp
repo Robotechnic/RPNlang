@@ -84,7 +84,7 @@ class Struct : public Value {
 		static int  getStructMembersCount(std::string_view structName);
 		static bool structExists(std::string_view structName);
 		static StructDefinition getStructDefinition(std::string_view structName);
-		static Value *&getStruct(const Path *path, const ContextPtr &context);
+		static Value *&getStruct(const Value *name, const Path *path, const ContextPtr &context);
 
 		bool immutable;
 

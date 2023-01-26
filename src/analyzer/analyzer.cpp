@@ -308,8 +308,9 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 	for (int i = function.args.size() - 1; i >= 0; i--) {
 		type = this->topVariable().type;
 		if (this->hasErrors()) return;
-		if (type != function.args[i] && (function.args[i].index() == 0 || 
-			std::get<ValueType>(function.args[i].type) != ANY)
+		if (
+			(function.args[i].index() == 0 || std::get<ValueType>(function.args[i].type) != ANY) && 
+			type != function.args[i]
 		) {
 			this->error = ExpressionResult(
 				"Function " + name + " expects value type " + 
@@ -782,20 +783,23 @@ void Analyzer::checkKeywordLine(const KeywordToken *token, bool restaureStack, b
 }
 
 void Analyzer::analyzeStructAccess(const Token *token) {
-	std::vector<std::string> path = static_cast<const Path*>(static_cast<const ValueToken *>(token)->getValue())->getPath();
-	std::unordered_map<std::string, AnalyzerValueType> *variables = this->getVariables();
-	if (variables->find(path.at(0)) == variables->end()) {
+	if (this->stack.empty()) {
 		this->error = ExpressionResult(
-			"Variable " + path.at(0) + " is not defined",
+			"Struct access require a struct",
 			token->getRange(),
 			this->context
 		);
 		return;
 	}
-	AnalyzerValueType structType = (*variables)[path.at(0)];
+	std::vector<std::string> path = static_cast<const Path*>(static_cast<const ValueToken *>(token)->getValue())->getPath();
+	std::string variableName = this->stack.top().name();
+	this->topVariable();
+	if (this->hasErrors()) return;
+	AnalyzerValueType structType = this->stack.top();
+	this->stack.pop();
 	if (!structType.type.index() == 0) {
 		this->error = ExpressionResult(
-			"Variable " + path.at(0) + " is not a struct",
+			"Variable " + variableName + " is not a struct",
 			token->getRange(),
 			this->context
 		);
@@ -811,7 +815,7 @@ void Analyzer::analyzeStructAccess(const Token *token) {
 	}
 	StructDefinition definition = Struct::getStructDefinition(std::get<std::string>(structType.type.type));
 	RPNValueType type;
-	for (size_t i = 1; i < path.size(); i++) {
+	for (size_t i = 0; i < path.size(); i++) {
 		if (!definition.hasMember(path.at(i))) {
 			this->error = ExpressionResult(
 				"Struct " + structType.name() + " does not have a member named " + path.at(i),

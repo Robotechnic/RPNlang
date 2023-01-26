@@ -21,6 +21,7 @@ class Memory {
 		ExpressionResult sizeExpected(size_t size, const std::string &message, TextRange range, const ContextPtr &ctx);
 
 	private:
+		Value *&getStructureValue(Value *pathValue, const ContextPtr &context);
 		std::stack<Value*> stack;
 };
 
