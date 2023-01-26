@@ -55,11 +55,7 @@ RPNValueType StructDefinition::getMemberType(std::string_view name) const {
 void StructDefinition::display(std::ostream &stream) const {
 	for (const std::string &key : this->memberOrder) {
 		stream << "\t" << key << " -> ";
-		if (this->members.at(key).index() == 0) {
-			stream << std::get<std::string>(this->members.at(key));
-		} else {
-			stream << std::get<ValueType>(this->members.at(key));
-		}
+		stream << this->members.at(key).name();
 		stream << std::endl;
 	}
 }
@@ -102,40 +98,39 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 			if ((*it)->getType() != STRUCT) {
 				return ExpressionResult(
 					"Struct " + this->definition->name + " member " + key + 
-					" is of type " + std::get<std::string>(type) + " but " + (*it)->getStringType() + " was given",
+					" is of type " + type.name() + " but " + (*it)->getStringType() + " was given",
 					(*it)->getRange(),
 					context
 				);
 			}
 			Struct *structValue = static_cast<Struct*>(*it);
-			if (structValue->definition->name != std::get<std::string>(type)) {
+			if (structValue->getStructName() != std::get<std::string>(type.type)) {
 				return ExpressionResult(
 					"Struct " + this->definition->name + " member " + key + 
-					" is of type " + std::get<std::string>(type) + " but " + std::string(structValue->getStructName()) + " was given",
+					" is of type " + std::string(structValue->getStructName()) + " but " + 
+					type.name() + " was given",
 					(*it)->getRange(),
 					context
 				);
 			}
 			(*this->members)[key] = (*it)->copy(OBJECT_VALUE);
 		} else {
-			if (!Value::isCastableTo((*it)->getType(), std::get<ValueType>(type))) {
+			if (!RPNValueType::isCastableTo((*it)->getType(), std::get<ValueType>(type.type))) {
 				return ExpressionResult(
 					"Struct " + this->definition->name + " member " + key + 
-					" is of type " + Value::stringType(std::get<ValueType>(type)) + " but " + (*it)->getStringType() + " was given",
+					" is of type " + type.name() + " but " + (*it)->getStringType() + " was given",
 					(*it)->getRange(),
 					context
 				);
 			}
-			(*this->members)[key] = (*it)->to(std::get<ValueType>(type), Value::OBJECT_VALUE);
+			(*this->members)[key] = (*it)->to(std::get<ValueType>(type.type), Value::OBJECT_VALUE);
 		}
 		it++;
 	}
 	return ExpressionResult();
 }
 
-void Struct::setMember(const Path *member, Value *value, ContextPtr context, Value **hold) {
-	RPNValueType memberType;
-
+void Struct::setMember(const Path *member, Value *value, Value **hold) {
 	Value **memberValue = &this->members->at(member->ats(member->size() - 1));
 	if (hold != nullptr) {
 		*hold = *memberValue;
@@ -149,7 +144,7 @@ Value *&Struct::getMember(const Path *member) {
 	return this->members->at(member->ats(member->size() - 1));
 }
 
-void Struct::setMember(std::string_view member, Value *value, ContextPtr context) {
+void Struct::setMember(std::string_view member, Value *value) {
 	Value **memberValue = &(*this->members)[std::string(member)];
 	Value::deleteValue(memberValue, Value::OBJECT_VALUE);
 	value->setOwner(Value::OBJECT_VALUE);
@@ -168,7 +163,7 @@ Value *Struct::to(ValueType type, ValueOwner owner) const {
 	if (type == STRUCT)
 		return this->copy(owner);
 	
-	throw std::runtime_error("Cannot cast Struct to " + Value::stringType(type));
+	throw std::runtime_error("Cannot cast Struct to " + stringType(type));
 }
 
 inline Value *Struct::copy(ValueOwner owner) const {
@@ -260,19 +255,19 @@ Value *Struct::oppow(const Value *other, const TextRange &range, const ContextPt
 
 
 Value *Struct::opgt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	throw std::runtime_error("Cannot compare struct to element of type " + Value::stringType(other->getType()));
+	throw std::runtime_error("Cannot compare struct to element of type " + stringType(other->getType()));
 }
 
 Value *Struct::opge(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	throw std::runtime_error("Cannot compare struct to element of type " + Value::stringType(other->getType()));
+	throw std::runtime_error("Cannot compare struct to element of type " + stringType(other->getType()));
 }
 
 Value *Struct::oplt(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	throw std::runtime_error("Cannot compare struct to element of type " + Value::stringType(other->getType()));
+	throw std::runtime_error("Cannot compare struct to element of type " + stringType(other->getType()));
 }
 
 Value *Struct::ople(const Value *other, const TextRange &range, const ContextPtr &context) const {
-	throw std::runtime_error("Cannot compare struct to element of type " + Value::stringType(other->getType()));
+	throw std::runtime_error("Cannot compare struct to element of type " + stringType(other->getType()));
 }
 
 Value *Struct::opne(const Value *other, const TextRange &range, const ContextPtr &context) const {

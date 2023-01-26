@@ -1,13 +1,25 @@
 #include "tokens/tokens/typetoken.hpp"
 
-TypeToken::TypeToken(const TextRange range, std::string_view value) : 
-	Token(range, TOKEN_TYPE_VALUE_TYPE),
-	valueType(Value::valueType(value)) {}
+TypeToken::TypeToken(const TextRange range, std::string_view value, TokenType type) : 
+	Token(range, type),
+	valueType(stringToType(value)) {}
 
-ValueType TypeToken::getValueType() const {
-	return valueType;
+RPNValueType TypeToken::getValueType() const {
+	return this->valueType;
+}
+
+std::variant<std::string, ValueType> TypeToken::getListType() const {
+	if (this->valueType.index() != 1 || std::get<ValueType>(this->valueType.type) != LIST)
+		throw std::runtime_error("Cannot get list type of non-list type");
+	return this->valueType.listType;
 }
 
 std::string TypeToken::getStringValue() const {
-	return Value::stringType(valueType);
+	return this->valueType.name();
+}
+
+void TypeToken::setListType(std::variant<std::string, ValueType> listType) {
+	if (this->valueType.index() != 1 || std::get<ValueType>(this->valueType.type) != LIST)
+		throw std::runtime_error("Cannot set list type of non-list type");
+	this->valueType.listType = listType;
 }

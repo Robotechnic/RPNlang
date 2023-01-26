@@ -11,7 +11,7 @@ class Memory {
 		Memory();
 		~Memory();
 
-		void push(Value* value);
+		void push(Value* const &value);
 		Value*& pop();
 		Value*& popVariableValue(const ContextPtr &context);
 		Value*& top();

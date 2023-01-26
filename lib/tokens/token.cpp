@@ -16,6 +16,10 @@ TextRange Token::getRange() const {
 	return this->range;
 }
 
+void Token::setRange(TextRange range) {
+	this->range = range;
+}
+
 /**
  * @brief convert a TokenType to its string representation
  * 
@@ -76,6 +80,10 @@ std::string Token::stringType(TokenType type) {
 			return "struct access";
 		case TOKEN_TYPE_KEYWORD:
 			return "keyword";
+		case TOKEN_TYPE_LEFT_BRACKET:
+			return "left bracket";
+		case TOKEN_TYPE_RIGHT_BRACKET:
+			return "right bracket";
 		default:
 			return "unknown";
 	}

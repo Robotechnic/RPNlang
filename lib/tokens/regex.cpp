@@ -45,7 +45,7 @@ matchResult fStringMatch(std::string_view str) {
 	return std::nullopt;
 }
 matchResult typeMatch(std::string_view str) {
-	if (auto m = ctre::starts_with<"^(int|float|bool|string|function|none|list)(?=\\s|$)">(str)) {
+	if (auto m = ctre::starts_with<"^(int|float|bool|string|function|none|list)(?=[^0-9a-zA-Z_]|$)">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;
@@ -64,6 +64,18 @@ matchResult colonMatch(std::string_view str) {
 }
 matchResult arrowMatch(std::string_view str) {
 	if (auto m = ctre::starts_with<"^((?:\\-\\>))">(str)) {
+		return std::make_pair(m.get<1>().to_view(), m.size());
+	}
+	return std::nullopt;
+}
+matchResult leftBracket(std::string_view str) {
+	if (auto m = ctre::starts_with<"^((?:\\[))">(str)) {
+		return std::make_pair(m.get<1>().to_view(), m.size());
+	}
+	return std::nullopt;
+}
+matchResult rightBracket(std::string_view str) {
+	if (auto m = ctre::starts_with<"^((?:\\]))">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;

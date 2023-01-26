@@ -8,7 +8,7 @@ void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 			this->analyze(static_cast<Line *>(*it));
 			if (this->hasErrors()) continue;
 			if (it != blocks.end() - (size_t)1 && (*(it + (size_t)1))->getType() == CODE_BLOCK) {
-				this->checkKeywordLine(static_cast<CodeBlock *>(*(it + (size_t)1))->getKeywordToken());
+				this->checkKeywordLine(static_cast<CodeBlock *>(*(it + (size_t)1))->getKeywordToken(), false);
 			} else {
 				this->checkRemainingCount();
 			}
@@ -132,6 +132,7 @@ void Analyzer::analyze(Line *line) {
 		}
 		this->currentLine->pop();
 	}
+	line->reset();
 }
 
 AnalyzerValueType& Analyzer::topVariable() {
@@ -140,11 +141,11 @@ AnalyzerValueType& Analyzer::topVariable() {
 		TextRange range = top.range;
 		stack.pop();
 		std::unordered_map<std::string, AnalyzerValueType> *variablesMap = &this->functionVariables;
-		if (this->functionVariables.find(std::get<std::string>(top.type)) == this->variables.end()) {
+		if (this->functionVariables.find(std::get<std::string>(top.type.type)) == this->variables.end()) {
 			variablesMap = &this->variables;
-			if (this->variables.find(std::get<std::string>(top.type)) == this->variables.end()) {
+			if (this->variables.find(std::get<std::string>(top.type.type)) == this->variables.end()) {
 				this->error = ExpressionResult(
-					"Variable " + std::get<std::string>(top.type) + " is not defined",
+					"Variable " + top.type.name() + " is not defined",
 					top.range,
 					this->context
 				);
@@ -152,9 +153,9 @@ AnalyzerValueType& Analyzer::topVariable() {
 				return stack.top();
 			}
 		}
-		if (variablesMap->at(std::get<std::string>(top.type)).conditionalLevel > this->conditionalLevel) {
+		if (variablesMap->at(std::get<std::string>(top.type.type)).conditionalLevel > this->conditionalLevel) {
 			this->error = ExpressionResult(
-				"Variable " + std::get<std::string>(top.type) + 
+				"Variable " + top.type.name() + 
 				" has been declared conditionally and cannot be used outside of the condition scope",
 				top.range,
 				this->context
@@ -162,7 +163,7 @@ AnalyzerValueType& Analyzer::topVariable() {
 			this->stack.push(top);
 			return stack.top();
 		}
-		this->stack.push(variablesMap->at(std::get<std::string>(top.type)));
+		this->stack.push(variablesMap->at(std::get<std::string>(top.type.type)));
 		this->stack.top().isVariable = false;
 		this->stack.top().range = range;
 	}
@@ -205,6 +206,7 @@ void Analyzer::analyzeFunctionsBody() {
 				0
 			};
 		}
+		this->currentFunctionReturnType = this->functionBlocks.top()->getReturnType();
 		this->analyze(this->functionBlocks.top()->getBlocks());
 		this->functionBlocks.pop();
 		this->functionVariables.clear();
@@ -243,7 +245,11 @@ void Analyzer::analyzeOperator(const OperatorToken *token) {
 		return;
 	}
 	stack.pop();
-	std::optional<ValueType> resultType = this->getOperatorType(std::get<ValueType>(left.type), std::get<ValueType>(right.type), token);
+	std::optional<ValueType> resultType = this->getOperatorType(
+		std::get<ValueType>(left.type.type),
+		std::get<ValueType>(right.type.type), 
+		token
+	);
 	if (resultType.has_value()) {
 		stack.push({
 			resultType.value(),
@@ -253,7 +259,7 @@ void Analyzer::analyzeOperator(const OperatorToken *token) {
 	} else {
 		this->error = ExpressionResult(
 			"Can't apply operator " + token->getStringValue() + " to types " + 
-			Value::stringType(std::get<ValueType>(left.type)) + " and " + Value::stringType(std::get<ValueType>(right.type)),
+			left.type.name() + " and " + right.type.name(),
 			token->getRange(),
 			this->context
 		);
@@ -289,7 +295,9 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 	std::string name = token->getStringValue();
 	if (this->stack.size() < function.args.size()) {
 		this->error = ExpressionResult(
-			"Not enough values for function " + name + ", expected " + std::to_string(function.args.size()) + " but got " + std::to_string(this->stack.size()),
+			"Not enough values for function " + name + ", expected " +
+			std::to_string(function.args.size()) + " but got " + 
+			std::to_string(this->stack.size()),
 			token->getRange(),
 			this->context
 		);
@@ -300,50 +308,22 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 	for (int i = function.args.size() - 1; i >= 0; i--) {
 		type = this->topVariable().type;
 		if (this->hasErrors()) return;
-		if (type.index() == 0 && function.args[i].index() == 1) {
+		if (type != function.args[i] && (function.args[i].index() == 0 || 
+			std::get<ValueType>(function.args[i].type) != ANY)
+		) {
 			this->error = ExpressionResult(
 				"Function " + name + " expects value type " + 
-				Value::stringType(std::get<ValueType>(function.args[i])) + 
-				" but got struct instead",
-				stack.top().range,
-				this->context
-			);
-			return;
-		} else if (type.index() == 1 && function.args[i].index() == 0) {
-			this->error = ExpressionResult(
-				"Function " + name + " expects struct type " + 
-				std::get<std::string>(function.args[i]) + 
-				" but got value instead",
-				stack.top().range,
-				this->context
-			);
-			return;
-		} else if (type.index() == 0 && function.args[i].index() == 0) {
-			if (std::get<std::string>(type) != std::get<std::string>(function.args[i])) {
-				this->error = ExpressionResult(
-					"Function " + name + " expects struct type " + 
-					std::get<std::string>(function.args[i]) + 
-					" but got " + std::get<std::string>(type) + " instead",
-					stack.top().range,
-					this->context
-				);
-				return;
-			}
-		} else if (!Value::isCastableTo(std::get<ValueType>(type), std::get<ValueType>(function.args[i]))) {
-			this->error = ExpressionResult(
-				"Function " + name + " expects value type " + 
-				Value::stringType(std::get<ValueType>(function.args[i])) + 
-				" but got " + Value::stringType(std::get<ValueType>(type)) + " instead",
+				function.args[i].name() + 
+				" but got " + type.name(),
 				stack.top().range,
 				this->context
 			);
 			return;
 		}
-
 		range.merge(stack.top().range);
 		stack.pop();
 	}
-	stack.push({
+	this->stack.push({
 		function.returnType,
 		range,
 		false
@@ -405,7 +385,26 @@ void Analyzer::analyzeAssignment(const Token *token) {
 	if (this->hasErrors()) return;
 	AnalyzerValueType variable = stack.top();
 	if (variable.isStructMember) {
-		return this->anlyzeStructMemberAssignment(token, type);
+		if (this->stack.top().type != type) {
+			this->error = ExpressionResult(
+				"Struct member is of type " + this->stack.top().name() +
+				" but value is of type " + type.name(),
+				this->stack.top().range,
+				this->context
+			);
+		}
+		return;
+	}
+	if (variable.isListElement) {
+		if (this->stack.top().type != type) {
+			this->error = ExpressionResult(
+				"List element is of type " + this->stack.top().name() +
+				" but value is of type " + type.name(),
+				this->stack.top().range,
+				this->context
+			);
+		}
+		return;
 	}
 	if (variable.type.index() != 0 || !variable.isVariable) {
 		this->error = ExpressionResult(
@@ -416,51 +415,18 @@ void Analyzer::analyzeAssignment(const Token *token) {
 		return;
 	}
 	std::unordered_map<std::string, AnalyzerValueType> *variables = this->getVariables();
-	std::string name = std::get<std::string>(variable.type);
+	std::string name = std::get<std::string>(variable.type.type);
 	if (this->conditionalLevel > 0 && variables->find(name) != variables->end()) {
 		// check if the type is the same or equivalent
 		AnalyzerValueType holdVariable = variables->at(name);
-		if (holdVariable.type.index() == 0) {
-			if (type.index() != 0) {
-				this->error = ExpressionResult(
-					"Can't conditionally assign value of type " + Value::stringType(std::get<ValueType>(type)) + 
-					" to variable " + name + " of type " + std::get<std::string>(holdVariable.type),
-					variable.range,
-					this->context
-				);
-				return;
-			}
-			if (std::get<std::string>(type) != std::get<std::string>(holdVariable.type)) {
-				this->error = ExpressionResult(
-					"Can't conditionally assign value of type " + std::get<std::string>(type) + 
-					" to variable " + name + " of type " + std::get<std::string>(holdVariable.type),
-					variable.range,
-					this->context
-				);
-				return;
-			}
-		} else {
-			if (type.index() == 0) {
-				this->error = ExpressionResult(
-					"Can't conditionally assign value of type " + std::get<std::string>(type) + 
-					" to variable " + name + " of type " + Value::stringType(std::get<ValueType>(holdVariable.type)),
-					variable.range,
-					this->context
-				);
-				return;
-			}
-			if (
-				!Value::isCastableTo(std::get<ValueType>(type),std::get<ValueType>(holdVariable.type)) ||
-				!Value::isCastableTo(std::get<ValueType>(holdVariable.type), std::get<ValueType>(type))
-			) {
-				this->error = ExpressionResult(
-					"Can't conditionally assign value of type " + Value::stringType(std::get<ValueType>(type)) + 
-					" to variable " + name + " of type " + Value::stringType(std::get<ValueType>(holdVariable.type)),
-					variable.range,
-					this->context
-				);
-				return;
-			}
+		if (holdVariable.type != type || type != holdVariable.type) {
+			this->error = ExpressionResult(
+				"Can't conditionally assign value of type " + type.name() + 
+				" to variable " + name + " of type " + holdVariable.type.name(),
+				variable.range,
+				this->context
+			);
+			return;
 		}
 		(*variables)[name] = {
 			type,
@@ -480,48 +446,6 @@ void Analyzer::analyzeAssignment(const Token *token) {
 	};
 }
 
-void Analyzer::anlyzeStructMemberAssignment(const Token *token, const RPNValueType &type) {
-	if (this->stack.top().type.index() == 0) {
-		if (type.index() != 0) {
-			this->error = ExpressionResult(
-				"Struct member is of type " + std::get<std::string>(this->stack.top().type) +
-				" but value is of type " + Value::stringType(std::get<ValueType>(type)),
-				this->stack.top().range,
-				this->context
-			);
-			return;
-		}
-		if (std::get<std::string>(this->stack.top().type) != std::get<std::string>(type)) {
-			this->error = ExpressionResult(
-				"Struct member is of type " + std::get<std::string>(this->stack.top().type) +
-				" but value is of type " + std::get<std::string>(type),
-				this->stack.top().range,
-				this->context
-			);
-			return;
-		}
-		return;
-	}
-	if (type.index() != 1) {
-		this->error = ExpressionResult(
-			"Struct member is of type " + Value::stringType(std::get<ValueType>(this->stack.top().type)) +
-			" but value is of type " + Value::stringType(std::get<ValueType>(type)),
-			this->stack.top().range,
-			this->context
-		);
-		return;
-	}
-	if (!Value::isCastableTo(std::get<ValueType>(type), std::get<ValueType>(this->stack.top().type))) {
-		this->error = ExpressionResult(
-			"Struct member is of type " + Value::stringType(std::get<ValueType>(this->stack.top().type)) +
-			" but value is of type " + Value::stringType(std::get<ValueType>(type)),
-			this->stack.top().range,
-			this->context
-		);
-		return;
-	}
-}
-
 void Analyzer::analyzeTypeCast(const TypeToken *token) {
 	if (stack.size() < 1) {
 		this->error = ExpressionResult(
@@ -534,13 +458,13 @@ void Analyzer::analyzeTypeCast(const TypeToken *token) {
 	AnalyzerValueType type = this->topVariable();
 	stack.pop();
 	if (this->hasErrors()) return;
-	if (token->getValueType() == LIST && type.type.index() == 1 && std::get<ValueType>(type.type) == INT) {
+	if (std::get<ValueType>(token->getValueType().type) == LIST && type.type.index() == 1 && std::get<ValueType>(type.type.type) == INT) {
 		return this->analyzeListCreation(token);
 	}
 	
-	if (!Value::isCastableTo(std::get<ValueType>(type.type), token->getValueType())) {
+	if (type.type != token->getValueType()) {
 		this->error = ExpressionResult(
-			"Can't cast " + Value::stringType(std::get<ValueType>(type.type)) + " to " + Value::stringType(token->getValueType()),
+			"Can't cast " + type.name() + " to " + token->getValueType().name(),
 			token->getRange(),
 			this->context
 		);
@@ -571,13 +495,23 @@ void Analyzer::analyzeListCreation(const TypeToken *token) {
 		return;
 	}
 	TextRange range = token->getRange();
+	auto listType = token->getListType();
 	for (int i = 0; i < size; i++) {
 		range.merge(this->topVariable().range);
 		if (this->hasErrors()) return;
+		if (this->stack.top().type != listType) {
+			this->error = ExpressionResult(
+				"List is of type " + RPNValueType::typeName(listType) +
+				" but got " + this->stack.top().name(),
+				this->stack.top().range,
+				this->context
+			);
+			return;
+		}
 		stack.pop();
 	}
 	stack.push({
-		LIST,
+		RPNValueType(LIST, listType),
 		range,
 		false
 	});
@@ -610,40 +544,13 @@ void Analyzer::analyzeStructCreation(const Token *token) {
 		RPNValueType type = def.getMemberType(*it);
 		this->topVariable();
 		if (this->hasErrors()) return;
-		if (type.index() == 0) {
-			if (stack.top().type.index() != 0) {
-				this->error = ExpressionResult(
-					"Struct member " + *it + " is of type " + std::get<std::string>(type) + " but got " + Value::stringType(std::get<ValueType>(stack.top().type)),
-					stack.top().range,
-					this->context
-				);
-				return;
-			}
-			if (std::get<std::string>(type) != std::get<std::string>(stack.top().type)) {
-				this->error = ExpressionResult(
-					"Struct member " + *it + " is of type " + std::get<std::string>(type) + " but got " + std::get<std::string>(stack.top().type),
-					stack.top().range,
-					this->context
-				);
-				return;
-			}
-		} else {
-			if (stack.top().type.index() != 1) {
-				this->error = ExpressionResult(
-					"Struct member " + *it + " is of type " + Value::stringType(std::get<ValueType>(type)) + " but got " + std::get<std::string>(stack.top().type),
-					stack.top().range,
-					this->context
-				);
-				return;
-			}
-			if (std::get<ValueType>(type) != std::get<ValueType>(stack.top().type)) {
-				this->error = ExpressionResult(
-					"Struct member " + *it + " is of type " + Value::stringType(std::get<ValueType>(type)) + " but got " + Value::stringType(std::get<ValueType>(stack.top().type)),
-					stack.top().range,
-					this->context
-				);
-				return;
-			}
+		if (stack.top().type != type) {
+			this->error = ExpressionResult(
+				"Struct member " + *it + " is of type " + type.name() + " but got " + stack.top().name(),
+				stack.top().range,
+				this->context
+			);
+			return;
 		}
 		range.merge(stack.top().range);
 		stack.pop();
@@ -684,17 +591,30 @@ void Analyzer::analyzeKeyword(const KeywordToken *token) {
 					this->context
 				);
 			}
-			/// TODO: check if the value is correct and if the function return a value anyway
+			this->topVariable();
+			if (this->hasErrors()) return;
+			if (this->stack.top().type != this->currentFunctionReturnType) {
+				this->error = ExpressionResult(
+					"Return type is " + this->currentFunctionReturnType.name() + " but got " + this->stack.top().name(),
+					this->stack.top().range,
+					this->context
+				);
+			}
 			break;
 		case KEYWORD_IMPORT:
-			this->checkKeywordLine(token);
+			this->checkKeywordLine(token, false);
 			if (this->hasErrors()) return;
 			this->analyzeImport(token);
 			break;
 		case KEYWORD_IMPORTAS:
-			this->checkKeywordLine(token);
+			this->checkKeywordLine(token, false);
 			if (this->hasErrors()) return;
 			this->analyzeImportAs(token);
+			break;
+		case KEYWORD_GET:
+			this->checkKeywordLine(token, true, false);
+			if (this->hasErrors()) return;
+			this->analyzeGet(token);
 			break;
 		default:
 			throw std::runtime_error("The keyword " + token->getStringValue() + " is not implemented");
@@ -702,7 +622,14 @@ void Analyzer::analyzeKeyword(const KeywordToken *token) {
 }
 
 void Analyzer::analyzeImport(const KeywordToken *token) {
-	this->checkKeywordLine(token);
+	if (this->currentLine->totalSize() != 2) {
+		this->error = ExpressionResult(
+			"import must have exactly one argument",
+			token->getRange(),
+			this->context
+		);
+		return;
+	}
 	const std::string path = this->currentLine->last()->getStringValue();
 	if (path.size() == 0) {
 		this->error = ExpressionResult(
@@ -716,7 +643,14 @@ void Analyzer::analyzeImport(const KeywordToken *token) {
 }
 
 void Analyzer::analyzeImportAs(const KeywordToken *token) {
-	this->checkKeywordLine(token);
+	if (this->currentLine->totalSize() != 3) {
+		this->error = ExpressionResult(
+			"import must have exactly two arguments",
+			token->getRange(),
+			this->context
+		);
+		return;
+	}
 	const std::string name = this->currentLine->last()->getStringValue();
 	this->currentLine->goBack();
 	const std::string path = this->currentLine->last()->getStringValue();
@@ -757,48 +691,49 @@ void Analyzer::analyzePath(Token *path, bool addToStack) {
 	});
 }
 
-void Analyzer::checkKeywordLine(const KeywordToken *token) {
+void Analyzer::checkKeywordLine(const KeywordToken *token, bool restaureStack, bool strict) {
 	if (linePatern.find(token->getKeyword()) == linePatern.end()) {
 		this->checkRemainingCount();
 	}
 	std::vector<RPNValueType> types = linePatern.at(token->getKeyword());
-	if (types.size() != this->stack.size()) {
+	if ((strict && types.size() != this->stack.size()) || types.size() > this->stack.size()) {
 		this->error = ExpressionResult(
-			"Keyword " + token->getStringValue() + " require " + 
+			"Keyword " + token->getStringValue() + " require " + (strict ? "exactly " : "") +
 			std::to_string(types.size()) + " values but got " + std::to_string(this->stack.size()),
 			token->getRange(),
 			this->context
 		);
 		return;
 	}
+	std::stack<AnalyzerValueType> values;
 	for (int i = types.size() - 1; i >= 0; i--) {
 		if (types[i].index() == 0) {
 			if (stack.top().type.index() != 0) {
 				this->error = ExpressionResult(
 					"Keyword " + token->getStringValue() + " require a value of type " + 
-					std::get<std::string>(types[i]) + " but got " + 
-					Value::stringType(std::get<ValueType>(stack.top().type)),
+					types[i].name() + " but got " + 
+					stack.top().name(),
 					stack.top().range,
 					this->context
 				);
 				return;
 			}
-			if (std::get<std::string>(types[i]) != std::get<std::string>(stack.top().type)) {
+			if (std::get<std::string>(types[i].type) != std::get<std::string>(stack.top().type.type)) {
 				this->error = ExpressionResult(
 					"Keyword " + token->getStringValue() + " require a value of type " + 
-					std::get<std::string>(types[i]) + " but got " + std::get<std::string>(stack.top().type),
+					types[i].name() + " but got " + stack.top().name(),
 					stack.top().range,
 					this->context
 				);
 				return;
 			}
 		} else {
-			if (std::get<ValueType>(types[i]) == VARIABLE) {
+			if (std::get<ValueType>(types[i].type) == VARIABLE) {
 				if (stack.top().type.index() != 0) {
 					this->error = ExpressionResult(
 						"Keyword " + token->getStringValue() + " require a value of type " + 
-						Value::stringType(std::get<ValueType>(types[i])) + " but got " + 
-						Value::stringType(std::get<ValueType>(stack.top().type)),
+						types[i].name() + " but got " + 
+						stack.top().name(),
 						stack.top().range,
 						this->context
 					);
@@ -807,40 +742,42 @@ void Analyzer::checkKeywordLine(const KeywordToken *token) {
 				if (!stack.top().isVariable) {
 					this->error = ExpressionResult(
 						"Keyword " + token->getStringValue() + " require a value of type " + 
-						Value::stringType(std::get<ValueType>(types[i])) + " but got " + 
-						std::get<std::string>(stack.top().type),
+						types[i].name() + " but got " + 
+						stack.top().name(),
 						stack.top().range,
 						this->context
 					);
 					return;
 				}
-				this->variables[std::get<std::string>(stack.top().type)] = {
+				this->variables[std::get<std::string>(stack.top().type.type)] = {
 					INT,
 					stack.top().range,
+					false,
+					0, 0,
 					false
 				};
 				continue;
 			}
 			this->topVariable();
 			if (this->hasErrors()) return;
-			if (stack.top().type.index() != 1) {
+			if (stack.top().type != types[i]) {
 				this->error = ExpressionResult(
-					"Keyword " + token->getStringValue() + " require a value of type " + Value::stringType(std::get<ValueType>(types[i])) + " but got " + std::get<std::string>(stack.top().type),
-					stack.top().range,
-					this->context
-				);
-				return;
-			}
-			if (!Value::isCastableTo(std::get<ValueType>(stack.top().type), std::get<ValueType>(types[i]))) {
-				this->error = ExpressionResult(
-					"Keyword " + token->getStringValue() + " require a value of type " + Value::stringType(std::get<ValueType>(types[i])) + " but got " + Value::stringType(std::get<ValueType>(stack.top().type)),
+					"Keyword " + token->getStringValue() + " require a value of type " + types[i].name() +
+					" but got " + stack.top().name(),
 					stack.top().range,
 					this->context
 				);
 				return;
 			}
 		}
+		values.push(stack.top());
 		stack.pop();
+	}
+	if (restaureStack) {
+		while (!values.empty()) {
+			stack.push(values.top());
+			values.pop();
+		}
 	}
 }
 
@@ -864,29 +801,29 @@ void Analyzer::analyzeStructAccess(const Token *token) {
 		);
 		return;
 	}
-	if (!Struct::structExists(std::get<std::string>(structType.type))) {
+	if (!Struct::structExists(std::get<std::string>(structType.type.type))) {
 		this->error = ExpressionResult(
-			"Struct " + std::get<std::string>(structType.type) + " does not exist",
+			"Struct " + structType.name() + " does not exist",
 			token->getRange(),
 			this->context
 		);
 		return;
 	}
-	StructDefinition definition = Struct::getStructDefinition(std::get<std::string>(structType.type));
+	StructDefinition definition = Struct::getStructDefinition(std::get<std::string>(structType.type.type));
 	RPNValueType type;
 	for (size_t i = 1; i < path.size(); i++) {
 		if (!definition.hasMember(path.at(i))) {
 			this->error = ExpressionResult(
-				"Struct " + std::get<std::string>(structType.type) + " does not have a member named " + path.at(i),
+				"Struct " + structType.name() + " does not have a member named " + path.at(i),
 				token->getRange(),
 				this->context
 			);
 			return;
 		}
 		type = definition.getMemberType(path.at(i));
-		if (i < path.size() - 1 && (type.index() != 0 || std::get<ValueType>(type) != STRUCT)) {
+		if (i < path.size() - 1 && (type.index() != 0 || std::get<ValueType>(type.type) != STRUCT)) {
 			this->error = ExpressionResult(
-				"Member " + path.at(i) + " of struct " + std::get<std::string>(structType.type) + " is not a struct",
+				"Member " + path.at(i) + " of struct " + structType.name() + " is not a struct",
 				token->getRange(),
 				this->context
 			);
@@ -898,6 +835,23 @@ void Analyzer::analyzeStructAccess(const Token *token) {
 		token->getRange(),
 		false,
 		0, 0,
+		true,
+		false
+	});
+}
+
+void Analyzer::analyzeGet(const Token *token) {
+	this->stack.pop();
+	RPNValueType type = this->stack.top().type;
+	TextRange range = this->stack.top().range;
+	this->stack.pop();
+
+	this->stack.push({
+		type.listType,
+		token->getRange().merge(range),
+		false,
+		0, 0,
+		false,
 		true
 	});
 }
@@ -988,9 +942,9 @@ std::optional<ValueType> Analyzer::getOperatorType(ValueType left, ValueType rig
 std::ostream& operator<<(std::ostream &stream, const AnalyzerValueType &valueType) {
 	if (valueType.type.index() == 0) {
 		stream << (valueType.isVariable ? "variable " : (valueType.isStructMember ? "struct member " : "struct "));
-		stream << std::get<std::string>(valueType.type);
+		stream << valueType.name();
 	} else {
-		stream << std::get<ValueType>(valueType.type);
+		stream << valueType.name();
 	}
 	return stream;
 }

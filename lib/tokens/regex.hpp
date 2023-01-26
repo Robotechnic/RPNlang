@@ -23,6 +23,8 @@ matchResult typeMatch(std::string_view str);
 matchResult indentBlockMatch(std::string_view str);
 matchResult colonMatch(std::string_view str);
 matchResult arrowMatch(std::string_view str);
+matchResult leftBracket(std::string_view str);
+matchResult rightBracket(std::string_view str);
 matchResult expressionSeparatorMatch(std::string_view str);
 matchResult affectTokenMatch(std::string_view str);
 matchResult dotMatch(std::string_view str);
@@ -40,12 +42,14 @@ matchResult commentMatch(std::string_view str);
  * exemple: an int can be a substring of a float
  * true, false and types can be keywords or literals
  */
-const std::array<std::pair<Matcher, TokenType>, 21> tokenRegexes = {
+const std::array<std::pair<Matcher, TokenType>, 23> tokenRegexes = {
 	std::make_pair(binNumMatch,              TOKEN_TYPE_BIN),
 	std::make_pair(hexNumMatch,              TOKEN_TYPE_HEX),
 	std::make_pair(floatMatch,               TOKEN_TYPE_FLOAT),
 	std::make_pair(intMatch,                 TOKEN_TYPE_INT),
 	std::make_pair(arrowMatch,               TOKEN_TYPE_ARROW),
+	std::make_pair(leftBracket,              TOKEN_TYPE_LEFT_BRACKET),
+	std::make_pair(rightBracket,             TOKEN_TYPE_RIGHT_BRACKET),
 	std::make_pair(boolMatch,                TOKEN_TYPE_BOOL),
 	std::make_pair(stringMatch,              TOKEN_TYPE_STRING),
 	std::make_pair(fStringMatch,             TOKEN_TYPE_FSTRING),

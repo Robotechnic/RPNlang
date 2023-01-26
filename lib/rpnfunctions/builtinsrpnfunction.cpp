@@ -33,20 +33,19 @@ RPNFunctionResult BuiltinRPNFunction::call(
 			converted.push_back(args.at(i));
 			continue;
 		}
-		ValueType type = std::get<ValueType>(this->arguments.at(i).second);
+		ValueType type = std::get<ValueType>(this->arguments.at(i).second.type);
 		if (type == ANY || args.at(i)->getType() == type)
 			converted.push_back(args.at(i));
 		else
-			converted.push_back(args.at(i)->to(type));
+			converted.push_back(args.at(i)->to(type, Value::PARENT_FUNCTION));
 	}
 	RPNFunctionResult callResult = this->function(converted, functionRange, functionContext);
 	for (size_t i = 0; i < args.size(); i++) {
 		if (this->arguments.at(i).second.index() == 0) continue;
-		ValueType type = std::get<ValueType>(this->arguments.at(i).second);
+		ValueType type = std::get<ValueType>(this->arguments.at(i).second.type);
 		if (type != ANY && args.at(i)->getType() != type) 
-			delete converted.at(i);
+			Value::deleteValue(&converted.at(i), Value::PARENT_FUNCTION);
 	}
-	
 	
 	if (
 		auto callExpressionResult = std::get_if<ExpressionResult>(&callResult); 
@@ -56,11 +55,11 @@ RPNFunctionResult BuiltinRPNFunction::call(
 	if (this->returnType.index() == 0) {
 		if (std::get<Value*>(callResult)->getType() != STRUCT)
 			throw std::runtime_error("BuiltinRPNFunction::call: result.second->getType() != STRUCT");
-		if (std::get<std::string>(this->returnType) != static_cast<Struct*>(std::get<Value*>(callResult))->getStructName())
+		if (std::get<std::string>(this->returnType.type) != static_cast<Struct*>(std::get<Value*>(callResult))->getStructName())
 			throw std::runtime_error("BuiltinRPNFunction::call: std::get<std::string>(this->returnType) != result.second->getStructName()");
 	} else {
-		if (!Value::isCastableTo(std::get<Value*>(callResult)->getType(), std::get<ValueType>(this->returnType)))
-			throw std::runtime_error("BuiltinRPNFunction::call: result.second->getType() != std::get<ValueType>(this->returnType)");
+		if (!RPNValueType::isCastableTo(std::get<Value*>(callResult)->getType(), std::get<ValueType>(this->returnType.type)))
+			throw std::runtime_error("BuiltinRPNFunction::call: result.second->getType() != std::get<ValueType>(this->returnType.type)");
 	}
 
 	return callResult;

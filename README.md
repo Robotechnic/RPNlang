@@ -110,8 +110,28 @@ mymath.pi 2 / mymath.cos :print
 **Lists**:
 ```
 a 1 2 3 4 5 6 7 8 9 10 list =
-a 0 :at f"{}\n" :print
-a 9 :at f"{}\n" :print
+a 0 get f"{}\n" :print
+a 9 get f"{}\n" :print
+a 5 get 7 =
+```
+
+**Structs**:
+```
+"math" :import
+Vector struct
+	x -> float
+	y -> float
+tcurts
+
+normalise Vector v -> none fun
+	len v->x 2 ^ v->y 2 ^ + :sqrt
+	v->x v->x len / =
+	v->y v->y len / =
+nuf
+
+v 10 10 Vector =
+v->x f"{}\n" :print
+v->y f"{}\n" :print
 ```
 
 More exemples [here](https://github.com/Robotechnic/RPNlang/tree/master/examples)
@@ -123,22 +143,23 @@ RPNlang is also a strongly typed language, each variable has a type (if you defi
 
 ## 1.4. Language keywords
 In this languages there are just a few language specific keywords, everithing else is a function.
-| Keyword  | Description |
-|:--------:|:-----------:|
-|  `if`    | If the condition is true, execute the block of instruction after it. Else skip it |
-| `else`   | If the previous condition is false, execute the block of instruction after it.|
-|  `fi`    | End of an if/else block |
-|  `for`   | Execute the block of instruction for each increment in a given range |
-|  `rof`   | End of a for loop |
-|  `while` | Execute the block of instruction while the condition is true |
-|  `elihw` | End of a while loop |
-|  `fun`   | Define a function |
-|  `nuf`   | End of a function block|
-|  `->`    | Define function return type|
-| `try`    | start of a try catch block |
-| `catch`  | start of catch block |
-| `finally`| start of a finally block |
-| `yrt`    | end of try catch block |
+| Keyword   | Description |
+|:---------:|:-----------:|
+|  `if`     | If the condition is true, execute the block of instruction after it. Else skip it |
+| `else`    | If the previous condition is false, execute the block of instruction after it.|
+|  `fi`     | End of an if/else block |
+|  `for`    | Execute the block of instruction for each increment in a given range |
+|  `rof`    | End of a for loop |
+|  `while`  | Execute the block of instruction while the condition is true |
+|  `elihw`  | End of a while loop |
+|  `fun`    | Define a function |
+|  `nuf`    | End of a function block|
+| `try`     | start of a try catch block |
+| `catch`   | start of catch block |
+| `finally` | start of a finally block |
+| `yrt`     | end of try catch block |
+| `import`  | import the given module |
+| `importAs`| import the given module and rename it |
 
 ## 1.5. Types
 There are a few types in this language:
@@ -150,3 +171,6 @@ There are a few types in this language:
 | `bool` | Boolean value |
 | `function` | Function |
 | `none` | Empty value |
+| `list` | list of values |
+| `struct` | Custom datatype that allow to agregate multiple values |
+

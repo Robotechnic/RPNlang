@@ -24,6 +24,7 @@ class Token {
 		virtual std::string getStringValue() const = 0;
 
 		TextRange getRange() const;
+		void setRange(TextRange range);
 		static std::string stringType(TokenType type);
 
 	protected:

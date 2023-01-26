@@ -101,7 +101,7 @@ ExpressionResult Lexer::lex() {
 				result = this->parseFunctionCall(token);
 				break;
 			case TOKEN_TYPE_VALUE_TYPE:
-				this->currentLine->push(new TypeToken(token->getRange(), token->getStringValue()));
+				result = this->parseType(token);
 				break;
 			case TOKEN_TYPE_DOT:
 				return ExpressionResult(
@@ -513,16 +513,17 @@ std::pair<ExpressionResult, FunctionBlock*> Lexer::parseFunction(CodeBlock *bloc
 	while (line->top()->getType() != TOKEN_TYPE_ARROW && line->size() > 2) {
 		current = line->pop();
 		if (i % 2 == 0) {
-			if (current->getType() == TOKEN_TYPE_VALUE_TYPE)
+			if (current->getType() == TOKEN_TYPE_VALUE_TYPE){
 				type.second = static_cast<TypeToken*>(current)->getValueType();
-			else if (current->getType() == TOKEN_TYPE_STRUCT_NAME)
+			} else if (current->getType() == TOKEN_TYPE_STRUCT_NAME) {
 				type.second = current->getStringValue();
-			else
+			} else {
 				return std::make_pair(ExpressionResult(
 					"Expected value type or struct name",
 					current->getRange(),
 					this->context
 				), nullptr);
+			}
 		} else {
 			if (current->getType() != TOKEN_TYPE_LITERAL)
 				return std::make_pair(ExpressionResult(
@@ -665,6 +666,65 @@ ExpressionResult Lexer::parseStruct(CodeBlock *block) {
 		def.addMember(name->getStringValue(), static_cast<TypeToken*>(l->pop())->getValueType());
 	}
 	Struct::addStructDefinition(def);
+	return ExpressionResult();
+}
+
+ExpressionResult Lexer::parseType(const Token *token) {
+	this->currentLine->push(new TypeToken(token->getRange(), token->getStringValue()));
+	RPNValueType type = static_cast<TypeToken*>(this->currentLine->back())->getValueType();
+	if (std::get<ValueType>(type.type) != LIST) 
+		return ExpressionResult();
+	if (this->tokens.size() < 3) {
+		return ExpressionResult(
+			"List type require a content type in the form 'list[type]'",
+			token->getRange(),
+			this->context
+		);
+	}
+	if (this->tokens.front()->getType() != TOKEN_TYPE_LEFT_BRACKET) {
+		return ExpressionResult(
+			"Missing opening bracket",
+			this->tokens.front()->getRange(),
+			this->context
+		);
+	}
+	delete this->tokens.front();
+	this->tokens.pop();
+	if (this->tokens.front()->getType() == TOKEN_TYPE_STRUCT_NAME) {
+		static_cast<TypeToken*>(this->currentLine->back())->setListType(
+			this->tokens.front()->getStringValue()
+		);
+	} else if (this->tokens.front()->getType() == TOKEN_TYPE_VALUE_TYPE) {
+		ValueType type = stringToType(this->tokens.front()->getStringValue());
+		if (type == LIST) {
+			return ExpressionResult(
+				"List type cannot contain another list",
+				this->tokens.front()->getRange(),
+				this->context
+			);
+		}
+		static_cast<TypeToken*>(this->currentLine->back())->setListType(
+			type
+		);
+	} else {
+		return ExpressionResult(
+			"List type require a content type in the form 'list[type]'",
+			token->getRange(),
+			this->context
+		);
+	}
+	delete this->tokens.front();
+	this->tokens.pop();
+	if (this->tokens.front()->getType() != TOKEN_TYPE_RIGHT_BRACKET) {
+		return ExpressionResult(
+			"Missing ']' after list type",
+			this->tokens.front()->getRange(),
+			this->context
+		);
+	}
+	this->currentLine->back()->setRange(token->getRange().merge(this->tokens.front()->getRange()));
+	delete this->tokens.front();
+	this->tokens.pop();
 	return ExpressionResult();
 }
 

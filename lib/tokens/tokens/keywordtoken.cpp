@@ -41,6 +41,8 @@ KeywordToken::KeywordToken(TextRange range, std::string_view keyword) : Token(ra
 		this->keyword = KEYWORD_IMPORT;
 	} else if (keyword == "importAs") {
 		this->keyword = KEYWORD_IMPORTAS;
+	} else if (keyword == "get") {
+		this->keyword = KEYWORD_GET;
 	} else {
 		throw std::runtime_error("Invalid keyword");
 	}
@@ -92,6 +94,8 @@ std::string KeywordToken::keywordString(KeywordEnum keyword) {
 			return "import";
 		case KEYWORD_IMPORTAS:
 			return "importas";
+		case KEYWORD_GET:
+			return "get";
 		default:
 			throw std::runtime_error("Invalid keyword");
 	}

@@ -7,11 +7,14 @@
 
 class TypeToken : public Token {
 	public:
-		TypeToken(const TextRange range, std::string_view value);
+		TypeToken(const TextRange range, std::string_view value, TokenType type = TOKEN_TYPE_VALUE_TYPE);
 
-		ValueType getValueType() const;
+		RPNValueType getValueType() const;
+		std::variant<std::string, ValueType> getListType() const;
 		std::string getStringValue() const override;
 
+		void setListType(std::variant<std::string, ValueType> listType);
+
 	private:
-		ValueType valueType;
+		RPNValueType valueType;
 };

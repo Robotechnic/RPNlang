@@ -319,6 +319,8 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 		case KEYWORD_IMPORT:
 		case KEYWORD_IMPORTAS: // this case is handle by analyser
 			return ExpressionResult();
+		case KEYWORD_GET:
+			return this->interpretGet(keywordToken);
 		default:
 			return ExpressionResult(
 				"Unknow keyword " + keywordToken->getStringValue(),
@@ -329,8 +331,10 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 }
 
 ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
-	ValueType type = static_cast<const TypeToken *>(typeToken)->getValueType();
-	if (type == LIST && !Value::isCastableTo(this->memory.top()->getType(), LIST)) {
+	ValueType type = std::get<ValueType>(
+		static_cast<const TypeToken *>(typeToken)->getValueType().type
+	);
+	if (type == LIST && !RPNValueType::isCastableTo(this->memory.top()->getType(), LIST)) {
 		return this->interpretList(typeToken);
 	}
 	Value *top = this->memory.popVariableValue(this->context);	
@@ -349,15 +353,17 @@ void Interpreter::interpretAssignment(const Token *operatorToken) {
 	Value *hold = nullptr;
 	if (this->memory.top()->getType() == VARIABLE) {
 		this->context->setValue(this->memory.top(), copy ? left->copy() : left, &hold);
-	} else {
+	} else if (this->memory.top()->getType() == STRUCT_ACCESS) {
 		Path *path = static_cast<Path *>(this->memory.top());
 		Value *structValue = Struct::getStruct(path, this->context);
 		static_cast<Struct *>(structValue)->setMember(
 			path,
 			copy ? left->copy() : left,
-			this->context,
 			&hold
 		);
+	} else {
+		ListElement *element = static_cast<ListElement *>(this->memory.top());
+		element->set(copy ? left->copy() : left, &hold);
 	}
 	if (this->lastValue == hold)
 		this->lastValue = nullptr;
@@ -543,7 +549,12 @@ ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
 		values.emplace(values.begin(), value);
 		range.merge(values.at(0)->getRange());
 	}
-	this->memory.push(new List(values, range, Value::INTERPRETER));
+	this->memory.push(new List(
+		values,
+		range,
+		Value::INTERPRETER,
+		static_cast<const TypeToken*>(keywordToken)->getListType()
+	));
 	return ExpressionResult();
 }
 
@@ -559,16 +570,37 @@ ExpressionResult Interpreter::interpretStruct(const Token *keywordToken) {
 	size_t count = Struct::getStructMembersCount(name);
 	std::vector<Value *> members(count, nullptr);
 	TextRange range = keywordToken->getRange();
-	for (size_t i = 0; i < count; i++) {
-		members.at(count - i - 1) = this->memory.popVariableValue(this->context);
+	for (size_t i = count - 1; i > 0; i--) {
+		members.at(count) = this->memory.popVariableValue(this->context);
 
-		if (members.at(count - i - 1)->getOwner() == Value::OBJECT_VALUE)
-			members.at(count - i - 1) = members.at(count - i - 1)->copy();
-		members.at(count - i - 1)->setOwner(Value::OBJECT_VALUE);
+		if (members.at(count)->getOwner() == Value::OBJECT_VALUE)
+			members.at(count) = members.at(count)->copy();
+		members.at(count)->setOwner(Value::OBJECT_VALUE);
 	}
 	range.merge(members.at(0)->getRange());
 	Struct *s = new Struct(range, name, Value::INTERPRETER);
 	s->setMembers(members, this->context);
 	this->memory.push(s);
+	return ExpressionResult();
+}
+
+ExpressionResult Interpreter::interpretGet(const Token *keywordToken) {
+	Value *index = this->memory.popVariableValue(this->context);
+	int64_t i = static_cast<Int*>(index)->getValue();
+	List *list = static_cast<List*>(this->memory.popVariableValue(this->context));
+	if (i < 0 || i >= list->size()) {
+		return ExpressionResult(
+			"Index out of range",
+			index->getRange(),
+			this->context
+		);
+	}
+	this->memory.push(new ListElement(
+		list,
+		i,
+		keywordToken->getRange().merge(index->getRange()),
+		Value::INTERPRETER
+	));
+	Value::deleteValue(&index, Value::INTERPRETER);
 	return ExpressionResult();
 }

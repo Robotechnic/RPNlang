@@ -1,41 +1,21 @@
 #pragma once
 
-#include <vector>
 #include "value/value.hpp"
-#include "value/types/string.hpp"
-#include "value/types/numbers/bool.hpp"
+#include "value/types/list.hpp"
 
-class List : public Value {
+class ListElement : public Value {
 	public:
-		List(TextRange range, ValueOwner owner, RPNBaseType listType, const TextRange variableRange = TextRange());
-		List(std::vector<Value *> values, TextRange range, ValueOwner owner, RPNBaseType listType, const TextRange variableRange = TextRange());
-		~List();
+		ListElement(List *list, size_t index, TextRange range, ValueOwner owner);
 
-		bool isNumber() const override;
-		std::vector<Value *> getValues() const;
+		Value *&get() const;
+		void set(Value * const &value, Value **hold = nullptr);
 
-		RPNBaseType getListType() const {
-			return listType;
-		}
+		inline std::string getStringValue() const;
 
-		unsigned int size() const;
-		Value *&at(unsigned int index);
-		Value *at(unsigned int index) const;
-		void set(unsigned int index, Value *value, Value **hold = nullptr);
-		void push(Value *value);
-		Value *pop();
-		void insert(unsigned int index, Value *value);
-		void remove(unsigned int index);
-		void clear();
-
-		List *empty() {
-			return List::emptyList.get();
-		}
+		bool isNumber() const { return false; };
 
 		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
 		inline Value *copy(ValueOwner owner = INTERPRETER) const override;
-		
-		inline std::string getStringValue() const override;
 
 		Value *opadd(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 		Value *opsub(const Value *other, const TextRange &range, const ContextPtr &context) const override;
@@ -43,7 +23,6 @@ class List : public Value {
 		Value *opdiv(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 		Value *opmod(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 		Value *oppow(const Value *other, const TextRange &range, const ContextPtr &context) const override;
-		
 		Value *opgt(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 		Value *opge(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 		Value *oplt(const Value *other, const TextRange &range, const ContextPtr &context) const override;
@@ -52,7 +31,6 @@ class List : public Value {
 		Value *opeq(const Value *other, const TextRange &range, const ContextPtr &context) const override;
 
 	private:
-		static std::unique_ptr<List> emptyList;
-		std::vector<Value *> values;
-		RPNBaseType listType;
+		List *list;
+		size_t index;
 };

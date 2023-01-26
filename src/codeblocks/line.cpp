@@ -47,6 +47,10 @@ int Line::size() const {
 	return this->tokens.size() - this->currentToken;
 }
 
+int Line::totalSize() const {
+	return this->tokens.size();
+}
+
 void Line::clear() {
 	for (auto token : this->tokens)
 		if (token != nullptr) 

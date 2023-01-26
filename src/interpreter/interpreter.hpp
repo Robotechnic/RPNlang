@@ -20,6 +20,7 @@
 #include "value/value.hpp"
 #include "value/types.hpp"
 #include "value/types/numbers/cppinterface.hpp"
+#include "value/types/listelement.hpp"
 
 #include "lexer/lexer.hpp"
 #include "expressionresult/expressionresult.hpp"
@@ -59,6 +60,7 @@ class Interpreter {
 		ExpressionResult interpretTry(Line &line, CodeBlock &block);
 		ExpressionResult interpretList(const Token *keywordToken);
 		ExpressionResult interpretStruct(const Token *keywordToken);
+		ExpressionResult interpretGet(const Token *keywordToken);
 
 		Value *lastValue;
 		Memory memory;

@@ -55,6 +55,7 @@ class Lexer {
 		std::pair<ExpressionResult, FunctionBlock*> parseFunction(CodeBlock *block);
 		ExpressionResult parseStruct(CodeBlock *block);
 		ExpressionResult parseFunctionCall(const Token *token);
+		ExpressionResult parseType(const Token *token);
 
 	private:
 		ContextPtr context;

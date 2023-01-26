@@ -259,25 +259,25 @@ ExpressionResult loader(CppModule *module) {
 		fileStruct->immutable = true;
 		fs::path path = args[0]->getStringValue();
 		fileStruct->setMember(
-			"name", new String(path.filename().string(), range,	Value::INTERPRETER), context
+			"name", new String(path.filename().string(), range,	Value::INTERPRETER)
 		);
 		fileStruct->setMember(
-			"path", new String(path.parent_path().string(), range, Value::INTERPRETER), context
+			"path", new String(path.parent_path().string(), range, Value::INTERPRETER)
 		);
 		fileStruct->setMember(
-			"size", new Int(fs::file_size(path), range, Value::INTERPRETER), context
+			"size", new Int(fs::file_size(path), range, Value::INTERPRETER)
 		);
 		fileStruct->setMember(
-			"bin", new Bool(mode & std::ios_base::binary, range, Value::INTERPRETER), context
+			"bin", new Bool(mode & std::ios_base::binary, range, Value::INTERPRETER)
 		);
 		fileStruct->setMember(
-			"writable", new Bool(mode & std::ios_base::out, range, Value::INTERPRETER), context
+			"writable", new Bool(mode & std::ios_base::out, range, Value::INTERPRETER)
 		);
 		fileStruct->setMember(
-			"readable", new Bool(mode & std::ios_base::in, range, Value::INTERPRETER), context
+			"readable", new Bool(mode & std::ios_base::in, range, Value::INTERPRETER)
 		);
 		fileStruct->setMember(
-			"append", new Bool(mode & std::ios_base::app, range, Value::INTERPRETER), context
+			"append", new Bool(mode & std::ios_base::app, range, Value::INTERPRETER)
 		);
 		fileStruct->setData(file);
 		return fileStruct;

@@ -33,6 +33,15 @@ struct AnalyzerValueType {
 	unsigned int conditionalLevel;
 	unsigned int conditionalNextLevel;
 	bool isStructMember;
+	bool isListElement;
+
+	std::string name() const {
+		return type.name();
+	};
+
+	int index() const {
+		return type.index();
+	};
 };
 
 struct FunctionSignature {
@@ -55,6 +64,7 @@ class Analyzer final {
 		ContextPtr context;
 		unsigned int conditionalLevel;
 		bool inFunctionBlock;
+		RPNValueType currentFunctionReturnType;
 		std::vector<unsigned int> nextConditionalLevel;
 
 		Line *currentLine;
@@ -76,17 +86,17 @@ class Analyzer final {
 		void analyzeFunctionCall(FunctionSignature function, Token *token);
 		void analyzeFunctionCall(Token *token);
 		void analyzeAssignment(const Token *token);
-		void anlyzeStructMemberAssignment(const Token *token, const RPNValueType &type);
 		void analyzeTypeCast(const TypeToken *token);
 		void analyzeListCreation(const TypeToken *token);
 		void analyzeStructCreation(const Token *token);
 		void analyzeKeyword(const KeywordToken *token);
-		void checkKeywordLine(const KeywordToken *token);
+		void checkKeywordLine(const KeywordToken *token, bool restaureStack, bool strict = true);
 		void analyzeImport(const KeywordToken *token);
 		void analyzeImportAs(const KeywordToken *token);
 		void analyzePath(Token *path, bool addToStack = true);
 		void analyzeStructAccess(const Token *token);
-
+		void analyzeGet(const Token *token);
+		
 		static bool isBinaryOperator(OperatorToken::OperatorTypes operatorType);
 		static bool isComparisonOperator(OperatorToken::OperatorTypes operatorType);
 		static std::optional<ValueType> getOperatorType(ValueType left, ValueType right, const OperatorToken *operatorToken);

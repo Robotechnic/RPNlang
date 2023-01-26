@@ -47,11 +47,11 @@ class Struct : public Value {
 		ExpressionResult setMembers(std::vector<Value*> members, ContextPtr context);
 
 		// this is for struct which are used by the interpreter
-		void setMember(const Path *member, Value *value, ContextPtr context, Value **hold);
+		void setMember(const Path *member, Value *value, Value **hold);
 		Value *&getMember(const Path *member);
 
 		// this is for struct which are used by the c++ code
-		void setMember(std::string_view member, Value *value, ContextPtr context);
+		void setMember(std::string_view member, Value *value);
 		Value *&getMember(std::string_view member);
 
 		bool isNumber() const;

@@ -76,7 +76,13 @@ void setWorkingDirectory(std::string path) {
 int main(int argc, char **argv) {
 	bool result = true;
 	#ifdef TEST_FILE
-		argc = 2;
+		std::string path;
+		if (argc == 1) {
+			path = TEST_FILE;
+			argc = 2;
+		} else {
+			path = argv[1];
+		}
 	#endif
 
 	CppModule::setBuiltinModulesPath(std::filesystem::canonical(std::filesystem::current_path()).string() + "/RPNmodules");
@@ -85,11 +91,6 @@ int main(int argc, char **argv) {
 		signal(SIGINT, signalHandler);
 		shellInput();
 	} else {
-		#ifdef TEST_FILE
-			std::string path = TEST_FILE;
-		#else
-			std::string path = argv[1];
-		#endif
 		setWorkingDirectory(path);
 		std::string name = extractFileName(path);
 		path = path.substr(path.find_last_of('/') + 1);

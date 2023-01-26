@@ -29,7 +29,6 @@ class Value {
 		Value(ValueType type, const TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 		virtual ~Value() = default;
 		
-		static bool isCastableTo(ValueType from, ValueType to);
 		virtual bool isNumber() const = 0;
 
 		virtual Value *to(ValueType type, ValueOwner owner = INTERPRETER) const = 0;
@@ -38,9 +37,6 @@ class Value {
 		inline virtual std::string getStringValue() const = 0;
 
 		static Value *empty();
-
-		static std::string stringType(const ValueType &type);
-		static ValueType valueType(std::string_view type); 
 
 		TextRange getRange() const;
 		TextRange getVariableRange() const;

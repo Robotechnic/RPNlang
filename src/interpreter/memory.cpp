@@ -5,7 +5,7 @@ Memory::~Memory() {
 	this->clear();
 }
 
-void Memory::push(Value* value) {
+void Memory::push(Value* const &value) {
 	this->stack.push(value);
 }
 
@@ -22,20 +22,31 @@ Value *& Memory::popVariableValue(const ContextPtr &context) {
 		this->stack.top()->getType() != VARIABLE && 
 		this->stack.top()->getType() != PATH &&
 		this->stack.top()->getType() != BUILTIN_PATH &&
-		this->stack.top()->getType() != STRUCT_ACCESS) {
+		this->stack.top()->getType() != STRUCT_ACCESS &&
+		this->stack.top()->getType() != LIST_ELEMENT) {
 		return this->pop();
 	}
 	
 	ExpressionResult result;
 	Value **value;
-	if (this->stack.top()->getType() == VARIABLE) {
-		value = &context->getValue(this->stack.top());
-	} else if (this->stack.top()->getType() == PATH || this->stack.top()->getType() == BUILTIN_PATH) {
-		value = &Module::getModuleValue(this->stack.top());
-	} else {
-		const Path* path = static_cast<Path*>(this->stack.top());
-		Value *structVaue = Struct::getStruct(path, context);
-		value = &static_cast<Struct*>(structVaue)->getMember(path);
+	switch (this->stack.top()->getType()) {
+		case VARIABLE:
+			value = &context->getValue(this->stack.top());
+			break;
+		case PATH:
+		case BUILTIN_PATH:
+			value = &Module::getModuleValue(this->stack.top());
+			break;
+		case STRUCT_ACCESS:
+			value = &static_cast<Struct*>(
+				Struct::getStruct(static_cast<Path*>(this->stack.top()), context)
+			)->getMember(static_cast<Path*>(this->stack.top()));
+			break;
+		case LIST_ELEMENT:
+			value = &static_cast<ListElement*>(this->stack.top())->get();
+			break;
+		default:
+			throw std::runtime_error("This should not happen");
 	}
 	TextRange range = this->stack.top()->getRange();
 	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);

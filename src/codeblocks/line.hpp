@@ -12,6 +12,7 @@ class Line : public BaseBlock {
 		void push(Token *token);
 		bool empty() const;
 		int size() const;
+		int totalSize() const;
 		Token *pop();
 		Token *top();
 		Token *back();
