@@ -18,15 +18,6 @@ Value*& Memory::pop() {
 }
 
 Value *& Memory::popVariableValue(const ContextPtr &context) {
-	if (
-		this->stack.top()->getType() != VARIABLE && 
-		this->stack.top()->getType() != PATH &&
-		this->stack.top()->getType() != BUILTIN_PATH &&
-		this->stack.top()->getType() != STRUCT_ACCESS &&
-		this->stack.top()->getType() != LIST_ELEMENT) {
-		return this->pop();
-	}
-	
 	ExpressionResult result;
 	Value **value;
 	switch (this->stack.top()->getType()) {
@@ -46,7 +37,7 @@ Value *& Memory::popVariableValue(const ContextPtr &context) {
 			value = &static_cast<ListElement*>(this->stack.top())->get();
 			break;
 		default:
-			throw std::runtime_error("This should not happen");
+			return this->pop();
 	}
 	TextRange range = this->stack.top()->getRange();
 	Value::deleteValue(&this->stack.top(), Value::INTERPRETER);

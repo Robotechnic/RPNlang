@@ -570,12 +570,12 @@ ExpressionResult Interpreter::interpretStruct(const Token *keywordToken) {
 	size_t count = Struct::getStructMembersCount(name);
 	std::vector<Value *> members(count, nullptr);
 	TextRange range = keywordToken->getRange();
-	for (size_t i = count - 1; i > 0; i--) {
-		members.at(count) = this->memory.popVariableValue(this->context);
+	for (size_t i = count; i > 0U; i--) {
+		members.at(i - 1) = this->memory.popVariableValue(this->context);
 
-		if (members.at(count)->getOwner() == Value::OBJECT_VALUE)
-			members.at(count) = members.at(count)->copy();
-		members.at(count)->setOwner(Value::OBJECT_VALUE);
+		if (members.at(i - 1)->getOwner() == Value::OBJECT_VALUE)
+			members.at(i - 1) = members.at(i - 1)->copy();
+		members.at(i - 1)->setOwner(Value::OBJECT_VALUE);
 	}
 	range.merge(members.at(0)->getRange());
 	Struct *s = new Struct(range, name, Value::INTERPRETER);

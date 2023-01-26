@@ -95,34 +95,8 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 	for (const std::string &key : this->definition->memberOrder) {
 		RPNValueType type = this->definition->members.at(key);
 		if (type.index() == 0) {
-			if ((*it)->getType() != STRUCT) {
-				return ExpressionResult(
-					"Struct " + this->definition->name + " member " + key + 
-					" is of type " + type.name() + " but " + (*it)->getStringType() + " was given",
-					(*it)->getRange(),
-					context
-				);
-			}
-			Struct *structValue = static_cast<Struct*>(*it);
-			if (structValue->getStructName() != std::get<std::string>(type.type)) {
-				return ExpressionResult(
-					"Struct " + this->definition->name + " member " + key + 
-					" is of type " + std::string(structValue->getStructName()) + " but " + 
-					type.name() + " was given",
-					(*it)->getRange(),
-					context
-				);
-			}
 			(*this->members)[key] = (*it)->copy(OBJECT_VALUE);
 		} else {
-			if (!RPNValueType::isCastableTo((*it)->getType(), std::get<ValueType>(type.type))) {
-				return ExpressionResult(
-					"Struct " + this->definition->name + " member " + key + 
-					" is of type " + type.name() + " but " + (*it)->getStringType() + " was given",
-					(*it)->getRange(),
-					context
-				);
-			}
 			(*this->members)[key] = (*it)->to(std::get<ValueType>(type.type), Value::OBJECT_VALUE);
 		}
 		it++;
