@@ -57,6 +57,10 @@ ExpressionResult CppModule::load(TextRange imortRange) {
 		);
 	}
 	api->loader(this);
+	this->addVariable("author", new String(api->author, TextRange(), Value::MODULE));
+	this->addVariable("version", new String(api->version, TextRange(), Value::MODULE));
+	this->addVariable("description", new String(api->description, TextRange(), Value::MODULE));
+	this->addVariable("name", new String(api->name, TextRange(), Value::MODULE));
 	return ExpressionResult();
 }
 
