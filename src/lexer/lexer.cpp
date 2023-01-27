@@ -414,6 +414,13 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 	// open a new block when encounter a block keyword like if, fun, while...
 	if (blockOpeners.contains(tokenKeyword)) {
 		this->pushLine();
+		if (!this->keywordBlockStack.empty() && this->keywordBlockStack.top()->getKeyword() == KEYWORD_STRUCT) {
+			return ExpressionResult(
+				"Structs cannot contain other blocks",
+				token->getRange(),
+				this->context
+			);
+		}
 		this->keywordBlockStack.push(new CodeBlock(static_cast<KeywordToken*>(token)));
 		this->integrated = true;
 		return ExpressionResult();
@@ -633,13 +640,6 @@ ExpressionResult Lexer::parseStruct(CodeBlock *block) {
 		);
 	}
 	for (BaseBlock *b : *block) {
-		if (b->getType() != LINE_BLOCK) {
-			return ExpressionResult(
-				"Struct member definition must be in the form 'name -> type'",
-				b->lastRange(),
-				this->context
-			);
-		}
 		Line *l = static_cast<Line *>(b);
 		if (l->size() != 3) {
 			return ExpressionResult(

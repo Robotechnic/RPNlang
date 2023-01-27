@@ -2,58 +2,68 @@
 "time" import
 "random" import
 
-drawSnake list rings -> none fun
-	rings :top 0 :at rings :top 1 :at terminal.YELLOW_BACKGROUND :terminal.setPixelColor
-	i 0 rings :len 1 - 1 for
-		rings i :at 0 :at rings i :at 1 :at terminal.GREEN_BACKGROUND :terminal.setPixelColor
+Point struct
+	x -> int
+	y -> int
+tcurts
+
+drawSnake list[Point] rings -> none fun
+	top rings :len 1 - =
+	rings top get->x rings top get->y terminal.YELLOW_BACKGROUND :terminal.setPixelColor
+	i 0 top 1 for
+		rings i get->x rings i get->y terminal.GREEN_BACKGROUND :terminal.setPixelColor
 	rof
 	:terminal.flush
 nuf
 
-drawApple list pos -> none fun
-	pos 0 :at pos 1:at terminal.RED_BACKGROUND :terminal.setPixelColor
+drawApple Point pos -> none fun
+	pos->x pos->y terminal.RED_BACKGROUND :terminal.setPixelColor
 	:terminal.flush
 nuf
 
-moveSnake list rings int direction -> list fun
+moveSnake list[Point] rings int direction -> list[Point] fun
+	top rings :len 1 - =
 	direction 0 == if
-		rings rings :top 0 :at rings :top 1 :at 1 - 2 list :push
+		rings rings top get->x rings top get->y 1 - Point :push
 	else direction 1 == if
-		rings rings :top 0 :at rings :top 1 :at 1 + 2 list :push
+		rings rings top get->x rings top get->y 1 + Point :push
 	else direction 2 == if
-		rings rings :top 0 :at 1 - rings :top 1 :at 2 list :push
+		rings rings top get->x 1 - rings top get->y Point :push
 	else direction 3 == if
-		rings rings :top 0 :at 1 + rings :top 1 :at 2 list :push
+		rings rings top get->x 1 + rings top get->y Point :push
 	fi fi fi fi
 	rings return
 nuf
 
-appleCollision list rings list pos -> bool fun
-	rings :top 0 :at pos 0 :at == rings :top 1 :at pos 1 :at == :and return
+appleCollision list[Point] rings Point pos -> bool fun
+	top rings :len 1 - =
+	rings top get->x pos->x == rings top get->y pos->y == :and return
 nuf
 
-spawnApple list rings -> list fun
-	pos 1 :terminal.width :random.randRange 1 :terminal.height :random.randRange 2 list =
+spawnApple list[Point] rings -> Point fun
+	pos 1 :terminal.width :random.randRange 1 :terminal.height :random.randRange Point =
 	rings pos :appleCollision if
 		pos rings :spawnApple =
 	fi
 	pos return
 nuf
 
-snakeCollision list rings -> bool fun
-	hx rings :top 0 :at =
-	hy rings :top 1 :at =
+snakeCollision list[Point] rings -> bool fun
+	top rings :len 1 - =
+	hx rings top get->x =
+	hy rings top get->y =
 	i 0 rings :len 1 - 1 for
-		rings i :at 0 :at hx == rings i :at 1 :at hy == :and if
+		rings i get->x hx == rings i get->y hy == :and if
 			true return
 		fi
 	rof
 	false return
 nuf
 
-wallCollision list rings int width int height -> bool fun
-	hx rings :top 0 :at =
-	hy rings :top 1 :at =
+wallCollision list[Point] rings int width int height -> bool fun
+	top rings :len 1 - =
+	hx rings top get->x =
+	hy rings top get->y =
 	width :terminal.width =
 	height :terminal.height =
 	hx 0 <= hx width > :or hy 0 <= hy height > :or :or return
@@ -66,9 +76,9 @@ main -> none fun
 	quit false =
 	gameOver false =
 	direction 0 =
-	rings :terminal.width 2 / :terminal.height 2 / 2 list 1 list =
+	rings :terminal.width 2 / :terminal.height 2 / Point 1 list[Point] =
 	i 0 2 1 for
-		rings :terminal.width 2 / i + :terminal.height 2 / 2 list :push
+		rings :terminal.width 2 / i + :terminal.height 2 / Point :push
 	rof
 	apple rings :spawnApple =
 	last :time.time =

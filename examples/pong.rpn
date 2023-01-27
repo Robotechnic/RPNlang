@@ -1,14 +1,29 @@
 "terminal" import
 "time" import
 
-drawPaddle list pos -> none fun
-	pos 0 :at pos 1 :at pos 2 :at pos 3 :at terminal.WHITE_BACKGROUND :terminal.drawRect
-	:terminal.flush
+Paddle struct
+	x -> int
+	y -> int
+	width -> int
+	height -> int
+tcurts
+
+Ball struct
+	x -> int
+	y -> int
+	radius -> int
+	xSpeed -> float
+	ySpeed -> float
+tcurts
+
+reboundCoeff -1.001 =
+
+drawPaddle Paddle p -> none fun
+	p->x p->y p->width p->height terminal.WHITE_BACKGROUND :terminal.drawRect
 nuf
 
-drawBall list pos -> none fun
-	pos 0 :at pos 1 :at pos 2 :at 1.6 * pos 2 :at terminal.WHITE_BACKGROUND :terminal.drawRect
-	:terminal.flush
+drawBall Ball b -> none fun
+	b->x b->y b->radius b->radius terminal.WHITE_BACKGROUND :terminal.drawRect
 nuf
 
 drawMidLine int width int height -> none fun
@@ -18,75 +33,64 @@ drawMidLine int width int height -> none fun
 	rof
 nuf
 
-moveBall list pos int xdir int ydir -> list fun
-	pos 0 :at xdir + pos 1 :at ydir + pos 2 :at 3 list return
+moveBall Ball b float dt -> none fun
+	b->x b->x b->xSpeed dt * + =
+	b->y b->y b->ySpeed dt * + =
 nuf
 
-paddleCollision list paddle list ball -> bool fun
-	paddle 0 :at paddle 2 :at + ball 0 :at >= paddle 1 :at ball 1 :at ball 2 :at + < :and paddle 1 :at paddle 3 :at + ball 1 :at > :and return
+paddleCollision Ball b Paddle p -> bool fun
+	p->x p->width + b->x > p->y b->y b->radius + < :and p->y p->height + b->y > :and return
 nuf
 
-wallCollision list ball int width int height -> int fun
-	ball 1 :at 1 <= ball 1 :at ball 2 :at + height > :or if
-		1 return
-	else ball 0 :at ball 2 :at 1.6 * + width > if
-		2 return
-	else ball 0 :at 0 <= if
-		3 return
+
+wallCollision Ball b -> bool fun
+	b->y 1 < b->y b->radius + :terminal.height 1 - > :or if
+		b->ySpeed b->ySpeed -1 * =
+		false return
+	else b->x b->radius + :terminal.width 1 - > if
+		b->xSpeed b->xSpeed -1 * =
+		false return
+	else b->x 1 < if
+		true return
 	fi fi fi
-	0 return
-nuf
-
-movePaddle list paddle int ydir -> list fun
-	paddle 0 :at paddle 1 :at ydir + paddle 2 :at paddle 3 :at 4 list return
+	false return
 nuf
 
 main -> none fun
-	:terminal.clear
-	:terminal.rawMode
+	paddleHeight :terminal.height 3 / =
+	paddle 5 :terminal.height 2 / paddleHeight 2 / - 5 paddleHeight Paddle =
+	ball :terminal.width 2 / :terminal.height 2 / 3 0.01 0.01 Ball =
 	quit false =
-	width :terminal.width =
-	height :terminal.height =
-	paddle 5 height 2 / 5 -  2 11 4 list =
-	ball width 2 / height 2 / 2 3 list =
-	xdir 1 =
-	ydir 1 =
+	:terminal.rawMode
+	:terminal.clear
+	lastDraw :time.time =
 	score 0 =
-	last :time.time =
-	
 	quit :not while
-		# keyboard management
 		key :terminal.getKey =
 		key "a" == if
 			quit true =
-		else key "z" == if
-			paddle paddle -1 :movePaddle =
-		else key "s" == if
-			paddle paddle 1 :movePaddle =
-		fi fi fi
-
-		# game logic
-		:time.time last - 50 < if
 			continue
+		else key "z" == paddle->y 1 > :and if
+			paddle->y paddle->y 1 - =
+		else key "s" == paddle->y paddle->height + :terminal.height < :and if
+			paddle->y paddle->y 1 + =
+		fi fi fi
+		:time.time lastDraw - 20 < if
+			continue
+		fi
+		:terminal.clear
+		paddle->height :terminal.height 3 / =
+		ball :time.time lastDraw - :moveBall
+		ball paddle :paddleCollision if
+			ball->xSpeed ball->xSpeed reboundCoeff * =
+			score score 1 + =
+		fi
+		ball :wallCollision if
+			quit true =
 		fi
 		width :terminal.width =
 		height :terminal.height =
-		last :time.time =
-		:terminal.clear
-		ball ball xdir ydir :moveBall =
-		paddle ball :paddleCollision if
-			xdir xdir -1.1 * =
-			ydir ydir 1.1 * =
-			score score 1 + =
-		fi
-		side ball width height :wallCollision =
-		if side 1 == if
-			ydir ydir -1 * =
-		else side 2 == if
-			xdir xdir -1 * =
-		else side 3 == if
-			quit true =
-		fi fi fi fi
+		lastDraw :time.time =
 		width height :drawMidLine
 		paddle :drawPaddle
 		ball :drawBall

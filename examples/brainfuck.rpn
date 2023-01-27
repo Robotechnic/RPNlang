@@ -9,15 +9,15 @@ main -> none fun
 	fi
 	sourceFile filename "r" :fs.open =
 	pointer 0 =
-	memory 0 1 list =
-	loopStack 0 list =
+	memory 0 1 list[int] =
+	loopStack 0 list[int] =
 	op true =
 	op while
 		op sourceFile :fs.get =
 		op "+" == if
-			memory pointer memory pointer :at 1 + :set
+			memory pointer get memory pointer get 1 + =
 		else op "-" == if
-			memory pointer memory pointer :at 1 - :set
+			memory pointer get memory pointer get 1 - =
 		else op ">" == if
 			pointer pointer 1 + =
 			memory :len pointer <= if
@@ -30,12 +30,12 @@ main -> none fun
 			fi
 			pointer pointer 1 - =
 		else op "." == if
-			memory pointer :at :chr :print
+			memory pointer get :chr :print
 		else op "," == if
 			"Input : " :print
-			memory pointer :getChr :ord :set
+			memory pointer get :getChr :ord =
 		else op "[" == if
-			memory pointer :at 0 == if
+			memory pointer get 0 == if
 				openBrackets 1 =
 				sourceFile :fs.eof :not openBrackets 0 != :and while
 					op sourceFile :fs.get =
@@ -50,17 +50,17 @@ main -> none fun
 					1 :exit
 				fi
 			else
-				loopStack sourceFile :fs.tellp :push
+				loopStack sourceFile :fs.tellg :push
 			fi
 		else op "]" == if
 			loopStack :len 0 == if
 				"Error : unmatched ]\n" :print
 				1 :exit
 			fi
-			memory pointer :at 0 == if
+			memory pointer get 0 == if
 				loopStack :pop
 			else
-				sourceFile loopStack :top true :fs.seekp
+				sourceFile loopStack loopStack :len 1 - get true :fs.seekg
 			fi
 		fi fi fi fi fi fi fi fi
 	elihw
