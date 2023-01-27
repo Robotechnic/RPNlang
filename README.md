@@ -109,7 +109,7 @@ mymath.pi 2 / mymath.cos :print
 
 **Lists**:
 ```
-a 1 2 3 4 5 6 7 8 9 10 list =
+a 1 2 3 4 5 6 7 8 9 10 list[int] =
 a 0 get f"{}\n" :print
 a 9 get f"{}\n" :print
 a 5 get 7 =
