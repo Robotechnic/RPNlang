@@ -2,6 +2,7 @@
 
 #include <string>
 #include <queue>
+#include <deque>
 #include <stack>
 #include <tuple>
 
@@ -27,7 +28,7 @@ class FunctionBlock;
 
 class Lexer {
 	public:
-		Lexer(std::queue<Token*> tokens, ContextPtr context);
+		Lexer(std::deque<Token*> tokens, ContextPtr context);
 		~Lexer();
 
 		ExpressionResult lex();
@@ -37,7 +38,7 @@ class Lexer {
 		static ExpressionResult tokenize(
 			int lineNumber, 
 			std::string_view lineString, 
-			std::queue<Token*> &tokens,
+			std::deque<Token*> &tokens,
 			const ContextPtr &context
 		);
 
@@ -60,7 +61,7 @@ class Lexer {
 	private:
 		ContextPtr context;
 		Line *currentLine;
-		std::queue<Token*> tokens;
+		std::deque<Token*> tokens;
 		std::stack<CodeBlock*> keywordBlockStack;
 		BlockQueue codeBlocks;
 		/**

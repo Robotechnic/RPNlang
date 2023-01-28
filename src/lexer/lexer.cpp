@@ -1,6 +1,6 @@
 #include "lexer/lexer.hpp"
 
-Lexer::Lexer(std::queue<Token*> tokens, ContextPtr context) :
+Lexer::Lexer(std::deque<Token*> tokens, ContextPtr context) :
 	context(context),
 	currentLine(new Line()),
 	tokens(tokens){}
@@ -48,7 +48,7 @@ ExpressionResult Lexer::lex() {
 	ExpressionResult result;
 	while (!this->tokens.empty()) {
 		token = this->tokens.front();
-		this->tokens.pop();
+		this->tokens.pop_front();
 		this->integrated = false;
 		switch (token->getType()) {
 			case TOKEN_TYPE_END_OF_LINE:
@@ -138,9 +138,7 @@ ExpressionResult Lexer::lex() {
 	this->pushLine();
 	Analyzer analyzer(this->context);
 	analyzer.analyze(this->codeBlocks, true);
-	if (analyzer.hasErrors()) 
-		return analyzer.analyzeErrors();
-	return ExpressionResult();
+	return analyzer.analyzeErrors();
 };
 
 /**
@@ -285,7 +283,7 @@ ExpressionResult Lexer::parsePath(Token *token) {
 	TextRange range = token->getRange();
 	while (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_DOT) {
 		delete this->tokens.front();
-		this->tokens.pop();
+		this->tokens.pop_front();
 		if (this->tokens.size() == 0 || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
 			return ExpressionResult(
 				"Invalid path: expected literal after dot",
@@ -295,7 +293,7 @@ ExpressionResult Lexer::parsePath(Token *token) {
 		path.push_back(this->tokens.front()->getStringValue());
 		range.merge(this->tokens.front()->getRange());
 		delete this->tokens.front();
-		this->tokens.pop();
+		this->tokens.pop_front();
 	}
 	this->currentLine->push(new ValueToken(
 		new Path(path, range),
@@ -334,12 +332,12 @@ ExpressionResult Lexer::parseStructAccess(Token *token) {
 	}
 	path.push_back(this->tokens.front()->getStringValue());
 	delete this->tokens.front();
-	this->tokens.pop();
+	this->tokens.pop_front();
 	TextRange arrowRange = token->getRange();
 	while (this->tokens.size() > 0 && this->tokens.front()->getType() == TOKEN_TYPE_ARROW) {
 		arrowRange = this->tokens.front()->getRange();
 		delete this->tokens.front();
-		this->tokens.pop();
+		this->tokens.pop_front();
 		if (this->tokens.size() == 0 || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL)
 			return ExpressionResult(
 				"Invalid struct access: expected literal after arrow",
@@ -349,7 +347,7 @@ ExpressionResult Lexer::parseStructAccess(Token *token) {
 		path.push_back(this->tokens.front()->getStringValue());
 		range.merge(this->tokens.front()->getRange());
 		delete this->tokens.front();
-		this->tokens.pop();
+		this->tokens.pop_front();
 	}
 
 	this->currentLine->push(new ValueToken(
@@ -467,7 +465,7 @@ ExpressionResult Lexer::parseFunctionCall(const Token *token) {
 	}
 	
 	Token *literal = this->tokens.front();
-	this->tokens.pop();
+	this->tokens.pop_front();
 	TextRange literalRange = literal->getRange();
 	ExpressionResult result = this->parseLiteral(literal);
 	delete literal;
@@ -697,7 +695,7 @@ ExpressionResult Lexer::parseType(const Token *token) {
 		);
 	}
 	delete this->tokens.front();
-	this->tokens.pop();
+	this->tokens.pop_front();
 	if (this->tokens.front()->getType() == TOKEN_TYPE_STRUCT_NAME) {
 		static_cast<TypeToken*>(this->currentLine->back())->setListType(
 			this->tokens.front()->getStringValue()
@@ -722,7 +720,7 @@ ExpressionResult Lexer::parseType(const Token *token) {
 		);
 	}
 	delete this->tokens.front();
-	this->tokens.pop();
+	this->tokens.pop_front();
 	if (this->tokens.front()->getType() != TOKEN_TYPE_RIGHT_BRACKET) {
 		return ExpressionResult(
 			"Missing ']' after list type",
@@ -732,7 +730,7 @@ ExpressionResult Lexer::parseType(const Token *token) {
 	}
 	this->currentLine->back()->setRange(token->getRange().merge(this->tokens.front()->getRange()));
 	delete this->tokens.front();
-	this->tokens.pop();
+	this->tokens.pop_front();
 	return ExpressionResult();
 }
 
@@ -744,7 +742,7 @@ ExpressionResult Lexer::parseType(const Token *token) {
  * @param tokens the vector of tokens to fill
  * @return ExpressionResult if the line is a valid expression
  */
-ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString, std::queue<Token*> &tokens, const ContextPtr &context) {
+ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString, std::deque<Token*> &tokens, const ContextPtr &context) {
 	unsigned int column = 0;
 	std::string_view value;
 	matchResult result;
@@ -764,7 +762,7 @@ ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString, st
 				if (type == TOKEN_TYPE_COMMENT)
 					return ExpressionResult();
 				if (type != TOKEN_TYPE_INDENT)
-					tokens.push(new StringToken(lineNumber, column, type, value, matchSize));
+					tokens.push_back(new StringToken(lineNumber, column, type, value, matchSize));
 				else
 					column += 1;
 			}
@@ -788,5 +786,11 @@ ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString, st
 			column++;
 		}
 	}
+
+	while (tokens.size() > 0 && tokens.back()->getType() == TOKEN_TYPE_END_OF_LINE) {
+		delete tokens.back();
+		tokens.pop_back();
+	}
+	
 	return ExpressionResult();
 }

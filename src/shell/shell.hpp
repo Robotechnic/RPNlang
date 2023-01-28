@@ -11,7 +11,7 @@
 
 #include "shell/colors.hpp"
 
-#define MAX_HISTORY_SIZE 100
+#define MAX_HISTORY_SIZE 200
 
 class Shell {
 	public:
@@ -21,6 +21,10 @@ class Shell {
 
 		bool loadHistory(std::string_view historyFile = "");
 		void saveHistory();
+		void setPrompt(std::string_view prompt);
+
+		size_t getHistorySize() const;
+		std::string_view at(size_t index) const;
 
 		void operator>>(std::string& str);
 
@@ -56,7 +60,7 @@ class Shell {
 		void displayHistoryLine();
 		void setLine();
 
-		const std::string prompt;
+		std::string prompt;
 
 		int historyIndex, cursorPosition;
 		std::string command, savedCommand;
@@ -72,3 +76,20 @@ Shell& operator<<(Shell& out, std::string_view str);
 Shell& operator<<(Shell& out,const color &c);
 Shell& operator<<(Shell& out, const background &b);
 Shell& operator<<(Shell& out, const format &s);
+
+
+class LastCharBuffer : public std::streambuf {
+	public:
+		LastCharBuffer(std::streambuf* sb) : buff(sb), lastChar(traits_type::eof()) {
+			setp(0, 0);
+		};
+		char getLastChar() const { return lastChar; };
+
+		virtual int_type overflow(int_type c) {
+			lastChar = c;
+			return buff->sputc(c);
+		};
+	private:
+		std::streambuf* buff;
+		char lastChar;
+};

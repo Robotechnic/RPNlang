@@ -25,6 +25,7 @@ class Context : public std::enable_shared_from_this<Context> {
 		~Context();
 
 		void clear();
+		symbolTable getSymbols() const;
 
 		inline void setName(std::string_view name);
 		std::string getName() const;
@@ -47,6 +48,7 @@ class Context : public std::enable_shared_from_this<Context> {
 
 		bool hasValue(std::string_view name) const;
 		void takeOwnership();
+		void copyTokenValues();
 
 		bool hasParentType(ContextType type) const;
 

@@ -23,40 +23,139 @@ void signalHandler(int signum) {
 	exit(signum);
 }
 
+bool multilineKeyword(std::string_view keyword) {
+	return keyword == "if" || keyword == "while" || keyword == "for" || keyword == "fun" ||
+		   keyword == "struct" || keyword == "try";
+}
+
 void shellInput() {
+	// setup lastChar buffer
+	std::streambuf *hold = std::cout.rdbuf();
+	std::cout.flush();
+	LastCharBuffer lastCharBuffer(hold);
+	std::cout.rdbuf(&lastCharBuffer);
+
 	ContextPtr ctx = std::make_shared<Context>("main", "<stdin>");
 	Interpreter i(ctx);
 	std::string instruction;
 	rpnShell.loadHistory();
 	rpnShell>>instruction;
+	std::deque<Token*> tokens;
+	unsigned int lineNumber = 1;
 
 	while (instruction != "exit") {
-		ExpressionResult result = i.interpretLine(instruction);
+		ExpressionResult result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
 		if (result.error()) {
 			result.displayLineError(instruction);
 		} else {
-			switch (i.getLastValue()->getType()) {
-				case INT:
-				case FLOAT:
-					rpnShell<<MAGENTA;
-					break;
-				case STRING:
-					rpnShell<<YELLOW;
-					break;
-				case BOOL:
-					rpnShell<<GREEN;
-					break;
-				case NONE:
-					rpnShell<<RED;
-					break;
-				default:
-					break;
-			};
-			rpnShell<<"\n"<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
+			if (tokens.size() > 0 && tokens.back()->getType() == TOKEN_TYPE_LITERAL && multilineKeyword(tokens.back()->getStringValue())) {
+				rpnShell.setPrompt("... ");
+				rpnShell>>instruction;
+				lineNumber += instruction.size() != 0;
+				int emptyLines = 0;
+				while (instruction.size() != 0 || emptyLines < 2) {
+					if (instruction.size() != 0) {
+						result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
+						if (result.error()) {
+							result.displayLineError(instruction);
+							break;
+						}
+						tokens.push_back(new StringToken(
+							TextRange(lineNumber, instruction.size(), 1),
+							TOKEN_TYPE_END_OF_LINE,
+							"\n"
+						));
+					}
+					rpnShell>>instruction;
+					lineNumber += instruction.size() != 0;
+					emptyLines = instruction.size() == 0 ? emptyLines + 1 : 0;
+				}
+				rpnShell.setPrompt(">>> ");
+			}
+			Lexer lexer(tokens, ctx);
+			result = lexer.lex();
+			if (result.error()) {
+				result.displayLineError(instruction);
+			} else {
+				Value::deleteValue(&i.getLastValue(), Value::INTERPRETER);
+				result = i.interpret(lexer.getBlocks());
+				ctx->copyTokenValues();
+				if (result.error()) {
+					if (result.getRange().line != lineNumber) {
+						instruction = rpnShell.at(
+							rpnShell.getHistorySize() - lineNumber
+						);
+					}
+					result.displayLineError(instruction);
+				} else {
+					if (lastCharBuffer.getLastChar() != '\n' && lastCharBuffer.getLastChar() != '\r') {
+						rpnShell<<std::endl;
+					}
+					switch (i.getLastValue()->getType()) {
+						case INT:
+						case FLOAT:
+							rpnShell<<MAGENTA;
+							break;
+						case STRING:
+							rpnShell<<YELLOW;
+							break;
+						case BOOL:
+							rpnShell<<GREEN;
+							break;
+						case NONE:
+							rpnShell<<RED;
+							break;
+						default:
+							break;
+					};
+					rpnShell<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
+				}
+				i.clearMemory();
+			}
 		}
-
+		tokens.clear();
 		rpnShell>>instruction;
+		lineNumber += instruction.size() != 0;
 	}
+	// restaure hold buffer
+	std::cout.rdbuf(hold);
+}
+
+int interpretPipe() {
+	std::cout<<"Interpret pipe"<<std::endl;
+	ContextPtr ctx = std::make_shared<Context>("main", "<stdin>");
+	// display the stdin content
+	std::string instruction;
+	std::deque<Token*> tokens;
+	unsigned int lineNumber = 0;
+	std::vector<std::string> lines;
+	while (std::getline(std::cin, instruction)) {
+		lineNumber++;
+		lines.push_back(instruction);
+		ExpressionResult result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
+		if (result.error()) {
+			result.displayLineError(instruction);
+			return 1;
+		}
+		tokens.push_back(new StringToken(
+			TextRange(lineNumber, instruction.size(), 1),
+			TOKEN_TYPE_END_OF_LINE,
+			"\n"
+		));
+	}
+	Lexer lexer(tokens, ctx);
+	ExpressionResult result = lexer.lex();
+	if (result.error()) {
+		result.displayLineError(lines[result.getRange().line - 1]);
+		return 1;
+	}
+	Interpreter i(ctx);
+	result = i.interpret(lexer.getBlocks());
+	if (result.error()) {
+		result.displayLineError(lines[result.getRange().line - 1]);
+		return 1;
+	}
+	return 0;
 }
 
 void setWorkingDirectory(std::string path) {
@@ -86,6 +185,11 @@ int main(int argc, char **argv) {
 	#endif
 
 	CppModule::setBuiltinModulesPath(std::filesystem::canonical(std::filesystem::current_path()).string() + "/RPNmodules");
+
+	if (!isatty(fileno(stdin))) {
+		return interpretPipe();
+	}
+
 	if (argc == 1) {
 		signal(SIGTERM, signalHandler);
 		signal(SIGINT, signalHandler);

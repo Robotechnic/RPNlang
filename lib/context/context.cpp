@@ -112,6 +112,10 @@ std::string Context::getTypeName() const {
 	return result + this->name;
 }
 
+symbolTable Context::getSymbols() const {
+	return this->symbols;
+}
+
 inline void Context::setFilePath(std::string_view filePath) {
 	this->filePath = filePath;
 }
@@ -238,6 +242,14 @@ Value *&Context::getValue(const std::string &name) {
 void Context::takeOwnership() {
 	for (auto &symbol : this->symbols) {
 		symbol.second->setOwner(Value::CONTEXT_VARIABLE, true);
+	}
+}
+
+void Context::copyTokenValues() {
+	for (auto &symbol : this->symbols) {
+		if (symbol.second->getOwner() == Value::VALUE_TOKEN) {
+			symbol.second = symbol.second->copy(Value::CONTEXT_VARIABLE);
+		}
 	}
 }
 

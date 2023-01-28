@@ -37,11 +37,13 @@ class Interpreter {
 		Interpreter(ContextPtr ctx);
 		~Interpreter();
 
+		void clearMemory();
+
 		bool interpretFile(std::string_view fileName, std::string &errorString, bool isModule = false);
-		ExpressionResult interpretLine(std::string_view line, int lineNumber = 0);
 		ExpressionResult interpret(BlockQueue &blocks);
 
 		Value *getLastValue() const;
+		Value *&getLastValue();
 
 	private:
 		void checkMemory();

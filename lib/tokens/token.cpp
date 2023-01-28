@@ -106,10 +106,10 @@ std::ostream &operator<<(std::ostream &os, const std::vector<Token*> &tokens) {
 	return os;
 }
 
-std::ostream &operator<<(std::ostream &os, std::queue<Token*> tokens) {
+std::ostream &operator<<(std::ostream &os, std::deque<Token*> tokens) {
 	while (!tokens.empty()) {
 		os << tokens.front() << " ";
-		tokens.pop();
+		tokens.pop_front();
 	}
 	return os;
 }

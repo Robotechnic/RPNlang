@@ -101,6 +101,18 @@ void Shell::saveHistory() {
 	file.close();
 }
 
+size_t Shell::getHistorySize() const {
+	return this->history.size();
+}
+
+std::string_view Shell::at(size_t index) const {
+	return this->history.at(index);
+}
+
+void Shell::setPrompt(std::string_view prompt) {
+	this->prompt = prompt;
+}
+
 /**
  * @brief check if the given character is a special character
  * 
@@ -116,9 +128,9 @@ bool Shell::isSpecialChar(char c) {
  * 
  */
 void Shell::updateLine(int offset) {
+	std::cout<<"\r";
 	std::cout<<"\033[0K";
-	for (size_t i = this->cursorPosition; i < this->command.size(); i++)
-		std::cout<<command[i];
+	std::cout<<this->prompt<<this->command;
 	this->setCursorPosition(this->cursorPosition + offset);
 }
 

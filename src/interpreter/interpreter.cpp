@@ -11,6 +11,10 @@ Interpreter::Interpreter(ContextPtr ctx) :
 {}
 
 Interpreter::~Interpreter() {
+	this->clearMemory();
+}
+
+void Interpreter::clearMemory() {
 	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
 	this->memory.clear();
 }
@@ -22,7 +26,7 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 	}
 
 	bool error = false;
-	std::queue<Token*> tokens;
+	std::deque<Token*> tokens;
 	std::string instruction;
 	int line = 0;
 	ExpressionResult result;
@@ -33,7 +37,7 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 			result.display();
 			error = true;
 		}
-		tokens.push(new StringToken(line, instruction.size(), TOKEN_TYPE_END_OF_LINE, "\n"));
+		tokens.push_back(new StringToken(line, instruction.size(), TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	file.close();
 	
@@ -83,28 +87,6 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 	return true;
 }
 
-/**
- * @brief take a string line, parse it and interpret the result
- * 
- * @param line the line to interpret
- * @param lineNumber the line number of the line
- * @return ExpressionResult status of the interpretation
- */
-ExpressionResult Interpreter::interpretLine(std::string_view line, int lineNumber) {
-	std::queue<Token*> tokens;
-	ExpressionResult result = Lexer::tokenize(lineNumber, std::string(line), tokens, this->context);
-	if (result.error()) return result;
-
-	Lexer lexer(tokens, this->context);
-	result = lexer.lex();
-	if (result.error()) return result;
-
-	Value::deleteValue(&this->lastValue, Value::INTERPRETER);
-	result = this->interpret(lexer.getBlocks());
-	if (result.error()) return result;
-	this->checkMemory();
-	return ExpressionResult();
-}
 
 /**
  * @brief return the last value remaining in the interpreter memory
@@ -112,6 +94,10 @@ ExpressionResult Interpreter::interpretLine(std::string_view line, int lineNumbe
  * @return Value the last value in the stack
  */
 Value *Interpreter::getLastValue() const {
+	return this->lastValue;
+}
+
+Value *&Interpreter::getLastValue() {
 	return this->lastValue;
 }
 

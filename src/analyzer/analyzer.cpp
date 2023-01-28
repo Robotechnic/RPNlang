@@ -1,6 +1,16 @@
 #include "analyzer/analyzer.hpp"
 
-Analyzer::Analyzer(ContextPtr context) : context(context), conditionalLevel(0), inFunctionBlock(false), nextConditionalLevel(1, 0) {}
+Analyzer::Analyzer(ContextPtr context) : context(context), conditionalLevel(0), inFunctionBlock(false), nextConditionalLevel(1, 0) {
+	// add variables of the current context
+	for (auto &variable : context->getSymbols()) {
+		this->variables[variable.first] = {
+			variable.second->getType(),
+			variable.second->getRange(),
+			0, 0,
+			false, false
+		};
+	}
+}
 
 void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 	for (auto it = blocks.begin(); it != blocks.end() && !this->hasErrors(); it++) {

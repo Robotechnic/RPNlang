@@ -102,7 +102,7 @@ void ExpressionResult::displayLineError(std::string_view code) const {
 
 	if (this->context->getType() == CONTEXT_TYPE_DEFAULT) {
 		std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
-		std::cout << range.getLine(code) << std::endl;
+		std::cout << code << std::endl;
 		this->displayArrow(range, code);
 	}
 }
