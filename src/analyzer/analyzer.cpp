@@ -47,12 +47,12 @@ void Analyzer::analyze(CodeBlock *block) {
 		this->nextConditionalLevel[this->conditionalLevel]++;
 		this->analyze(block->getBlocks());
 	}
-	if (this->nextConditionalLevel[this->conditionalLevel] == 1) return;
-	for (auto &variable : this->variables) {
-		if (variable.second.conditionalNextLevel == this->nextConditionalLevel[this->conditionalLevel]) {
-			variable.second.conditionalLevel = this->conditionalLevel - 1;
+	if (this->nextConditionalLevel[this->conditionalLevel] != 1)
+		for (auto &variable : this->variables) {
+			if (variable.second.conditionalNextLevel == this->nextConditionalLevel[this->conditionalLevel]) {
+				variable.second.conditionalLevel = this->conditionalLevel - 1;
+			}
 		}
-	}
 	this->conditionalLevel--;
 }
 
@@ -439,12 +439,22 @@ void Analyzer::analyzeAssignment(const Token *token) {
 			);
 			return;
 		}
+		if (this->conditionalLevel > holdVariable.conditionalLevel) {
+			(*variables)[name] = {
+				type,
+				variable.range,
+				true,
+				holdVariable.conditionalLevel,
+				holdVariable.conditionalNextLevel
+			};
+			return;
+		}
 		(*variables)[name] = {
 			type,
 			variable.range,
 			true,
 			holdVariable.conditionalLevel,
-			this->nextConditionalLevel.at(this->conditionalLevel) - 1 == holdVariable.conditionalLevel ? holdVariable.conditionalLevel + 1 : holdVariable.conditionalLevel
+			this->nextConditionalLevel.at(this->conditionalLevel) - 1 == holdVariable.conditionalNextLevel ? holdVariable.conditionalNextLevel + 1 : holdVariable.conditionalNextLevel
 		};
 		return;
 	}
