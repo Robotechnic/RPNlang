@@ -99,7 +99,9 @@ nuf
 ```
 
 ```
-divide nb float -> float fun nb .5 / return nuf =
+divide nb float -> float fun 
+	nb .5 / return 
+nuf
 ```
 
 **Functions call**:
