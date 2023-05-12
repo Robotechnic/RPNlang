@@ -159,7 +159,7 @@ This language use a stack to store the things that you type. Each time that you 
 RPNlang is also a strongly typed language, each variable has a type (if you define a variable it will be implicitly typed). All the types can be implicitly converted to each other if they are compatible (for example, a integer can be converted to a float).
 
 ## 1.5. Language keywords
-In this languages there are just a few language specific keywords, everithing else is a function.
+In this languages there are just a few language specific keywords, everithing else is a literal.
 | Keyword   | Description |
 |:---------:|:-----------:|
 |  `if`     | If the condition is true, execute the block of instruction after it. Else skip it |
