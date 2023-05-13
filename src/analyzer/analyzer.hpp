@@ -29,6 +29,12 @@ class FunctionBlock;
 class Line;
 class CodeBlock;
 
+struct FunctionSignature {
+	std::vector<RPNValueType> args;
+	RPNValueType returnType;
+	bool builtin;
+};
+
 struct AnalyzerValueType {
 	RPNValueType type;
 	TextRange range;
@@ -37,6 +43,7 @@ struct AnalyzerValueType {
 	unsigned int conditionalNextLevel;
 	bool isStructMember;
 	bool isListElement;
+	bool isFunction;
 
 	std::string name() const {
 		return type.name();
@@ -49,12 +56,6 @@ struct AnalyzerValueType {
 
 using AnalyzerSymbolTable =
 	std::unordered_map<std::string, AnalyzerValueType, StringHash, std::equal_to<>>;
-
-struct FunctionSignature {
-	std::vector<RPNValueType> args;
-	RPNValueType returnType;
-	bool builtin;
-};
 
 class Analyzer final {
   public:
