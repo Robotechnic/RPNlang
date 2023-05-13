@@ -143,7 +143,7 @@ Vector struct
 tcurts
 
 normalise Vector v -> none fun
-	len v->x 2 ^ v->y 2 ^ + :math.sqrt
+	len v->x 2 ^ v->y 2 ^ + :math.sqrt =
 	v->x v->x len / =
 	v->y v->y len / =
 nuf
