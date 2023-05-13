@@ -2,7 +2,7 @@
 
 /**
  * @brief convert a color name to a ANSII color code
- * 
+ *
  * @param color the color to print
  * @return std::string the ANSII escape sequence
  */
@@ -35,7 +35,7 @@ std::string toEscapeSequence(color color) {
 
 /**
  * @brief conver a color name to a ANSII color code
- * 
+ *
  * @param background the text background to print
  * @return std::string the ANSII escape sequence
  */
@@ -68,7 +68,7 @@ std::string toEscapeSequence(background background) {
 
 /**
  * @brief convert a format name to a ANSII format code
- * 
+ *
  * @param format the format to print
  * @return std::string the ANSII escape sequence
  */

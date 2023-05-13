@@ -42,7 +42,7 @@ int BlockQueue::size() const {
 
 void BlockQueue::clear() {
 	for (auto block : this->blocks)
-		if (block != nullptr) 
+		if (block != nullptr)
 			delete block;
 	this->blocks.clear();
 }
@@ -52,11 +52,11 @@ void BlockQueue::reset() {
 }
 
 void BlockQueue::display() const {
-	std::cout<<"BlockQueue: ";
+	std::cout << "BlockQueue: ";
 	for (auto block : this->blocks) {
 		block->display();
 	}
-	std::cout<<std::endl;
+	std::cout << std::endl;
 }
 
 TextRange BlockQueue::lastRange() const {
@@ -74,10 +74,11 @@ BlockQueueIterator BlockQueue::end() {
 	return BlockQueueIterator(this, this->blocks.size());
 }
 
-
 // Iteraror definition
-BlockQueueIterator::BlockQueueIterator(BlockQueue *queue, long unsigned int index) : queue(queue), currentBlock(index) {}
-BlockQueueIterator::BlockQueueIterator(const BlockQueueIterator &it) : queue(it.queue), currentBlock(it.currentBlock) {}
+BlockQueueIterator::BlockQueueIterator(BlockQueue *queue, long unsigned int index)
+	: queue(queue), currentBlock(index) {}
+BlockQueueIterator::BlockQueueIterator(const BlockQueueIterator &it)
+	: queue(it.queue), currentBlock(it.currentBlock) {}
 BlockQueueIterator::~BlockQueueIterator() {}
 
 BlockQueueIterator &BlockQueueIterator::operator=(const BlockQueueIterator &it) {
@@ -102,7 +103,8 @@ BlockQueueIterator BlockQueueIterator::operator++(int) {
 
 BlockQueueIterator BlockQueueIterator::operator+(long unsigned int n) {
 	if (this->currentBlock + n >= this->queue->blocks.size()) {
-		throw std::runtime_error("BlockQueueIterator::operator+(long unsigned int n) : n is too big");
+		throw std::runtime_error(
+			"BlockQueueIterator::operator+(long unsigned int n) : n is too big");
 	}
 	BlockQueueIterator it = *this;
 	it.currentBlock += n;
@@ -111,7 +113,8 @@ BlockQueueIterator BlockQueueIterator::operator+(long unsigned int n) {
 
 BlockQueueIterator BlockQueueIterator::operator-(long unsigned int n) {
 	if (this->currentBlock < n) {
-		throw std::runtime_error("BlockQueueIterator::operator-(long unsigned int n) : n is too big");
+		throw std::runtime_error(
+			"BlockQueueIterator::operator-(long unsigned int n) : n is too big");
 	}
 	BlockQueueIterator it = *this;
 	it.currentBlock -= n;
@@ -119,14 +122,16 @@ BlockQueueIterator BlockQueueIterator::operator-(long unsigned int n) {
 }
 bool BlockQueueIterator::operator<(const BlockQueueIterator &it) const {
 	if (this->queue == it.queue) {
-		throw std::runtime_error("BlockQueueIterator::operator<(const BlockQueueIterator &it) : iterators are not from the same queue");
+		throw std::runtime_error("BlockQueueIterator::operator<(const BlockQueueIterator &it) : "
+								 "iterators are not from the same queue");
 	}
 	return this->currentBlock < it.currentBlock;
 }
 
 bool BlockQueueIterator::operator>(const BlockQueueIterator &it) const {
 	if (this->queue == it.queue) {
-		throw std::runtime_error("BlockQueueIterator::operator<(const BlockQueueIterator &it) : iterators are not from the same queue");
+		throw std::runtime_error("BlockQueueIterator::operator<(const BlockQueueIterator &it) : "
+								 "iterators are not from the same queue");
 	}
 	return this->currentBlock > it.currentBlock;
 }

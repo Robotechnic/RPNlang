@@ -5,14 +5,14 @@ Memory::~Memory() {
 	this->clear();
 }
 
-void Memory::push(Value* const &value) {
+void Memory::push(Value *const &value) {
 	this->stack.push(value);
 }
 
-Value*& Memory::pop() {
+Value *&Memory::pop() {
 	if (this->stack.empty())
 		throw std::runtime_error("Memory stack is empty");
-	Value*& value = this->stack.top();
+	Value *&value = this->stack.top();
 	this->stack.pop();
 	return value;
 }
@@ -34,7 +34,7 @@ Value *&Memory::popVariableValue(const ContextPtr &context) {
 			value = &this->getStructureValue(*name, context);
 			break;
 		case LIST_ELEMENT:
-			value = &static_cast<ListElement*>(*name)->get();
+			value = &static_cast<ListElement *>(*name)->get();
 			break;
 		default:
 			return *name;
@@ -46,18 +46,16 @@ Value *&Memory::popVariableValue(const ContextPtr &context) {
 }
 
 Value *&Memory::getStructureValue(Value *pathValue, const ContextPtr &context) {
-	Path *path = static_cast<Path*>(pathValue);
+	Path *path = static_cast<Path *>(pathValue);
 	if (this->stack.top()->getType() == VARIABLE) {
 		Value *name = this->pop();
-		return static_cast<Struct*>(
-			Struct::getStruct(name, path, context)
-		)->getMember(path);
+		return static_cast<Struct *>(Struct::getStruct(name, path, context))->getMember(path);
 	}
 	Value *top = this->popVariableValue(context);
-	return static_cast<Struct*>(top)->getMember(path);
+	return static_cast<Struct *>(top)->getMember(path);
 }
 
-Value*& Memory::top() {
+Value *&Memory::top() {
 	return this->stack.top();
 }
 
@@ -78,24 +76,21 @@ size_t Memory::size() {
 
 /**
  * @brief check if the stack size is the expected one
- * 
+ *
  * @param size the minimum size of the stack
  * @param message the error message to display in case of error
  * @param range the default range in case where the stack is empty
  * @param ctx the current context
  * @return ExpressionResult if the stack size is correct or not
  */
-ExpressionResult Memory::sizeExpected(size_t size, const std::string &message, TextRange range, const ContextPtr &ctx) {
-	if (this->stack.size() == 0 && size != 0) 
+ExpressionResult Memory::sizeExpected(size_t size, const std::string &message, TextRange range,
+									  const ContextPtr &ctx) {
+	if (this->stack.size() == 0 && size != 0)
 		return ExpressionResult(message + " (Memory is empty)", range, ctx);
 	if (this->stack.size() < size) {
 		TextRange firstRange = this->stack.top()->getRange();
 		this->clear(1);
-		return ExpressionResult(
-			message,
-			this->stack.top()->getRange().merge(firstRange),
-			ctx
-		);
+		return ExpressionResult(message, this->stack.top()->getRange().merge(firstRange), ctx);
 	}
 	return ExpressionResult();
 }

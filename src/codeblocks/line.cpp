@@ -1,6 +1,6 @@
 #include "codeblocks/line.hpp"
 
-Line::Line() :  BaseBlock(LINE_BLOCK), tokens(), currentToken(0) {}
+Line::Line() : BaseBlock(LINE_BLOCK), tokens(), currentToken(0) {}
 
 Line::~Line() {
 	clear();
@@ -53,19 +53,19 @@ int Line::totalSize() const {
 
 void Line::clear() {
 	for (auto token : this->tokens)
-		if (token != nullptr) 
+		if (token != nullptr)
 			delete token;
 	this->tokens.clear();
 }
 
 void Line::display() const {
-	std::cout<<"Line: ";
-	std::cout<<this->tokens<<";"<<std::endl;
+	std::cout << "Line: ";
+	std::cout << this->tokens << ";" << std::endl;
 }
 
 /**
  * @brief reset the line to the beginning
- * 
+ *
  */
 void Line::reset() {
 	this->currentToken = 0;
@@ -96,8 +96,10 @@ LineIterator Line::end() {
 // Iterator implementation
 
 LineIterator::LineIterator(Line *line) : line(line), currentToken(0) {}
-LineIterator::LineIterator(const LineIterator &other) : line(other.line), currentToken(other.currentToken) {}
-LineIterator::LineIterator(Line *line, long unsigned int currentToken) : line(line), currentToken(currentToken) {}
+LineIterator::LineIterator(const LineIterator &other)
+	: line(other.line), currentToken(other.currentToken) {}
+LineIterator::LineIterator(Line *line, long unsigned int currentToken)
+	: line(line), currentToken(currentToken) {}
 LineIterator::~LineIterator() {}
 
 LineIterator &LineIterator::operator=(const LineIterator &other) {
@@ -141,6 +143,6 @@ Line *LineIterator::getLine() const {
 	return this->line;
 }
 
-const Line* LineIterator::getLineConst() const {
+const Line *LineIterator::getLineConst() const {
 	return this->line;
 }

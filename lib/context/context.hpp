@@ -10,9 +10,10 @@
 #include "context/typedef.hpp"
 #include "expressionresult/expressionresult.hpp"
 #include "value/value.hpp"
+#include "textutilities/stringhash.hpp"
 
 class Value;
-typedef std::unordered_map<std::string, Value*> symbolTable;
+using symbolTable = std::unordered_map<std::string, Value *, StringHash, std::equal_to<>>;
 
 class Context : public std::enable_shared_from_this<Context> {
 	public:
@@ -53,7 +54,8 @@ class Context : public std::enable_shared_from_this<Context> {
 		bool hasParentType(ContextType type) const;
 
 	private:
-		std::string name, filePath;
+		std::string name;
+		std::string filePath;
 		symbolTable symbols;
 		ContextType type;
 		ContextPtr parent;

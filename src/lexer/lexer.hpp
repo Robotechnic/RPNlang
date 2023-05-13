@@ -1,72 +1,67 @@
 #pragma once
 
-#include <string>
-#include <queue>
 #include <deque>
+#include <queue>
 #include <stack>
+#include <string>
 #include <tuple>
 
 #include "analyzer/analyzer.hpp"
-#include "expressionresult/expressionresult.hpp"
-#include "textutilities/escapecharacters.hpp"
-#include "tokens/token.hpp"
-#include "tokens/tokentypes.hpp"
-#include "tokens/keywords.hpp"
-#include "tokens/tokens/stringtoken.hpp"
-#include "tokens/tokens/fstringtoken.hpp"
-#include "tokens/tokens/valuetoken.hpp"
-#include "tokens/tokens/operatortoken.hpp"
-#include "value/value.hpp"
-#include "value/valuetypes.hpp"
 #include "codeblocks/blockqueue.hpp"
 #include "codeblocks/codeblock.hpp"
-#include "codeblocks/line.hpp"
 #include "codeblocks/functionblock.hpp"
-
+#include "codeblocks/line.hpp"
+#include "expressionresult/expressionresult.hpp"
+#include "textutilities/escapecharacters.hpp"
+#include "tokens/keywords.hpp"
+#include "tokens/token.hpp"
+#include "tokens/tokens/fstringtoken.hpp"
+#include "tokens/tokens/operatortoken.hpp"
+#include "tokens/tokens/stringtoken.hpp"
+#include "tokens/tokens/valuetoken.hpp"
+#include "tokens/tokentypes.hpp"
+#include "value/value.hpp"
+#include "value/valuetypes.hpp"
 
 class FunctionBlock;
 
 class Lexer {
-	public:
-		Lexer(std::deque<Token*> tokens, ContextPtr context);
-		~Lexer();
+  public:
+	Lexer(std::deque<Token *> tokens, ContextPtr context);
+	~Lexer();
 
-		ExpressionResult lex();
+	ExpressionResult lex();
 
-		BlockQueue& getBlocks();
+	BlockQueue &getBlocks();
 
-		static ExpressionResult tokenize(
-			int lineNumber, 
-			std::string_view lineString, 
-			std::deque<Token*> &tokens,
-			const ContextPtr &context
-		);
+	static ExpressionResult tokenize(int lineNumber, std::string_view lineString,
+									 std::deque<Token *> &tokens, const ContextPtr &context);
 
-	private:
-		void pushLine();
-		bool hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const;
-		ExpressionResult parseBinNumber(Token *token);
-		ExpressionResult parseHexNumber(Token *token);
-		ExpressionResult parseFString(Token *token);
-		ExpressionResult parseString(Token *token);
-		ExpressionResult parseLiteral(Token *token);
-		ExpressionResult parsePath(Token *token);
-		ExpressionResult parseStructAccess(Token *token);
-		ExpressionResult parseKeyword(Token *token);
-		std::pair<ExpressionResult, FunctionBlock*> parseFunction(CodeBlock *block);
-		ExpressionResult parseStruct(CodeBlock *block);
-		ExpressionResult parseFunctionCall(const Token *token);
-		ExpressionResult parseType(const Token *token);
+  private:
+	void pushLine();
+	bool hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const;
+	ExpressionResult parseBinNumber(Token *token);
+	ExpressionResult parseHexNumber(Token *token);
+	ExpressionResult parseFString(Token *token);
+	ExpressionResult parseString(Token *token);
+	ExpressionResult parseLiteral(Token *token);
+	ExpressionResult parsePath(Token *token);
+	ExpressionResult parseStructAccess(Token *token);
+	ExpressionResult parseKeyword(Token *token);
+	std::pair<ExpressionResult, FunctionBlock *> parseFunction(CodeBlock *block);
+	ExpressionResult parseStruct(CodeBlock *block);
+	ExpressionResult parseFunctionCall(const Token *token);
+	ExpressionResult parseType(const Token *token);
 
-	private:
-		ContextPtr context;
-		Line *currentLine;
-		std::deque<Token*> tokens;
-		std::stack<CodeBlock*> keywordBlockStack;
-		BlockQueue codeBlocks;
-		/**
-		 * @brief this member allow to track if the last token was used directly by the lexer so,
-		 * it allow to know it is necessary to clean the memory after token usage
-		 */
-		bool integrated;
+  private:
+	ContextPtr context;
+	Line *currentLine;
+	std::deque<Token *> tokens;
+	std::stack<CodeBlock *> keywordBlockStack;
+	BlockQueue codeBlocks;
+	/**
+	 * @brief this member allow to track if the last token was used directly by the lexer so,
+	 * it allow to know it is necessary to clean the memory after token usage
+	 */
+	bool integrated;
 };

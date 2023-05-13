@@ -1,11 +1,8 @@
 #include "codeblocks/functionblock.hpp"
 
-FunctionBlock::FunctionBlock(
-	const std::string &name,
-	const RPNFunctionArgs arguments,
-	const RPNValueType &returnType,
-	CodeBlock *body
-) : BaseBlock(FUNCTION_BLOCK) {
+FunctionBlock::FunctionBlock(const std::string &name, const RPNFunctionArgs &arguments,
+							 const RPNValueType &returnType, CodeBlock *body)
+	: BaseBlock(FUNCTION_BLOCK) {
 	this->function = UserRPNFunction::addFunction(name, arguments, returnType, body);
 }
 
@@ -19,11 +16,11 @@ void FunctionBlock::clear() {
 
 void FunctionBlock::display() const {
 	std::cout << "FunctionBlock" << std::endl;
-	std::cout << this->function  << std::endl;
+	std::cout << this->function << std::endl;
 	std::cout << "End of FunctionBlock" << std::endl;
 }
 
-BlockQueue& FunctionBlock::getBlocks() {
+BlockQueue &FunctionBlock::getBlocks() {
 	return this->function->getBody()->getBlocks();
 }
 
@@ -31,7 +28,7 @@ std::string FunctionBlock::getName() const {
 	return this->function->getName();
 }
 
-const RPNFunction *FunctionBlock::getFunction() const {
+const UserRPNFunction *FunctionBlock::getFunction() const {
 	return this->function.get();
 }
 

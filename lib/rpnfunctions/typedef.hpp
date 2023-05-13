@@ -12,8 +12,8 @@ class ExpressionResult;
 class Context;
 class TextRange;
 
-typedef std::vector<Value*> RPNFunctionArgsValue;
-typedef std::variant<ExpressionResult, Value*> RPNFunctionResult;
-typedef std::vector<std::pair<std::string, RPNValueType>> RPNFunctionArgs;
+using RPNFunctionArgsValue = std::vector<Value *>;
+using RPNFunctionResult = std::variant<ExpressionResult, Value *>;
+using RPNFunctionArgs = std::vector<std::pair<std::string, RPNValueType>>;
 
-typedef std::function<RPNFunctionResult(RPNFunctionArgsValue&, TextRange&, ContextPtr)> BuiltinRPNFunctionType;
+using BuiltinRPNFunctionType = std::function<RPNFunctionResult (RPNFunctionArgsValue &, TextRange &, ContextPtr)>;

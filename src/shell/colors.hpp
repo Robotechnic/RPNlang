@@ -2,18 +2,7 @@
 
 #include <string>
 
-enum color {
-	BLACK,
-	RED,
-	GREEN,
-	YELLOW,
-	BLUE,
-	MAGENTA,
-	CYAN,
-	WHITE,
-	RESET,
-	DEFAULT
-};
+enum color { BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET, DEFAULT };
 
 enum background {
 	BG_BLACK,

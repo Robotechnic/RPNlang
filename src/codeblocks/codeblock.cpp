@@ -1,6 +1,7 @@
 #include "codeblocks/codeblock.hpp"
 
-CodeBlock::CodeBlock(KeywordToken *keyword) : BaseBlock(CODE_BLOCK), keyword(keyword), next(nullptr) {}
+CodeBlock::CodeBlock(KeywordToken *keyword)
+	: BaseBlock(CODE_BLOCK), keyword(keyword), next(nullptr) {}
 
 CodeBlock::~CodeBlock() {
 	this->clear();
@@ -13,7 +14,7 @@ void CodeBlock::push(BaseBlock *block) {
 	blocks.push(block);
 }
 
-BlockQueue& CodeBlock::getBlocks() {
+BlockQueue &CodeBlock::getBlocks() {
 	return this->blocks;
 }
 
@@ -42,7 +43,7 @@ void CodeBlock::clear() {
 
 /**
  * @brief Resets the block queue to the beginning
- * 
+ *
  */
 void CodeBlock::reset() {
 	this->blocks.reset();
@@ -59,7 +60,7 @@ BlockQueueIterator CodeBlock::end() {
 	return this->blocks.end();
 }
 
-KeywordToken* CodeBlock::getKeywordToken() {
+KeywordToken *CodeBlock::getKeywordToken() {
 	return this->keyword;
 }
 
@@ -73,7 +74,7 @@ void CodeBlock::display() const {
 	this->blocks.display();
 	if (this->next != nullptr)
 		this->next->display();
-	std::cout<< "End CodeBlock: " << name << std::endl;
+	std::cout << "End CodeBlock: " << name << std::endl;
 }
 
 TextRange CodeBlock::lastRange() const {

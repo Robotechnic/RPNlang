@@ -1,25 +1,26 @@
-#include <iostream>
+#include <csignal>
 #include <filesystem>
+#include <iostream>
 #include <sstream>
 #include <string>
-#include <csignal>
 
-#include "textutilities/textutilities.hpp"
-#include "expressionresult/expressionresult.hpp"
-#include "cppmodule/cppmodule.hpp"
-#include "interpreter/interpreter.hpp"
 #include "context/context.hpp"
+#include "cppmodule/cppmodule.hpp"
+#include "expressionresult/expressionresult.hpp"
+#include "interpreter/interpreter.hpp"
 #include "shell/colors.hpp"
 #include "shell/shell.hpp"
+#include "textutilities/textutilities.hpp"
 
 /**
  * @brief allow shell to be destroyed when ctrl+c is pressed, this allow to save the history
- * 
+ *
  * @param signum signal number
  */
 void signalHandler(int signum) {
-	if (signum == SIGINT) return;
-	std::cout<<"\033[0m"<<std::endl;
+	if (signum == SIGINT)
+		return;
+	std::cout << "\033[0m" << std::endl;
 	exit(signum);
 }
 
@@ -39,8 +40,8 @@ void shellInput() {
 	Interpreter i(ctx);
 	std::string instruction;
 	rpnShell.loadHistory();
-	rpnShell>>instruction;
-	std::deque<Token*> tokens;
+	rpnShell >> instruction;
+	std::deque<Token *> tokens;
 	unsigned int lineNumber = 1;
 
 	while (instruction != "exit") {
@@ -48,9 +49,10 @@ void shellInput() {
 		if (result.error()) {
 			result.displayLineError(instruction);
 		} else {
-			if (tokens.size() > 0 && tokens.back()->getType() == TOKEN_TYPE_LITERAL && multilineKeyword(tokens.back()->getStringValue())) {
+			if (tokens.size() > 0 && tokens.back()->getType() == TOKEN_TYPE_LITERAL &&
+				multilineKeyword(tokens.back()->getStringValue())) {
 				rpnShell.setPrompt("... ");
-				rpnShell>>instruction;
+				rpnShell >> instruction;
 				lineNumber += instruction.size() != 0;
 				int emptyLines = 0;
 				while (instruction.size() != 0 || emptyLines < 2) {
@@ -60,13 +62,11 @@ void shellInput() {
 							result.displayLineError(instruction);
 							break;
 						}
-						tokens.push_back(new StringToken(
-							TextRange(lineNumber, instruction.size(), 1),
-							TOKEN_TYPE_END_OF_LINE,
-							"\n"
-						));
+						tokens.push_back(
+							new StringToken(TextRange(lineNumber, instruction.size(), 1),
+											TOKEN_TYPE_END_OF_LINE, "\n"));
 					}
-					rpnShell>>instruction;
+					rpnShell >> instruction;
 					lineNumber += instruction.size() != 0;
 					emptyLines = instruction.size() == 0 ? emptyLines + 1 : 0;
 				}
@@ -82,39 +82,38 @@ void shellInput() {
 				ctx->copyTokenValues();
 				if (result.error()) {
 					if (result.getRange().line != lineNumber) {
-						instruction = rpnShell.at(
-							rpnShell.getHistorySize() - lineNumber
-						);
+						instruction = rpnShell.at(rpnShell.getHistorySize() - lineNumber);
 					}
 					result.displayLineError(instruction);
 				} else {
-					if (lastCharBuffer.getLastChar() != '\n' && lastCharBuffer.getLastChar() != '\r') {
-						rpnShell<<std::endl;
+					if (lastCharBuffer.getLastChar() != '\n' &&
+						lastCharBuffer.getLastChar() != '\r') {
+						rpnShell << std::endl;
 					}
 					switch (i.getLastValue()->getType()) {
 						case INT:
 						case FLOAT:
-							rpnShell<<MAGENTA;
+							rpnShell << MAGENTA;
 							break;
 						case STRING:
-							rpnShell<<YELLOW;
+							rpnShell << YELLOW;
 							break;
 						case BOOL:
-							rpnShell<<GREEN;
+							rpnShell << GREEN;
 							break;
 						case NONE:
-							rpnShell<<RED;
+							rpnShell << RED;
 							break;
 						default:
 							break;
 					};
-					rpnShell<<i.getLastValue()->getStringValue()<<DEFAULT<<std::endl;
+					rpnShell << i.getLastValue()->getStringValue() << DEFAULT << std::endl;
 				}
 				i.clearMemory();
 			}
 		}
 		tokens.clear();
-		rpnShell>>instruction;
+		rpnShell >> instruction;
 		lineNumber += instruction.size() != 0;
 	}
 	// restaure hold buffer
@@ -122,11 +121,11 @@ void shellInput() {
 }
 
 int interpretPipe() {
-	std::cout<<"Interpret pipe"<<std::endl;
+	std::cout << "Interpret pipe" << std::endl;
 	ContextPtr ctx = std::make_shared<Context>("main", "<stdin>");
 	// display the stdin content
 	std::string instruction;
-	std::deque<Token*> tokens;
+	std::deque<Token *> tokens;
 	unsigned int lineNumber = 0;
 	std::vector<std::string> lines;
 	while (std::getline(std::cin, instruction)) {
@@ -137,11 +136,8 @@ int interpretPipe() {
 			result.displayLineError(instruction);
 			return 1;
 		}
-		tokens.push_back(new StringToken(
-			TextRange(lineNumber, instruction.size(), 1),
-			TOKEN_TYPE_END_OF_LINE,
-			"\n"
-		));
+		tokens.push_back(new StringToken(TextRange(lineNumber, instruction.size(), 1),
+										 TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	Lexer lexer(tokens, ctx);
 	ExpressionResult result = lexer.lex();
@@ -164,27 +160,29 @@ void setWorkingDirectory(std::string path) {
 		if (extractedPath[0] == '/') {
 			std::filesystem::current_path(extractedPath);
 		} else {
-			std::filesystem::current_path(std::filesystem::current_path().string() + "/" + extractedPath);
+			std::filesystem::current_path(std::filesystem::current_path().string() + "/" +
+										  extractedPath);
 		}
 	} catch (std::filesystem::filesystem_error &e) {
-		std::cout<<"Error: "<<e.what()<<std::endl;
+		std::cout << "Error: " << e.what() << std::endl;
 		exit(1);
 	}
 }
 
 int main(int argc, char **argv) {
 	bool result = true;
-	#ifdef TEST_FILE
-		std::string path;
-		if (argc == 1) {
-			path = TEST_FILE;
-			argc = 2;
-		} else {
-			path = argv[1];
-		}
-	#endif
+#ifdef TEST_FILE
+	std::string path;
+	if (argc == 1) {
+		path = TEST_FILE;
+		argc = 2;
+	} else {
+		path = argv[1];
+	}
+#endif
 
-	CppModule::setBuiltinModulesPath(std::filesystem::canonical(std::filesystem::current_path()).string() + "/RPNmodules");
+	CppModule::setBuiltinModulesPath(
+		std::filesystem::canonical(std::filesystem::current_path()).string() + "/RPNmodules");
 
 	if (!isatty(fileno(stdin))) {
 		return interpretPipe();
@@ -195,9 +193,9 @@ int main(int argc, char **argv) {
 		signal(SIGINT, signalHandler);
 		shellInput();
 	} else {
-		#ifndef TEST_FILE
-			std::string path = argv[1];
-		#endif
+#ifndef TEST_FILE
+		std::string path = argv[1];
+#endif
 		setWorkingDirectory(path);
 		std::string name = extractFileName(path);
 		path = path.substr(path.find_last_of('/') + 1);
@@ -209,6 +207,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	std::cout<<"\033[0m"<<std::endl;
+	std::cout << "\033[0m" << std::endl;
 	return result ? 0 : 1;
 }
