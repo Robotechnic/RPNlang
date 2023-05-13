@@ -29,10 +29,10 @@ class Shell {
 	void operator>>(std::string &str);
 
   private:
-	char getChar();
+	static char getChar();
 	void skipChar(int n = 1);
 
-	bool isSpecialChar(char c);
+	static bool isSpecialChar(char c);
 
 	void updateLine(int offset = 1);
 
@@ -44,8 +44,8 @@ class Shell {
 	void arrowUp();
 	void arrowDown();
 
-	void mooveLeft();
-	void mooveRight();
+	static void mooveLeft();
+	static void mooveRight();
 
 	void setCursorPosition(int position);
 	void eraseLine();

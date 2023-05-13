@@ -7,21 +7,23 @@
 class TextRange {
 	public:
 		TextRange();
-		TextRange(unsigned int line, unsigned int column, unsigned int length);
+		TextRange(unsigned long line, unsigned long column, unsigned long length);
 		TextRange(const TextRange &other);
 		TextRange(TextRange &&other);
 
-		std::string getLine(std::string_view code);
+		std::string getLine(std::string_view code) const;
 		
 		TextRange merge(const TextRange &other);
-		bool isEmpty();
+		bool isEmpty() const;
 
 		static TextRange merge(const TextRange left, const TextRange right);
 
-		void operator=(const TextRange &other);
-		void operator=(TextRange &&other);
+		TextRange& operator=(const TextRange &other);
+		TextRange& operator=(TextRange &&other);
 
-		unsigned int line, columnStart, columnEnd;
+		unsigned long line = 0;
+		unsigned long columnStart = 0;
+		unsigned long columnEnd = 0;
 };
 
 bool operator==(const TextRange &left, const TextRange &right);

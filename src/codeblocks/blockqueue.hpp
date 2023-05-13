@@ -18,7 +18,7 @@ class BlockQueue {
 	BaseBlock *back();
 
 	bool empty() const;
-	int size() const;
+	size_t size() const;
 	void clear();
 	void reset();
 
@@ -31,7 +31,7 @@ class BlockQueue {
 
   private:
 	std::vector<BaseBlock *> blocks;
-	long unsigned int currentBlock;
+	long unsigned int currentBlock = 0;
 
 	friend BlockQueueIterator;
 };

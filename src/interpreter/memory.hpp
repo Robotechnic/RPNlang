@@ -16,8 +16,8 @@ class Memory {
 	Value *&popVariableValue(const ContextPtr &context);
 	Value *&top();
 	void clear(size_t offset = 0);
-	bool empty();
-	size_t size();
+	bool empty() const;
+	size_t size() const;
 	ExpressionResult sizeExpected(size_t size, const std::string &message, TextRange range,
 								  const ContextPtr &ctx);
 

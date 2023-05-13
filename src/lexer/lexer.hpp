@@ -27,7 +27,7 @@ class FunctionBlock;
 
 class Lexer {
   public:
-	Lexer(std::deque<Token *> tokens, ContextPtr context);
+	Lexer(const std::deque<Token *> &tokens, ContextPtr context);
 	~Lexer();
 
 	ExpressionResult lex();
@@ -40,22 +40,22 @@ class Lexer {
   private:
 	void pushLine();
 	bool hasParentKeywordBlock(const std::vector<KeywordEnum> &keywords) const;
-	ExpressionResult parseBinNumber(Token *token);
-	ExpressionResult parseHexNumber(Token *token);
-	ExpressionResult parseFString(Token *token);
-	ExpressionResult parseString(Token *token);
+	ExpressionResult parseBinNumber(Token const *token);
+	ExpressionResult parseHexNumber(Token const *token);
+	ExpressionResult parseFString(Token const *token);
+	ExpressionResult parseString(Token const *token);
 	ExpressionResult parseLiteral(Token *token);
-	ExpressionResult parsePath(Token *token);
+	ExpressionResult parsePath(Token const *token);
 	ExpressionResult parseStructAccess(Token *token);
 	ExpressionResult parseKeyword(Token *token);
 	std::pair<ExpressionResult, FunctionBlock *> parseFunction(CodeBlock *block);
 	ExpressionResult parseStruct(CodeBlock *block);
 	ExpressionResult parseFunctionCall(const Token *token);
-	ExpressionResult parseType(const Token *token);
+	ExpressionResult parseType(Token const *token);
 
   private:
 	ContextPtr context;
-	Line *currentLine;
+	Line *currentLine = new Line();
 	std::deque<Token *> tokens;
 	std::stack<CodeBlock *> keywordBlockStack;
 	BlockQueue codeBlocks;
@@ -63,5 +63,5 @@ class Lexer {
 	 * @brief this member allow to track if the last token was used directly by the lexer so,
 	 * it allow to know it is necessary to clean the memory after token usage
 	 */
-	bool integrated;
+	bool integrated{};
 };

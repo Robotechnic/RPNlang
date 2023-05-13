@@ -1,6 +1,6 @@
 #include "interpreter/memory.hpp"
 
-Memory::Memory() : stack() {}
+Memory::Memory() = default;
 Memory::~Memory() {
 	this->clear();
 }
@@ -10,16 +10,17 @@ void Memory::push(Value *const &value) {
 }
 
 Value *&Memory::pop() {
-	if (this->stack.empty())
+	if (this->stack.empty()) {
 		throw std::runtime_error("Memory stack is empty");
+	}
 	Value *&value = this->stack.top();
 	this->stack.pop();
 	return value;
 }
 
 Value *&Memory::popVariableValue(const ContextPtr &context) {
-	ExpressionResult result;
-	Value **value;
+	ExpressionResult const result;
+	Value **value = nullptr;
 	Value **name = &this->stack.top();
 	this->stack.pop();
 	switch ((*name)->getType()) {
@@ -34,25 +35,25 @@ Value *&Memory::popVariableValue(const ContextPtr &context) {
 			value = &this->getStructureValue(*name, context);
 			break;
 		case LIST_ELEMENT:
-			value = &static_cast<ListElement *>(*name)->get();
+			value = &dynamic_cast<ListElement *>(*name)->get();
 			break;
 		default:
 			return *name;
 	}
-	TextRange range = (*name)->getRange();
+	TextRange const range = (*name)->getRange();
 	Value::deleteValue(name, Value::INTERPRETER);
 	(*value)->setVariableRange(range);
 	return *value;
 }
 
 Value *&Memory::getStructureValue(Value *pathValue, const ContextPtr &context) {
-	Path *path = static_cast<Path *>(pathValue);
+	Path const *path = dynamic_cast<Path *>(pathValue);
 	if (this->stack.top()->getType() == VARIABLE) {
-		Value *name = this->pop();
-		return static_cast<Struct *>(Struct::getStruct(name, path, context))->getMember(path);
+		Value const *name = this->pop();
+		return dynamic_cast<Struct *>(Struct::getStruct(name, path, context))->getMember(path);
 	}
 	Value *top = this->popVariableValue(context);
-	return static_cast<Struct *>(top)->getMember(path);
+	return dynamic_cast<Struct *>(top)->getMember(path);
 }
 
 Value *&Memory::top() {
@@ -66,11 +67,11 @@ void Memory::clear(size_t offset) {
 	}
 }
 
-bool Memory::empty() {
+bool Memory::empty() const {
 	return this->stack.empty();
 }
 
-size_t Memory::size() {
+size_t Memory::size() const {
 	return this->stack.size();
 }
 
@@ -85,12 +86,13 @@ size_t Memory::size() {
  */
 ExpressionResult Memory::sizeExpected(size_t size, const std::string &message, TextRange range,
 									  const ContextPtr &ctx) {
-	if (this->stack.size() == 0 && size != 0)
-		return ExpressionResult(message + " (Memory is empty)", range, ctx);
-	if (this->stack.size() < size) {
-		TextRange firstRange = this->stack.top()->getRange();
-		this->clear(1);
-		return ExpressionResult(message, this->stack.top()->getRange().merge(firstRange), ctx);
+	if (this->stack.empty() && size != 0) {
+		return {message + " (Memory is empty)", range, ctx};
 	}
-	return ExpressionResult();
+	if (this->stack.size() < size) {
+		TextRange const firstRange = this->stack.top()->getRange();
+		this->clear(1);
+		return {message, this->stack.top()->getRange().merge(firstRange), ctx};
+	}
+	return {};
 }

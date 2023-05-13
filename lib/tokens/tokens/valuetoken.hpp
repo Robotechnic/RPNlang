@@ -6,15 +6,14 @@
 class ValueToken : public Token {
 	public:
 		ValueToken(Value *value, TokenType type = TOKEN_TYPE_VALUE);
-		~ValueToken();
+		~ValueToken() override;
 
 		Value *getValue() const;
 		Value *&getValue();
 		ValueType getValueType() const;
 
-		inline std::string getStringValue() const override;
+		std::string getStringValue() const override;
 
 	private:
-		bool accessed;
 		Value *value;
 };

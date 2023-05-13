@@ -8,21 +8,21 @@ class LineIterator;
 class Line : public BaseBlock {
   public:
 	Line();
-	~Line();
+	~Line() override;
 	void push(Token *token);
-	bool empty() const;
-	int size() const;
-	int totalSize() const;
+	bool empty() const override;
+	size_t size() const;
+	size_t totalSize() const;
 	Token *pop();
 	Token *top();
 	Token *back();
 	Token *last();
 	void goBack();
-	void clear();
-	void display() const;
+	void clear() override;
+	void display() const override;
 	void reset();
 
-	TextRange lastRange() const;
+	TextRange lastRange() const override;
 	TextRange lineRange() const;
 
 	LineIterator begin();
@@ -30,17 +30,15 @@ class Line : public BaseBlock {
 
   private:
 	std::vector<Token *> tokens;
-	long unsigned int currentToken;
+	long unsigned int currentToken = 0;
 
 	friend class LineIterator;
 };
 
 class LineIterator {
   public:
-	LineIterator(Line *line);
-	LineIterator(const LineIterator &other);
+	explicit LineIterator(Line *line);
 	~LineIterator();
-	LineIterator &operator=(const LineIterator &other);
 	LineIterator &operator++();
 	LineIterator operator++(int);
 	Token *operator*();

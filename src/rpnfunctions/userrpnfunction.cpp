@@ -14,9 +14,9 @@ UserRPNFunction::~UserRPNFunction() {
 	}
 }
 
-RPNFunctionResult UserRPNFunction::call(RPNFunctionArgsValue &args, const TextRange &range,
+RPNFunctionResult UserRPNFunction::call(RPNFunctionArgsValue &args, const TextRange & /*range*/,
 										ContextPtr context) const {
-	ContextPtr functionContext =
+	ContextPtr const functionContext =
 		std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
 	for (size_t i = 0; i < args.size(); i++) {
 		if (this->arguments.at(i).second.index() == 0) {
@@ -32,34 +32,38 @@ RPNFunctionResult UserRPNFunction::call(RPNFunctionArgsValue &args, const TextRa
 
 	Interpreter interpreter(functionContext);
 	ExpressionResult result = interpreter.interpret(this->body->getBlocks());
-	if (result.error())
+	if (result.error()) {
 		return result;
+	}
 
 	// check the return type
 	if (!result.returnValue()) {
 		if (this->returnType.index() == 0 ||
-			(this->returnType.index() == 1 && std::get<ValueType>(this->returnType.type) != NONE))
+			(this->returnType.index() == 1 && std::get<ValueType>(this->returnType.type) != NONE)) {
 			return ExpressionResult("Function " + this->name + " expected a return value of type " +
 										this->returnType.name() + ", but no return value was found",
 									this->body->lastRange(), context);
+		}
 
 		return None::empty();
 	}
 
 	Value *returnValue = interpreter.getLastValue();
 	if (this->returnType.index() == 0) {
-		if (returnValue->getType() != STRUCT)
+		if (returnValue->getType() != STRUCT) {
 			return ExpressionResult("Return type must be struct of type " +
 										this->returnType.name() + " but got " +
 										stringType(returnValue->getType()),
 									returnValue->getRange(), context);
+		}
 
 		if (std::get<std::string>(this->returnType.type) !=
-			static_cast<Struct *>(returnValue)->getStructName())
+			dynamic_cast<Struct *>(returnValue)->getStructName()) {
 			return ExpressionResult(
 				"Return type must be struct of type " + this->returnType.name() + " but got " +
-					std::string(static_cast<Struct *>(returnValue)->getStructName()),
+					std::string(dynamic_cast<Struct *>(returnValue)->getStructName()),
 				returnValue->getRange(), context);
+		}
 
 		return returnValue->copy();
 	}
@@ -88,8 +92,9 @@ std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(const std::string 
 }
 
 std::shared_ptr<UserRPNFunction> UserRPNFunction::getFunction(const std::string &name) {
-	if (userFunctions.find(name) == userFunctions.end())
+	if (!userFunctions.contains(name)) {
 		return nullptr;
+	}
 	return userFunctions[name];
 }
 

@@ -1,7 +1,7 @@
 #include "textutilities/textrange.hpp"
 
-TextRange::TextRange() : line(0), columnStart(0), columnEnd(0) {}
-TextRange::TextRange(unsigned int line, unsigned int column, unsigned int length) : line(line), columnStart(column), columnEnd(column + length) {}
+TextRange::TextRange() = default;
+TextRange::TextRange(unsigned long line, unsigned long column, unsigned long length) : line(line), columnStart(column), columnEnd(column + length) {}
 TextRange::TextRange(const TextRange &other) : line(other.line), columnStart(other.columnStart), columnEnd(other.columnEnd) {}
 TextRange::TextRange(TextRange &&other) : line(other.line), columnStart(other.columnStart), columnEnd(other.columnEnd) {}
 /**
@@ -10,10 +10,11 @@ TextRange::TextRange(TextRange &&other) : line(other.line), columnStart(other.co
  * @param code the text to split
  * @return std::string the line
  */
-std::string TextRange::getLine(std::string_view code) {
+std::string TextRange::getLine(std::string_view code) const {
 	std::vector<std::string> lines = split(code, '\n');
-	if (line >= lines.size())
+	if (line >= lines.size()) {
 		return "";
+	}
 	return lines[line];
 }
 
@@ -39,7 +40,7 @@ TextRange TextRange::merge(const TextRange &other) {
  * 
  * @return bool true if the range is empty
  */
-bool TextRange::isEmpty() {
+bool TextRange::isEmpty() const {
 	return this->line == 0 && this->columnStart == 0 && this->columnEnd == 0;
 }
 
@@ -59,16 +60,13 @@ std::ostream &operator<<(std::ostream &os, const TextRange &range) {
 	return os;
 }
 
-void TextRange::operator=(const TextRange &other) {
-	this->line = other.line;
-	this->columnStart = other.columnStart;
-	this->columnEnd = other.columnEnd;
-}
+TextRange& TextRange::operator=(const TextRange &other) = default;
 
-void TextRange::operator=(TextRange &&other) {
+TextRange& TextRange::operator=(TextRange &&other) {
 	this->line = other.line;
 	this->columnStart = other.columnStart;
 	this->columnEnd = other.columnEnd;
+	return *this;
 }
 
 bool operator==(const TextRange &left, const TextRange &right) {

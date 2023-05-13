@@ -1,5 +1,5 @@
 #include "codeblocks/blockqueue.hpp"
-BlockQueue::BlockQueue() : blocks(), currentBlock(0) {}
+BlockQueue::BlockQueue() = default;
 BlockQueue::~BlockQueue() {
 	this->clear();
 }
@@ -12,7 +12,9 @@ BaseBlock *BlockQueue::pop() {
 	if (this->empty()) {
 		throw std::runtime_error("BlockQueue::pop() called on empty stack");
 	}
-	return this->blocks[this->currentBlock++];
+	BaseBlock *block = this->blocks[this->currentBlock];
+	this->currentBlock++;
+	return block;
 }
 
 BaseBlock *BlockQueue::popBack() {
@@ -36,14 +38,14 @@ bool BlockQueue::empty() const {
 	return this->currentBlock >= this->blocks.size();
 }
 
-int BlockQueue::size() const {
+size_t BlockQueue::size() const {
 	return this->blocks.size() - this->currentBlock;
 }
 
 void BlockQueue::clear() {
-	for (auto block : this->blocks)
-		if (block != nullptr)
-			delete block;
+	for (auto *block : this->blocks) {
+		delete block;
+	}
 	this->blocks.clear();
 }
 
@@ -53,7 +55,7 @@ void BlockQueue::reset() {
 
 void BlockQueue::display() const {
 	std::cout << "BlockQueue: ";
-	for (auto block : this->blocks) {
+	for (auto *block : this->blocks) {
 		block->display();
 	}
 	std::cout << std::endl;
@@ -67,25 +69,20 @@ TextRange BlockQueue::lastRange() const {
 }
 
 BlockQueueIterator BlockQueue::begin() {
-	return BlockQueueIterator(this, 0);
+	return {this, 0};
 }
 
 BlockQueueIterator BlockQueue::end() {
-	return BlockQueueIterator(this, this->blocks.size());
+	return {this, this->blocks.size()};
 }
 
 // Iteraror definition
 BlockQueueIterator::BlockQueueIterator(BlockQueue *queue, long unsigned int index)
 	: queue(queue), currentBlock(index) {}
-BlockQueueIterator::BlockQueueIterator(const BlockQueueIterator &it)
-	: queue(it.queue), currentBlock(it.currentBlock) {}
-BlockQueueIterator::~BlockQueueIterator() {}
+BlockQueueIterator::BlockQueueIterator(const BlockQueueIterator &it) = default;
+BlockQueueIterator::~BlockQueueIterator() = default;
 
-BlockQueueIterator &BlockQueueIterator::operator=(const BlockQueueIterator &it) {
-	this->queue = it.queue;
-	this->currentBlock = it.currentBlock;
-	return *this;
-}
+BlockQueueIterator &BlockQueueIterator::operator=(const BlockQueueIterator &it) = default;
 
 BlockQueueIterator &BlockQueueIterator::operator++() {
 	if (this->currentBlock >= this->queue->blocks.size()) {
@@ -96,7 +93,7 @@ BlockQueueIterator &BlockQueueIterator::operator++() {
 }
 
 BlockQueueIterator BlockQueueIterator::operator++(int) {
-	BlockQueueIterator it = *this;
+	BlockQueueIterator const it = *this;
 	++(*this);
 	return it;
 }

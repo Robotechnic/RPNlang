@@ -5,6 +5,8 @@
 #include <string>
 #include <unordered_map>
 
+// NOLINTBEGIN
+// clang-format off
 #include "expressionresult/expressionresult.hpp"
 #include "value/valuetypes.hpp"
 #include "value/types/numbers/int.hpp"
@@ -20,7 +22,8 @@
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/functionblock.hpp"
 #include "codeblocks/blockqueue.hpp"
-
+// clang-format on
+// NOLINTEND
 
 class FunctionBlock;
 class Line;
@@ -44,7 +47,8 @@ struct AnalyzerValueType {
 	};
 };
 
-using AnalyzerSymbolTable = std::unordered_map<std::string, AnalyzerValueType, StringHash, std::equal_to<>>;
+using AnalyzerSymbolTable =
+	std::unordered_map<std::string, AnalyzerValueType, StringHash, std::equal_to<>>;
 
 struct FunctionSignature {
 	std::vector<RPNValueType> args;
@@ -69,7 +73,7 @@ class Analyzer final {
 	RPNValueType currentFunctionReturnType;
 	std::vector<unsigned int> nextConditionalLevel = std::vector<unsigned int>{1, 0};
 
-	Line *currentLine;
+	Line *currentLine{};
 	std::stack<AnalyzerValueType> stack;
 	std::stack<FunctionBlock *> functionBlocks;
 	AnalyzerSymbolTable variables;

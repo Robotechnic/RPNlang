@@ -1,6 +1,6 @@
 #include "codeblocks/line.hpp"
 
-Line::Line() : BaseBlock(LINE_BLOCK), tokens(), currentToken(0) {}
+Line::Line() : BaseBlock(LINE_BLOCK) {}
 
 Line::~Line() {
 	clear();
@@ -11,7 +11,9 @@ void Line::push(Token *token) {
 }
 
 Token *Line::pop() {
-	return this->tokens[this->currentToken++];
+	Token *token = this->tokens[this->currentToken];
+	this->currentToken++;
+	return token;
 }
 
 Token *Line::top() {
@@ -43,18 +45,18 @@ bool Line::empty() const {
 	return this->currentToken >= this->tokens.size();
 }
 
-int Line::size() const {
+size_t Line::size() const {
 	return this->tokens.size() - this->currentToken;
 }
 
-int Line::totalSize() const {
+size_t Line::totalSize() const {
 	return this->tokens.size();
 }
 
 void Line::clear() {
-	for (auto token : this->tokens)
-		if (token != nullptr)
-			delete token;
+	for (auto *token : this->tokens) {
+		delete token;
+	}
 	this->tokens.clear();
 }
 
@@ -86,27 +88,19 @@ TextRange Line::lineRange() const {
 }
 
 LineIterator Line::begin() {
-	return LineIterator(this);
+	return LineIterator{this};
 }
 
 LineIterator Line::end() {
-	return LineIterator(this, this->tokens.size());
+	return {this, this->tokens.size()};
 }
 
 // Iterator implementation
 
 LineIterator::LineIterator(Line *line) : line(line), currentToken(0) {}
-LineIterator::LineIterator(const LineIterator &other)
-	: line(other.line), currentToken(other.currentToken) {}
 LineIterator::LineIterator(Line *line, long unsigned int currentToken)
 	: line(line), currentToken(currentToken) {}
-LineIterator::~LineIterator() {}
-
-LineIterator &LineIterator::operator=(const LineIterator &other) {
-	this->line = other.line;
-	this->currentToken = other.currentToken;
-	return *this;
-}
+LineIterator::~LineIterator() = default;
 
 LineIterator &LineIterator::operator++() {
 	this->currentToken++;
@@ -114,7 +108,7 @@ LineIterator &LineIterator::operator++() {
 }
 
 LineIterator LineIterator::operator++(int) {
-	LineIterator tmp(*this);
+	LineIterator const tmp(*this);
 	operator++();
 	return tmp;
 }

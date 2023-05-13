@@ -18,8 +18,9 @@
  * @param signum signal number
  */
 void signalHandler(int signum) {
-	if (signum == SIGINT)
+	if (signum == SIGINT) {
 		return;
+	}
 	std::cout << "\033[0m" << std::endl;
 	exit(signum);
 }
@@ -29,6 +30,34 @@ bool multilineKeyword(std::string_view keyword) {
 		   keyword == "struct" || keyword == "try";
 }
 
+ExpressionResult getMultilineInput(std::deque<Token *> &tokens, const ContextPtr &ctx,
+								   unsigned int &lineNumber) {
+	std::string instruction{""};
+	ExpressionResult result;
+	if (!tokens.empty() && tokens.back()->getType() == TOKEN_TYPE_LITERAL &&
+		multilineKeyword(tokens.back()->getStringValue())) {
+		rpnShell.setPrompt("... ");
+		rpnShell >> instruction;
+		lineNumber += instruction.size() != 0;
+		int emptyLines = 0;
+		while (!instruction.empty() || emptyLines < 2) {
+			if (!instruction.empty()) {
+				result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
+				if (result.error()) {
+					return result;
+				}
+				tokens.push_back(new StringToken(TextRange(lineNumber, instruction.size(), 1),
+												 TOKEN_TYPE_END_OF_LINE, "\n"));
+			}
+			rpnShell >> instruction;
+			lineNumber += !instruction.empty();
+			emptyLines += instruction.empty();
+		}
+		rpnShell.setPrompt(">>> ");
+	}
+	return result;
+}
+
 void shellInput() {
 	// setup lastChar buffer
 	std::streambuf *hold = std::cout.rdbuf();
@@ -36,85 +65,66 @@ void shellInput() {
 	LastCharBuffer lastCharBuffer(hold);
 	std::cout.rdbuf(&lastCharBuffer);
 
-	ContextPtr ctx = std::make_shared<Context>("main", "<stdin>");
+	const auto ctx = std::make_shared<Context>("main", "<stdin>");
 	Interpreter i(ctx);
 	std::string instruction;
 	rpnShell.loadHistory();
 	rpnShell >> instruction;
 	std::deque<Token *> tokens;
 	unsigned int lineNumber = 1;
-
-	while (instruction != "exit") {
-		ExpressionResult result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
+	ExpressionResult result;
+	while (instruction != "exit" && !result.error() && !std::cin.eof()) {
+		result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
+		if (result.error()) {
+			result.displayLineError(instruction);
+			continue;
+		}
+		result = getMultilineInput(tokens, ctx, lineNumber);
+		if (result.error()) {
+			result.displayLineError(instruction);
+			continue;
+		}
+		Lexer lexer(tokens, ctx);
+		result = lexer.lex();
 		if (result.error()) {
 			result.displayLineError(instruction);
 		} else {
-			if (tokens.size() > 0 && tokens.back()->getType() == TOKEN_TYPE_LITERAL &&
-				multilineKeyword(tokens.back()->getStringValue())) {
-				rpnShell.setPrompt("... ");
-				rpnShell >> instruction;
-				lineNumber += instruction.size() != 0;
-				int emptyLines = 0;
-				while (instruction.size() != 0 || emptyLines < 2) {
-					if (instruction.size() != 0) {
-						result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
-						if (result.error()) {
-							result.displayLineError(instruction);
-							break;
-						}
-						tokens.push_back(
-							new StringToken(TextRange(lineNumber, instruction.size(), 1),
-											TOKEN_TYPE_END_OF_LINE, "\n"));
-					}
-					rpnShell >> instruction;
-					lineNumber += instruction.size() != 0;
-					emptyLines = instruction.size() == 0 ? emptyLines + 1 : 0;
-				}
-				rpnShell.setPrompt(">>> ");
-			}
-			Lexer lexer(tokens, ctx);
-			result = lexer.lex();
+			Value::deleteValue(&i.getLastValue(), Value::INTERPRETER);
+			result = i.interpret(lexer.getBlocks());
+			ctx->copyTokenValues();
 			if (result.error()) {
+				if (result.getRange().line != lineNumber) {
+					instruction = rpnShell.at(rpnShell.getHistorySize() - lineNumber);
+				}
 				result.displayLineError(instruction);
 			} else {
-				Value::deleteValue(&i.getLastValue(), Value::INTERPRETER);
-				result = i.interpret(lexer.getBlocks());
-				ctx->copyTokenValues();
-				if (result.error()) {
-					if (result.getRange().line != lineNumber) {
-						instruction = rpnShell.at(rpnShell.getHistorySize() - lineNumber);
-					}
-					result.displayLineError(instruction);
-				} else {
-					if (lastCharBuffer.getLastChar() != '\n' &&
-						lastCharBuffer.getLastChar() != '\r') {
-						rpnShell << std::endl;
-					}
-					switch (i.getLastValue()->getType()) {
-						case INT:
-						case FLOAT:
-							rpnShell << MAGENTA;
-							break;
-						case STRING:
-							rpnShell << YELLOW;
-							break;
-						case BOOL:
-							rpnShell << GREEN;
-							break;
-						case NONE:
-							rpnShell << RED;
-							break;
-						default:
-							break;
-					};
-					rpnShell << i.getLastValue()->getStringValue() << DEFAULT << std::endl;
+				if (lastCharBuffer.getLastChar() != '\n' && lastCharBuffer.getLastChar() != '\r') {
+					rpnShell << std::endl;
 				}
-				i.clearMemory();
+				switch (i.getLastValue()->getType()) {
+					case INT:
+					case FLOAT:
+						rpnShell << MAGENTA;
+						break;
+					case STRING:
+						rpnShell << YELLOW;
+						break;
+					case BOOL:
+						rpnShell << GREEN;
+						break;
+					case NONE:
+						rpnShell << RED;
+						break;
+					default:
+						break;
+				};
+				rpnShell << i.getLastValue()->getStringValue() << DEFAULT << std::endl;
 			}
+			i.clearMemory();
 		}
 		tokens.clear();
 		rpnShell >> instruction;
-		lineNumber += instruction.size() != 0;
+		lineNumber += !instruction.empty();
 	}
 	// restaure hold buffer
 	std::cout.rdbuf(hold);
@@ -128,10 +138,11 @@ int interpretPipe() {
 	std::deque<Token *> tokens;
 	unsigned int lineNumber = 0;
 	std::vector<std::string> lines;
+	ExpressionResult result;
 	while (std::getline(std::cin, instruction)) {
 		lineNumber++;
 		lines.push_back(instruction);
-		ExpressionResult result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
+		result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
 		if (result.error()) {
 			result.displayLineError(instruction);
 			return 1;
@@ -140,7 +151,7 @@ int interpretPipe() {
 										 TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	Lexer lexer(tokens, ctx);
-	ExpressionResult result = lexer.lex();
+	result = lexer.lex();
 	if (result.error()) {
 		result.displayLineError(lines[result.getRange().line - 1]);
 		return 1;

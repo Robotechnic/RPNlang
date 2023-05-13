@@ -7,6 +7,8 @@
 
 class CppModule;
 
+#include "textutilities/stringhash.hpp"
+
 #include "value/types/path.hpp"
 #include "value/value.hpp"
 
@@ -47,6 +49,7 @@ class Module {
 	TextRange importRange;
 	ContextPtr context;
 
-	static std::unordered_map<std::string, std::shared_ptr<Module>> modules;
-	static std::unordered_map<std::string, CppModule> builtinModules;
+	static std::unordered_map<std::string, std::shared_ptr<Module>, StringHash, std::equal_to<>>
+		modules;
+	static std::unordered_map<std::string, CppModule, StringHash, std::equal_to<>> builtinModules;
 };

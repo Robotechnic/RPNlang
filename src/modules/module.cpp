@@ -1,16 +1,15 @@
 #include "modules/module.hpp"
 
-Module::Module() : path(""), name(""), importRange(TextRange(0, 0, 0)), context(nullptr) {}
+Module::Module() : importRange(TextRange(0, 0, 0)), context(nullptr) {}
 
 Module::Module(std::string_view path, std::string_view name, ContextPtr parentContext,
 			   TextRange importRange)
 	: path(path), name(name), importRange(importRange),
 	  context(std::make_shared<Context>(name, path, parentContext, CONTEXT_TYPE_MODULE, true)) {}
 
-Module::Module(const Module &other)
-	: path(other.path), name(other.name), importRange(other.importRange), context(other.context) {}
+Module::Module(const Module &other) = default;
 
-Module::~Module() {}
+Module::~Module() = default;
 
 /**
  * @brief load the module interpret it
@@ -18,7 +17,7 @@ Module::~Module() {}
  * @return ExpressionResult if the module is loaded correctly, otherwise quit the program
  */
 ExpressionResult Module::load() {
-	if (path == "") {
+	if (path.empty()) {
 		throw std::runtime_error("Module::load: path is empty");
 	}
 
@@ -26,13 +25,13 @@ ExpressionResult Module::load() {
 		throw std::runtime_error("Module::load: context is null");
 	}
 
-	Interpreter moduleLoader = Interpreter(this->context);
-	std::string error;
-	if (!moduleLoader.interpretFile(path, error, true))
-		return ExpressionResult("Failed to load module " + name + " at " + path + "(" + error + ")",
-								this->importRange, this->context->getParent());
+	auto moduleLoader = Interpreter(this->context);
+	if (std::string error; !moduleLoader.interpretFile(path, error, true)) {
+		return {"Failed to load module " + name + " at " + path + "(" + error + ")",
+				this->importRange, this->context->getParent()};
+	}
 
-	return ExpressionResult();
+	return {};
 }
 
 /**
@@ -60,8 +59,14 @@ std::string Module::getPath() const {
  */
 bool Module::isModule(const std::string &moduleName, bool &isBuiltin) {
 	isBuiltin = false;
-	return (Module::modules.find(moduleName) != Module::modules.end() ||
-			(isBuiltin = Module::builtinModules.find(moduleName) != Module::builtinModules.end()));
+	if (Module::modules.contains(moduleName)) {
+		return true;
+	}
+	if (Module::builtinModules.contains(moduleName)) {
+		isBuiltin = true;
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -72,12 +77,14 @@ bool Module::isModule(const std::string &moduleName, bool &isBuiltin) {
  * @return false if the module does not have the value
  */
 bool Module::hasValue(const Path *path) {
-	if (path->getType() == PATH)
+	if (path->getType() == PATH) {
 		return Module::modules.at(path->ats(0))->getModuleContext()->hasValue(path->ats(1));
-	else if (path->getType() == BUILTIN_PATH)
+	}
+
+	if (path->getType() == BUILTIN_PATH)
 		return Module::builtinModules.at(path->ats(0)).getModuleContext()->hasValue(path->ats(1));
-	else
-		throw std::runtime_error("This path is not a module path");
+
+	throw std::invalid_argument("This path is not a module path");
 }
 
 /**
@@ -91,16 +98,14 @@ bool Module::hasValue(const Path *path) {
 ExpressionResult Module::checkPath(const Path *path, const ContextPtr &parentContext,
 								   bool &isBuiltin) {
 	if (path->size() > 2) {
-		return ExpressionResult("Module path can only be 2 tokens long", path->getRange(),
-								parentContext);
+		return {"Module path can only be 2 tokens long", path->getRange(), parentContext};
 	}
 
 	if (!Module::isModule(path->ats(0), isBuiltin)) {
-		return ExpressionResult("Module " + path->ats(0) + " does not exist", path->getRange(),
-								parentContext);
+		return {"Module " + path->ats(0) + " does not exist", path->getRange(), parentContext};
 	}
 
-	return ExpressionResult();
+	return {};
 }
 
 /**
@@ -112,14 +117,15 @@ ExpressionResult Module::checkPath(const Path *path, const ContextPtr &parentCon
  * @return ExpressionResult if the value exists
  */
 Value *&Module::getModuleValue(const Value *valuePath) {
-	const Path *path = static_cast<const Path *>(valuePath);
+	auto const path = dynamic_cast<const Path *>(valuePath);
 
-	if (path->getType() == PATH)
+	if (path->getType() == PATH) {
 		return Module::modules.at(path->ats(0))->getModuleContext()->getValue(path->ats(1));
-	else if (path->getType() == BUILTIN_PATH)
+	}
+	if (path->getType() == BUILTIN_PATH)
 		return Module::builtinModules.at(path->ats(0)).getModuleContext()->getValue(path->ats(1));
 	else
-		throw std::runtime_error("This path is not a module path");
+		throw std::invalid_argument("This path is not a module path");
 }
 
 /**
@@ -131,14 +137,15 @@ Value *&Module::getModuleValue(const Value *valuePath) {
  * @return ExpressionResult
  */
 ContextPtr Module::getModuleContext(const Value *valuePath, const ContextPtr &parentContext) {
-	const Path *path = static_cast<const Path *>(valuePath);
+	auto const path = dynamic_cast<const Path *>(valuePath);
 	ContextPtr moduleContext;
-	if (path->getType() == PATH)
+	if (path->getType() == PATH) {
 		moduleContext = Module::modules.at(path->ats(0))->getModuleContext();
-	else if (path->getType() == BUILTIN_PATH)
+	} else if (path->getType() == BUILTIN_PATH) {
 		moduleContext = Module::builtinModules.at(path->ats(0)).getModuleContext();
-	else
+	} else {
 		throw std::runtime_error("This path is not a module path");
+	}
 	moduleContext->setParent(parentContext);
 	return moduleContext;
 }
@@ -151,12 +158,12 @@ ContextPtr Module::getModuleContext(const Value *valuePath, const ContextPtr &pa
  * @return bool true if the file is already loaded
  */
 bool Module::isImported(std::string_view modulePath, std::string &moduleName) {
-	auto it = std::find_if(
-		Module::modules.begin(), Module::modules.end(), [modulePath](auto module) -> bool {
-			return std::filesystem::equivalent(module.second->getPath(), modulePath);
-		});
-	if (it == Module::modules.end())
+	auto it = std::ranges::find_if(Module::modules, [modulePath](auto checkModule) -> bool {
+		return std::filesystem::equivalent(checkModule.second->getPath(), modulePath);
+	});
+	if (it == Module::modules.end()) {
 		return false;
+	}
 
 	moduleName = it->first;
 	return true;
@@ -177,9 +184,10 @@ ExpressionResult Module::addModule(std::string_view modulePath, const std::strin
 	// check if the module is user defined
 	if (modulePath != name) {
 		if (Module::isImported(modulePath, importedName)) {
-			if (importedName != name)
+			if (importedName != name) {
 				Module::modules[name] = Module::modules[importedName];
-			return ExpressionResult();
+			}
+			return {};
 		}
 		Module::modules[name] =
 			std::make_shared<Module>(modulePath, name, parentContext, importRange);
@@ -188,15 +196,15 @@ ExpressionResult Module::addModule(std::string_view modulePath, const std::strin
 
 	// check if the module is builtin
 	if (!CppModule::isBuiltin(name)) {
-		return ExpressionResult("Builtin module '" + name + "' does not exist", importRange,
-								parentContext);
+		return {"Builtin module '" + name + "' does not exist", importRange, parentContext};
 	}
 
 	builtinModules[name] = CppModule(name);
 	return builtinModules[name].load(importRange);
 }
 
-std::unordered_map<std::string, std::shared_ptr<Module>> Module::modules =
-	std::unordered_map<std::string, std::shared_ptr<Module>>();
-std::unordered_map<std::string, CppModule> Module::builtinModules =
-	std::unordered_map<std::string, CppModule>();
+std::unordered_map<std::string, std::shared_ptr<Module>, StringHash, std::equal_to<>>
+	Module::modules =
+		std::unordered_map<std::string, std::shared_ptr<Module>, StringHash, std::equal_to<>>();
+std::unordered_map<std::string, CppModule, StringHash, std::equal_to<>> Module::builtinModules =
+	std::unordered_map<std::string, CppModule, StringHash, std::equal_to<>>();

@@ -2,10 +2,10 @@
 
 Shell rpnShell = Shell();
 
-Shell::Shell() : prompt(">>> "), historyIndex(0), cursorPosition(0), command("") {}
+Shell::Shell() : prompt(">>> "), historyIndex(0), cursorPosition(0) {}
 
 Shell::~Shell() {
-	if (this->history.size() > 0) {
+	if (!this->history.empty()) {
 		this->saveHistory();
 	}
 }
@@ -20,7 +20,7 @@ std::string Shell::getCommand() {
 	this->historyIndex = 0;
 	this->cursorPosition = 0;
 	std::cout << this->prompt;
-	char c;
+	char c = 0;
 	while ((c = this->getChar()) != '\n') {
 		if (this->isSpecialChar(c)) {
 			this->handleSpecialChar(c);
@@ -29,7 +29,7 @@ std::string Shell::getCommand() {
 		}
 	}
 	std::cout << std::endl;
-	if (command != "" && (this->history.size() == 0 || this->history.back() != command)) {
+	if (!command.empty() && (this->history.empty() || this->history.back() != command)) {
 		this->history.push_back(command);
 		if (this->history.size() > MAX_HISTORY_SIZE) {
 			this->history.erase(this->history.begin());
@@ -43,7 +43,7 @@ std::string Shell::getCommand() {
  *
  */
 bool Shell::loadHistory(std::string_view historyFile) {
-	if (historyFile != "") {
+	if (!historyFile.empty()) {
 		this->historyFile = historyFile;
 	} else {
 		this->historyFile = std::getenv("HOME");
@@ -156,7 +156,7 @@ void Shell::handleSpecialChar(char c) {
  *
  */
 void Shell::arrowManagement() {
-	char bracket = this->getChar();
+	char const bracket = this->getChar();
 	if (bracket != 91) { // '[' character
 		this->putChar(bracket);
 		return;
@@ -213,8 +213,9 @@ void Shell::arrowManagement() {
  * @param ctrl if the ctrl key is pressed
  */
 void Shell::arrowRight(bool ctrl) {
-	if (this->cursorPosition >= (int)this->command.size())
+	if (this->cursorPosition >= (int)this->command.size()) {
 		return;
+	}
 
 	do {
 		this->cursorPosition++;
@@ -229,8 +230,9 @@ void Shell::arrowRight(bool ctrl) {
  * @param ctrl if the ctrl key is pressed
  */
 void Shell::arrowLeft(bool ctrl) {
-	if (this->cursorPosition <= 0)
+	if (this->cursorPosition <= 0) {
 		return;
+	}
 
 	do {
 		this->cursorPosition--;
@@ -243,8 +245,9 @@ void Shell::arrowLeft(bool ctrl) {
  *
  */
 void Shell::arrowUp() {
-	if (this->historyIndex >= (int)this->history.size())
+	if (this->historyIndex >= (int)this->history.size()) {
 		return;
+	}
 	if (this->historyIndex <= 0) {
 		this->savedCommand = this->command;
 	}
@@ -272,8 +275,9 @@ void Shell::arrowDown() {
  * @return char the char readen
  */
 char Shell::getChar() {
-	char c;
-	struct termios oldt, newt;
+	char c = 0;
+	struct termios oldt;
+	struct termios newt;
 	tcgetattr(STDIN_FILENO, &oldt);
 	newt = oldt;
 	newt.c_lflag &= ~ICANON;
@@ -285,8 +289,9 @@ char Shell::getChar() {
 }
 
 void Shell::skipChar(int n) {
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < n; i++) {
 		this->getChar();
+	}
 }
 
 /**
@@ -312,11 +317,13 @@ void Shell::mooveRight() {
  */
 void Shell::putChar(char c) {
 	this->command.insert(this->cursorPosition, std::string(1, c));
-	for (size_t i = this->cursorPosition; i < this->command.size(); i++)
+	for (size_t i = this->cursorPosition; i < this->command.size(); i++) {
 		std::cout << command[i];
+	}
 	this->cursorPosition++;
-	for (int i = this->command.size(); i > this->cursorPosition; i--)
+	for (int i = this->command.size(); i > this->cursorPosition; i--) {
 		this->mooveLeft();
+	}
 }
 
 /**
@@ -324,8 +331,9 @@ void Shell::putChar(char c) {
  *
  */
 void Shell::popChar() {
-	if (this->cursorPosition <= 0)
+	if (this->cursorPosition <= 0) {
 		return;
+	}
 	// delete char
 	this->command.erase(this->cursorPosition - 1, 1);
 	this->mooveLeft();
@@ -338,8 +346,9 @@ void Shell::popChar() {
  *
  */
 void Shell::popWord() {
-	if (this->cursorPosition <= 0)
+	if (this->cursorPosition <= 0) {
 		return;
+	}
 	// delete a word from the cursor position
 	do {
 		this->command.erase(this->cursorPosition, 1);
@@ -359,8 +368,9 @@ void Shell::popWord() {
  *
  */
 void Shell::popCharRight() {
-	if (this->cursorPosition >= (int)this->command.size())
+	if (this->cursorPosition >= (int)this->command.size()) {
 		return;
+	}
 	// delete char
 	this->command.erase(this->cursorPosition, 1);
 
@@ -376,8 +386,9 @@ void Shell::popCharRight() {
  *
  */
 void Shell::popWordRight() {
-	if (this->cursorPosition >= (int)this->command.size())
+	if (this->cursorPosition >= (int)this->command.size()) {
 		return;
+	}
 	// delete a word from the cursor position
 	do {
 		this->command.erase(this->cursorPosition, 1);
