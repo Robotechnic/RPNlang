@@ -68,11 +68,12 @@ Context::~Context() {
 }
 
 void Context::clear() {
-	for (auto it = this->symbols.begin(); it != this->symbols.end(); it++) {
-		if (it->second == nullptr || it->second->getOwner() != Value::CONTEXT_VARIABLE) 
+	for (auto &[_, value] : this->symbols) {
+		if (value == nullptr || value->getOwner() != Value::CONTEXT_VARIABLE) {
 			continue;
-		delete it->second;
-		it->second = nullptr;
+		}
+		delete value;
+		value = nullptr;
 	}
 }
 
@@ -213,7 +214,7 @@ void Context::setValue(const Value *name, Value *value, Value **hold, bool takeO
  * @return bool if the value exits
  */
 bool Context::hasValue(std::string_view name) const {
-	return this->symbols.find(name.data()) != this->symbols.end();
+	return this->symbols.contains(name.data());
 }
 
 /**
@@ -224,7 +225,7 @@ bool Context::hasValue(std::string_view name) const {
  */
 Value *&Context::getValue(const Value *name) {
 	std::string nameStr = name->getStringValue();
-	if (this->symbols.find(nameStr) != this->symbols.end()) {
+	if (this->symbols.contains(nameStr)) {
 		return this->symbols.at(nameStr);
 	}
 

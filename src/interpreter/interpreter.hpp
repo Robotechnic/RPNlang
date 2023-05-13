@@ -34,7 +34,7 @@
 class Interpreter {
   public:
 	Interpreter();
-	Interpreter(ContextPtr ctx);
+	explicit Interpreter(ContextPtr ctx);
 	~Interpreter();
 
 	void clearMemory();

@@ -62,8 +62,10 @@ class Shell {
 
 	std::string prompt;
 
-	int historyIndex, cursorPosition;
-	std::string command, savedCommand;
+	int historyIndex;
+	int cursorPosition;
+	std::string command;
+	std::string savedCommand;
 	std::string historyFile;
 	std::vector<std::string> history;
 };
@@ -78,19 +80,19 @@ Shell &operator<<(Shell &out, const format &s);
 
 class LastCharBuffer : public std::streambuf {
   public:
-	LastCharBuffer(std::streambuf *sb) : buff(sb), lastChar(traits_type::eof()) {
+	explicit LastCharBuffer(std::streambuf *sb) : buff(sb) {
 		setp(0, 0);
 	};
 	char getLastChar() const {
 		return lastChar;
 	};
 
-	virtual int_type overflow(int_type c) {
-		lastChar = c;
-		return buff->sputc(c);
+	int_type overflow(int_type currentChar) override {
+		lastChar = currentChar;
+		return buff->sputc(currentChar);
 	};
 
   private:
 	std::streambuf *buff;
-	char lastChar;
+	char lastChar = traits_type::eof();
 };

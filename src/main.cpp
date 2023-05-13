@@ -117,7 +117,7 @@ void shellInput() {
 						break;
 					default:
 						break;
-				};
+				}
 				rpnShell << i.getLastValue()->getStringValue() << DEFAULT << std::endl;
 			}
 			i.clearMemory();

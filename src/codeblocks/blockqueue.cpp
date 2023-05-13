@@ -55,7 +55,7 @@ void BlockQueue::reset() {
 
 void BlockQueue::display() const {
 	std::cout << "BlockQueue: ";
-	for (auto *block : this->blocks) {
+	for (auto const *block : this->blocks) {
 		block->display();
 	}
 	std::cout << std::endl;

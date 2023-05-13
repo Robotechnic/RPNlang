@@ -2,7 +2,7 @@
 
 Analyzer::Analyzer(ContextPtr context) : context(context) {
 	// add variables of the current context
-	for (auto &[name, variable] : context->getSymbols()) {
+	for (const auto &[name, variable] : context->getSymbols()) {
 		this->variables[name] = {
 			variable->getType(), variable->getRange(), false, 0, 0, false, false};
 	}
@@ -145,11 +145,9 @@ AnalyzerValueType &Analyzer::topVariable() {
 		TextRange const range = top.range;
 		stack.pop();
 		AnalyzerSymbolTable *variablesMap = &this->functionVariables;
-		if (this->functionVariables.find(std::get<std::string>(top.type.type)) ==
-			this->variables.end()) {
+		if (!this->functionVariables.contains(std::get<std::string>(top.type.type))) {
 			variablesMap = &this->variables;
-			if (this->variables.find(std::get<std::string>(top.type.type)) ==
-				this->variables.end()) {
+			if (!this->variables.contains(std::get<std::string>(top.type.type))) {
 				this->error = ExpressionResult("Variable " + top.type.name() + " is not defined",
 											   top.range, this->context);
 				this->stack.push(top);
@@ -605,12 +603,12 @@ void Analyzer::analyzePath(Token *path, bool addToStack) {
 	if (!addToStack) {
 		return;
 	}
-	Value *variable = Module::getModuleValue(p);
+	Value const *variable = Module::getModuleValue(p);
 	this->stack.push({variable->getType(), p->getRange(), false, 0, 0, false});
 }
 
 void Analyzer::checkKeywordLine(const KeywordToken *token, bool restaureStack, bool strict) {
-	if (linePatern.find(token->getKeyword()) == linePatern.end()) {
+	if (!linePatern.contains(token->getKeyword())) {
 		this->checkRemainingCount();
 	}
 	std::vector<RPNValueType> types = linePatern.at(token->getKeyword());

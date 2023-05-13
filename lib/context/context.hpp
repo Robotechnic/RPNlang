@@ -28,11 +28,11 @@ class Context : public std::enable_shared_from_this<Context> {
 		void clear();
 		symbolTable getSymbols() const;
 
-		inline void setName(std::string_view name);
+		void setName(std::string_view name);
 		std::string getName() const;
 		std::string getTypeName() const;
 
-		inline void setFilePath(std::string_view filePath);
+		void setFilePath(std::string_view filePath);
 		std::string getFilePath();
 
 		void setParent(ContextPtr parent);

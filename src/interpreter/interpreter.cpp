@@ -128,7 +128,7 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 				result = interpretLine(*l);
 			}
 		} else if (block->getType() == FUNCTION_BLOCK) {
-			FunctionBlock *f = dynamic_cast<FunctionBlock *>(block);
+			FunctionBlock const *f = dynamic_cast<FunctionBlock *>(block);
 			this->context->setValue(f->getName(), new Function(f->getFunction(), f->lastRange(),
 															   Value::CONTEXT_VARIABLE));
 		} else {
@@ -253,7 +253,7 @@ ExpressionResult Interpreter::interpretOperator(const OperatorToken *operatorTok
 	left = this->memory.popVariableValue(this->context);
 
 	if ((left->getType() == STRING || left->getType() == LIST)) {
-		Int *number = dynamic_cast<Int *>(right);
+		Int const *number = dynamic_cast<Int *>(right);
 		if (number && number->getValue() < 0) {
 			return {"Cannot multiply list like object by a negative number", right->getRange(),
 					this->context};
@@ -340,7 +340,7 @@ const RPNFunction *Interpreter::getFunction(const Value *functionName) {
 
 ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 	const RPNFunction *function = nullptr;
-	Value *functionName = dynamic_cast<ValueToken *>(functionToken)->getValue();
+	Value const *functionName = dynamic_cast<ValueToken *>(functionToken)->getValue();
 	function = this->getFunction(functionName);
 
 	std::vector<Value *> arguments;
@@ -355,7 +355,7 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 		ContextPtr const ctx = Module::getModuleContext(functionName, this->context);
 		callResult = function->call(arguments, functionName->getRange(), ctx);
 	}
-	if (auto *callExpressionResult = std::get_if<ExpressionResult>(&callResult);
+	if (auto const *callExpressionResult = std::get_if<ExpressionResult>(&callResult);
 		(callExpressionResult != nullptr) && callExpressionResult->error()) {
 		return *callExpressionResult;
 	}
@@ -375,8 +375,7 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 }
 
 ExpressionResult Interpreter::interpretIf(Line &line, CodeBlock &block) {
-	ExpressionResult result = this->interpretLine(line);
-	if (result.error()) {
+	if (ExpressionResult result = this->interpretLine(line); result.error()) {
 		return result;
 	}
 	Value *condition = this->lastValue->to(BOOL);
@@ -508,7 +507,7 @@ ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
 }
 
 ExpressionResult Interpreter::interpretList(const Token *keywordToken) {
-	Int *size = dynamic_cast<Int *>(this->memory.pop());
+	Int const *size = dynamic_cast<Int *>(this->memory.pop());
 	if (size->getValue() < 0) {
 		return {"List size must be positive", size->getRange(), this->context};
 	}
@@ -534,7 +533,7 @@ ExpressionResult Interpreter::interpretStruct(const Token *keywordToken) {
 	if (!Struct::structExists(name)) {
 		return {"Undefined struct name : " + std::string(name), keywordToken->getRange(),
 				this->context};
-	};
+	}
 	size_t const count = Struct::getStructMembersCount(name);
 	std::vector<Value *> members(count, nullptr);
 	TextRange range = keywordToken->getRange();

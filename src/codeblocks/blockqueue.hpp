@@ -38,13 +38,6 @@ class BlockQueue {
 
 class BlockQueueIterator {
   public:
-	using iterator_category = std::forward_iterator_tag;
-	using value_type = BaseBlock;
-	using difference_type = std::ptrdiff_t;
-	using pointer = BaseBlock *;
-	using reference = BaseBlock &;
-
-  public:
 	BlockQueueIterator(BlockQueue *queue, long unsigned int index);
 	BlockQueueIterator(const BlockQueueIterator &it);
 	~BlockQueueIterator();

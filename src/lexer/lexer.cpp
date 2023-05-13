@@ -177,7 +177,8 @@ ExpressionResult Lexer::parseFString(Token const *token) {
 
 	std::vector<std::string> parts;
 	parts.emplace_back("");
-	for (auto it = value.begin(); it != value.end(); it++) {
+	auto it = value.begin();
+	while (it != value.end()) {
 		if (*it == '{') {
 			if (it == value.end() || *(it + 1) != '}') {
 				return {"Invalid fstring format: missing closing bracket",
@@ -195,6 +196,7 @@ ExpressionResult Lexer::parseFString(Token const *token) {
 		} else {
 			parts.back() += *it;
 		}
+		it++;
 	}
 
 	this->currentLine->push(new FStringToken(token->getRange(), parts));
@@ -232,7 +234,7 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 	}
 
 	if (!this->tokens.empty()) {
-		Token *next = this->tokens.front();
+		Token const *next = this->tokens.front();
 		if (next->getType() == TOKEN_TYPE_DOT) {
 			return this->parsePath(token);
 		}
@@ -559,7 +561,7 @@ ExpressionResult Lexer::parseStruct(CodeBlock *block) {
 		if (l->top()->getType() != TOKEN_TYPE_LITERAL) {
 			return {"Struct member name must be a literal", l->top()->getRange(), this->context};
 		}
-		Token *nameToken = l->pop();
+		Token const *nameToken = l->pop();
 		if (l->top()->getType() != TOKEN_TYPE_ARROW) {
 			return {"Struct member definition must be in the form 'name -> type'",
 					l->top()->getRange(), this->context};

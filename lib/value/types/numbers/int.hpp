@@ -19,16 +19,16 @@ class Int : public Value {
 		Int(const std::string &value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 		Int(int64_t value, TextRange range, ValueOwner owner, const TextRange variableRange = TextRange());
 		
-		bool isNumber() const { return true; };
+		bool isNumber() const override { return true; };
 
 		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
-		inline Value *copy(ValueOwner owner = INTERPRETER) const override;
+		Value *copy(ValueOwner owner = INTERPRETER) const override;
 
 		static Int *empty() {
 			return Int::emptyInt.get();
 		}
 
-		inline std::string getStringValue() const;
+		std::string getStringValue() const override;
 
 		int64_t getValue() const { return value; };
 

@@ -21,7 +21,7 @@ std::string Shell::getCommand() {
 	this->cursorPosition = 0;
 	std::cout << this->prompt;
 	char c = 0;
-	while ((c = this->getChar()) != '\n') {
+	while ((c = Shell::getChar()) != '\n') {
 		if (this->isSpecialChar(c)) {
 			this->handleSpecialChar(c);
 		} else {
@@ -156,12 +156,12 @@ void Shell::handleSpecialChar(char c) {
  *
  */
 void Shell::arrowManagement() {
-	char const bracket = this->getChar();
+	char const bracket = Shell::getChar();
 	if (bracket != 91) { // '[' character
 		this->putChar(bracket);
 		return;
 	}
-	char type = this->getChar();
+	char type = Shell::getChar();
 	switch (type) {
 		case 68: // left
 			this->arrowLeft();
@@ -184,7 +184,7 @@ void Shell::arrowManagement() {
 			this->setCursorPosition(this->command.size());
 			break;
 		case 51: // supr
-			type = this->getChar();
+			type = Shell::getChar();
 			if (type == 126) {
 				this->popCharRight();
 			} else {
@@ -195,7 +195,7 @@ void Shell::arrowManagement() {
 			break;
 		case 49: // ctrl + arrow
 			skipChar(2);
-			type = this->getChar();
+			type = Shell::getChar();
 			if (type == 68) {
 				this->arrowLeft(true);
 			} else if (type == 67) {
@@ -219,7 +219,7 @@ void Shell::arrowRight(bool ctrl) {
 
 	do {
 		this->cursorPosition++;
-		this->mooveRight();
+		Shell::mooveRight();
 	} while (ctrl && this->command[this->cursorPosition] != ' ' &&
 			 this->cursorPosition < (int)this->command.size());
 }
@@ -236,7 +236,7 @@ void Shell::arrowLeft(bool ctrl) {
 
 	do {
 		this->cursorPosition--;
-		this->mooveLeft();
+		Shell::mooveLeft();
 	} while (ctrl && this->command[this->cursorPosition] != ' ' && this->cursorPosition > 0);
 }
 
@@ -290,7 +290,7 @@ char Shell::getChar() {
 
 void Shell::skipChar(int n) {
 	for (int i = 0; i < n; i++) {
-		this->getChar();
+		Shell::getChar();
 	}
 }
 
@@ -322,7 +322,7 @@ void Shell::putChar(char c) {
 	}
 	this->cursorPosition++;
 	for (int i = this->command.size(); i > this->cursorPosition; i--) {
-		this->mooveLeft();
+		Shell::mooveLeft();
 	}
 }
 
@@ -336,7 +336,7 @@ void Shell::popChar() {
 	}
 	// delete char
 	this->command.erase(this->cursorPosition - 1, 1);
-	this->mooveLeft();
+	Shell::mooveLeft();
 	this->updateLine(0);
 	this->cursorPosition--;
 }
@@ -352,7 +352,7 @@ void Shell::popWord() {
 	// delete a word from the cursor position
 	do {
 		this->command.erase(this->cursorPosition, 1);
-		this->mooveLeft();
+		Shell::mooveLeft();
 		this->cursorPosition--;
 	} while (this->cursorPosition >= 0 && this->command[this->cursorPosition] != ' ');
 
