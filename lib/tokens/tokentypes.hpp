@@ -1,6 +1,6 @@
 #pragma once
 
-enum TokenType {
+enum class TokenType {
 	// used only for the lexer they will be converted to other types directly
 	TOKEN_TYPE_HEX,
 	TOKEN_TYPE_BIN,
@@ -14,6 +14,7 @@ enum TokenType {
 	TOKEN_TYPE_FSTRING,
 	TOKEN_TYPE_LITERAL,
 	TOKEN_TYPE_STRUCT_NAME,
+	TOKEN_TYPE_FUN_SIGNATURE,
 
 	// this tokens are base for other tokens
 	TOKEN_TYPE_DOT,

@@ -33,17 +33,18 @@ struct FunctionSignature {
 	std::vector<RPNValueType> args;
 	RPNValueType returnType;
 	bool builtin;
+	bool callable = true;
 };
 
 struct AnalyzerValueType {
 	RPNValueType type;
 	TextRange range;
 	bool isVariable;
-	unsigned int conditionalLevel;
-	unsigned int conditionalNextLevel;
-	bool isStructMember;
-	bool isListElement;
-	bool isFunction;
+	unsigned int conditionalLevel = 0;
+	unsigned int conditionalNextLevel = 0;
+	bool isStructMember = false;
+	bool isListElement = false;
+	bool isFunction = false;
 
 	std::string name() const {
 		return type.name();
@@ -100,6 +101,8 @@ class Analyzer final {
 	void checkKeywordLine(const KeywordToken *token, bool restaureStack, bool strict = true);
 	void analyzeImport(const KeywordToken *token);
 	void analyzeImportAs(const KeywordToken *token);
+	void analyzeFunctionSignature(const KeywordToken *token);
+	void analyzeReturn(const KeywordToken *token);
 	void analyzePath(Token *path, bool addToStack = true);
 	void analyzeStructAccess(const Token *token);
 	void analyzeGet(const Token *token);

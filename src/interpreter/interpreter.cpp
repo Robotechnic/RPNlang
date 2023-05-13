@@ -33,7 +33,7 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 			result.display();
 			error = true;
 		}
-		tokens.push_back(new StringToken(line, instruction.size(), TOKEN_TYPE_END_OF_LINE, "\n"));
+		tokens.push_back(new StringToken(line, instruction.size(), TokenType::TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	file.close();
 
@@ -150,33 +150,33 @@ ExpressionResult Interpreter::interpretLine(Line &line, bool clearMemory) {
 	LineIterator it = line.begin();
 	while (!result.stopInterpret() && it) {
 		switch ((*it)->getType()) {
-			case TOKEN_TYPE_VALUE:
-			case TOKEN_TYPE_LITERAL:
-			case TOKEN_TYPE_PATH:
-			case TOKEN_TYPE_STRUCT_ACCESS:
+			case TokenType::TOKEN_TYPE_VALUE:
+			case TokenType::TOKEN_TYPE_LITERAL:
+			case TokenType::TOKEN_TYPE_PATH:
+			case TokenType::TOKEN_TYPE_STRUCT_ACCESS:
 				this->memory.push(dynamic_cast<ValueToken *>(*it)->getValue());
 				break;
-			case TOKEN_TYPE_OPERATOR:
-			case TOKEN_TYPE_BOOLEAN_OPERATOR:
+			case TokenType::TOKEN_TYPE_OPERATOR:
+			case TokenType::TOKEN_TYPE_BOOLEAN_OPERATOR:
 				result = this->interpretOperator(dynamic_cast<OperatorToken *>(*it));
 				break;
-			case TOKEN_TYPE_FUNCTION_CALL:
-			case TOKEN_TYPE_MODULE_FUNCTION_CALL:
+			case TokenType::TOKEN_TYPE_FUNCTION_CALL:
+			case TokenType::TOKEN_TYPE_MODULE_FUNCTION_CALL:
 				result = this->interpretFunctionCall(*it);
 				break;
-			case TOKEN_TYPE_FSTRING:
+			case TokenType::TOKEN_TYPE_FSTRING:
 				this->interpretFString(dynamic_cast<FStringToken *>(*it));
 				break;
-			case TOKEN_TYPE_ASSIGNMENT:
+			case TokenType::TOKEN_TYPE_ASSIGNMENT:
 				this->interpretAssignment(*it);
 				break;
-			case TOKEN_TYPE_KEYWORD:
+			case TokenType::TOKEN_TYPE_KEYWORD:
 				result = this->interpretKeyword(*it);
 				break;
-			case TOKEN_TYPE_VALUE_TYPE:
+			case TokenType::TOKEN_TYPE_VALUE_TYPE:
 				result = this->interpretValueType(*it);
 				break;
-			case TOKEN_TYPE_STRUCT_NAME:
+			case TokenType::TOKEN_TYPE_STRUCT_NAME:
 				result = this->interpretStruct(*it);
 				break;
 			default:
@@ -349,7 +349,7 @@ ExpressionResult Interpreter::interpretFunctionCall(Token *functionToken) {
 	}
 
 	RPNFunctionResult callResult;
-	if (functionToken->getType() == TOKEN_TYPE_FUNCTION_CALL) {
+	if (functionToken->getType() == TokenType::TOKEN_TYPE_FUNCTION_CALL) {
 		callResult = function->call(arguments, functionName->getRange(), this->context);
 	} else {
 		ContextPtr const ctx = Module::getModuleContext(functionName, this->context);

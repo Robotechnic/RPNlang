@@ -1,6 +1,6 @@
 #include "tokens/token.hpp"
 
-Token::Token() : type(TOKEN_TYPE_UNKNOWN) {}
+Token::Token() : type(TokenType::TOKEN_TYPE_UNKNOWN) {}
 Token::Token(TokenType type) :	type(type) {}
 Token::Token(const TextRange range, TokenType type) : range(range), type(type) {}
 
@@ -28,62 +28,66 @@ void Token::setRange(TextRange range) {
  */
 std::string Token::stringType(TokenType type) {
 	switch (type) {
-		case TOKEN_TYPE_INT:
+		case TokenType::TOKEN_TYPE_INT:
 			return "int";
-		case TOKEN_TYPE_HEX:
+		case TokenType::TOKEN_TYPE_HEX:
 			return "hex number";
-		case TOKEN_TYPE_BIN:
+		case TokenType::TOKEN_TYPE_BIN:
 			return "binary number";
-		case TOKEN_TYPE_FLOAT:
+		case TokenType::TOKEN_TYPE_FLOAT:
 			return "float";
-		case TOKEN_TYPE_STRING:
+		case TokenType::TOKEN_TYPE_STRING:
 			return "string";
-		case TOKEN_TYPE_BOOL:
+		case TokenType::TOKEN_TYPE_BOOL:
 			return "boolean";
-		case TOKEN_TYPE_OPERATOR:
+		case TokenType::TOKEN_TYPE_OPERATOR:
 			return "math operator";
-		case TOKEN_TYPE_LITERAL:
+		case TokenType::TOKEN_TYPE_LITERAL:
 			return "literal";
-		case TOKEN_TYPE_ASSIGNMENT:
+		case TokenType::TOKEN_TYPE_ASSIGNMENT:
 			return "assignment";
-		case TOKEN_TYPE_COLON:
+		case TokenType::TOKEN_TYPE_COLON:
 			return "colon token";
-		case TOKEN_TYPE_INDENT:
+		case TokenType::TOKEN_TYPE_INDENT:
 			return "indentation";
-		case TOKEN_TYPE_VALUE_TYPE:
+		case TokenType::TOKEN_TYPE_VALUE_TYPE:
 			return "value type";
-		case TOKEN_TYPE_END_OF_LINE:
+		case TokenType::TOKEN_TYPE_END_OF_LINE:
 			return "end of line";
-		case TOKEN_TYPE_BOOLEAN_OPERATOR:
+		case TokenType::TOKEN_TYPE_BOOLEAN_OPERATOR:
 			return "boolean operator";
-		case TOKEN_TYPE_COMMENT:
+		case TokenType::TOKEN_TYPE_COMMENT:
 			return "comment";
-		case TOKEN_TYPE_FSTRING:
+		case TokenType::TOKEN_TYPE_FSTRING:
 			return "fstring";
-		case TOKEN_TYPE_EXPRESSION_SEPARATOR:
+		case TokenType::TOKEN_TYPE_EXPRESSION_SEPARATOR:
 			return "expression separator";
-		case TOKEN_TYPE_ARROW:
+		case TokenType::TOKEN_TYPE_ARROW:
 			return "arrow";
-		case TOKEN_TYPE_PATH:
+		case TokenType::TOKEN_TYPE_PATH:
 			return "path";
-		case TOKEN_TYPE_DOT:
+		case TokenType::TOKEN_TYPE_DOT:
 			return "dot";
-		case TOKEN_TYPE_VALUE:
+		case TokenType::TOKEN_TYPE_VALUE:
 			return "value";
-		case TOKEN_TYPE_FUNCTION_CALL:
+		case TokenType::TOKEN_TYPE_FUNCTION_CALL:
 			return "function call";
-		case TOKEN_TYPE_MODULE_FUNCTION_CALL:
+		case TokenType::TOKEN_TYPE_MODULE_FUNCTION_CALL:
 			return "module function call";
-		case TOKEN_TYPE_STRUCT_NAME:
+		case TokenType::TOKEN_TYPE_STRUCT_NAME:
 			return "struct name";
-		case TOKEN_TYPE_STRUCT_ACCESS:
+		case TokenType::TOKEN_TYPE_STRUCT_ACCESS:
 			return "struct access";
-		case TOKEN_TYPE_KEYWORD:
+		case TokenType::TOKEN_TYPE_KEYWORD:
 			return "keyword";
-		case TOKEN_TYPE_LEFT_BRACKET:
+		case TokenType::TOKEN_TYPE_LEFT_BRACKET:
 			return "left bracket";
-		case TOKEN_TYPE_RIGHT_BRACKET:
+		case TokenType::TOKEN_TYPE_RIGHT_BRACKET:
 			return "right bracket";
+		case TokenType::TOKEN_TYPE_LIST_TYPE:
+			return "list type";
+		case TokenType::TOKEN_TYPE_FUN_SIGNATURE:
+			return "function signature";
 		default:
 			return "unknown";
 	}

@@ -1,6 +1,6 @@
 #include "tokens/tokens/keywordtoken.hpp"
 
-KeywordToken::KeywordToken(TextRange range, std::string_view keyword) : Token(range, TOKEN_TYPE_KEYWORD) {
+KeywordToken::KeywordToken(TextRange range, std::string_view keyword) : Token(range, TokenType::TOKEN_TYPE_KEYWORD) {
 	if (keyword == "if") {
 		this->keyword = KEYWORD_IF;
 	} else if (keyword == "fi") {
@@ -43,6 +43,8 @@ KeywordToken::KeywordToken(TextRange range, std::string_view keyword) : Token(ra
 		this->keyword = KEYWORD_IMPORTAS;
 	} else if (keyword == "get") {
 		this->keyword = KEYWORD_GET;
+	} else if (keyword == "funsig") {
+		this->keyword = KEYWORD_FUNSIG;
 	} else {
 		throw std::runtime_error("Invalid keyword");
 	}

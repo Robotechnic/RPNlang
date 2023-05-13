@@ -94,40 +94,40 @@ void Analyzer::analyze(Line *line) {
 	while (!this->currentLine->empty() && !this->hasErrors()) {
 		token = this->currentLine->top();
 		switch (token->getType()) {
-			case TOKEN_TYPE_VALUE:
+			case TokenType::TOKEN_TYPE_VALUE:
 				this->stack.emplace(dynamic_cast<const ValueToken *>(token)->getValueType(),
 									token->getRange(), false, 0, 0, false);
 				break;
-			case TOKEN_TYPE_OPERATOR:
-			case TOKEN_TYPE_BOOLEAN_OPERATOR:
+			case TokenType::TOKEN_TYPE_OPERATOR:
+			case TokenType::TOKEN_TYPE_BOOLEAN_OPERATOR:
 				this->analyzeOperator(dynamic_cast<const OperatorToken *>(token));
 				break;
-			case TOKEN_TYPE_FSTRING:
+			case TokenType::TOKEN_TYPE_FSTRING:
 				this->analyzeFString(dynamic_cast<const FStringToken *>(token));
 				break;
-			case TOKEN_TYPE_FUNCTION_CALL:
-			case TOKEN_TYPE_MODULE_FUNCTION_CALL:
+			case TokenType::TOKEN_TYPE_FUNCTION_CALL:
+			case TokenType::TOKEN_TYPE_MODULE_FUNCTION_CALL:
 				this->analyzeFunctionCall(token);
 				break;
-			case TOKEN_TYPE_LITERAL:
+			case TokenType::TOKEN_TYPE_LITERAL:
 				this->stack.emplace(token->getStringValue(), token->getRange(), true, 0, 0, false);
 				break;
-			case TOKEN_TYPE_ASSIGNMENT:
+			case TokenType::TOKEN_TYPE_ASSIGNMENT:
 				this->analyzeAssignment(token);
 				break;
-			case TOKEN_TYPE_VALUE_TYPE:
+			case TokenType::TOKEN_TYPE_VALUE_TYPE:
 				this->analyzeTypeCast(dynamic_cast<const TypeToken *>(token));
 				break;
-			case TOKEN_TYPE_STRUCT_NAME:
+			case TokenType::TOKEN_TYPE_STRUCT_NAME:
 				this->analyzeStructCreation(token);
 				break;
-			case TOKEN_TYPE_KEYWORD:
+			case TokenType::TOKEN_TYPE_KEYWORD:
 				this->analyzeKeyword(dynamic_cast<const KeywordToken *>(token));
 				break;
-			case TOKEN_TYPE_PATH:
+			case TokenType::TOKEN_TYPE_PATH:
 				this->analyzePath(token);
 				break;
-			case TOKEN_TYPE_STRUCT_ACCESS:
+			case TokenType::TOKEN_TYPE_STRUCT_ACCESS:
 				this->analyzeStructAccess(token);
 				break;
 			default:
@@ -325,7 +325,7 @@ void Analyzer::analyzeFunctionCall(Token *token) {
 	}
 	const RPNFunction *function = nullptr;
 	bool builtin = false;
-	if (token->getType() == TOKEN_TYPE_MODULE_FUNCTION_CALL) {
+	if (token->getType() == TokenType::TOKEN_TYPE_MODULE_FUNCTION_CALL) {
 		this->analyzePath(token, false);
 		if (this->hasErrors()) {
 			return;
@@ -507,7 +507,7 @@ void Analyzer::analyzeStructCreation(const Token *token) {
 		range.merge(stack.top().range);
 		stack.pop();
 	}
-	stack.push({name, range, false});
+	stack.emplace(name, range, false);
 }
 
 void Analyzer::analyzeKeyword(const KeywordToken *token) {
@@ -521,25 +521,7 @@ void Analyzer::analyzeKeyword(const KeywordToken *token) {
 			}
 			break;
 		case KEYWORD_RETURN:
-			if (this->stack.size() > 1) {
-				this->error = ExpressionResult("Return can't have more than one value",
-											   token->getRange(), this->context);
-				return;
-			}
-			if (this->stack.empty()) {
-				this->error =
-					ExpressionResult("Return must have a value", token->getRange(), this->context);
-			}
-			this->topVariable();
-			if (this->hasErrors()) {
-				return;
-			}
-			if (this->stack.top().type != this->currentFunctionReturnType) {
-				this->error =
-					ExpressionResult("Return type is " + this->currentFunctionReturnType.name() +
-										 " but got " + this->stack.top().name(),
-									 this->stack.top().range, this->context);
-			}
+			this->analyzeReturn(token);
 			break;
 		case KEYWORD_IMPORT:
 			this->checkKeywordLine(token, false);
@@ -561,6 +543,9 @@ void Analyzer::analyzeKeyword(const KeywordToken *token) {
 				return;
 			}
 			this->analyzeGet(token);
+			break;
+		case KEYWORD_FUNSIG:
+
 			break;
 		default:
 			throw std::runtime_error("The keyword " + token->getStringValue() +
@@ -605,6 +590,31 @@ void Analyzer::analyzeImportAs(const KeywordToken *token) {
 		return;
 	}
 	this->error = Module::addModule(path, name, this->currentLine->last()->getRange(), context);
+}
+
+void Analyzer::analyzeFunctionSignature(const KeywordToken *token) {
+
+}
+
+void Analyzer::analyzeReturn(const KeywordToken *token) {
+	if (this->stack.size() > 1) {
+		this->error = ExpressionResult("Return can't have more than one value", token->getRange(),
+									   this->context);
+		return;
+	}
+	if (this->stack.empty()) {
+		this->error =
+			ExpressionResult("Return must have a value", token->getRange(), this->context);
+	}
+	this->topVariable();
+	if (this->hasErrors()) {
+		return;
+	}
+	if (this->stack.top().type != this->currentFunctionReturnType) {
+		this->error = ExpressionResult("Return type is " + this->currentFunctionReturnType.name() +
+										   " but got " + this->stack.top().name(),
+									   this->stack.top().range, this->context);
+	}
 }
 
 void Analyzer::analyzePath(Token *path, bool addToStack) {

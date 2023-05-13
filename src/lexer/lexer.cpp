@@ -56,51 +56,51 @@ ExpressionResult Lexer::lex() {
 		this->tokens.pop_front();
 		this->integrated = false;
 		switch (token->getType()) {
-			case TOKEN_TYPE_END_OF_LINE:
-			case TOKEN_TYPE_EXPRESSION_SEPARATOR:
+			case TokenType::TOKEN_TYPE_END_OF_LINE:
+			case TokenType::TOKEN_TYPE_EXPRESSION_SEPARATOR:
 				this->pushLine();
 				break;
-			case TOKEN_TYPE_FSTRING:
+			case TokenType::TOKEN_TYPE_FSTRING:
 				result = this->parseFString(token);
 				break;
-			case TOKEN_TYPE_STRING:
+			case TokenType::TOKEN_TYPE_STRING:
 				result = this->parseString(token);
 				break;
-			case TOKEN_TYPE_LITERAL:
+			case TokenType::TOKEN_TYPE_LITERAL:
 				result = this->parseLiteral(token);
 				break;
-			case TOKEN_TYPE_BIN:
+			case TokenType::TOKEN_TYPE_BIN:
 				result = this->parseBinNumber(token);
 				break;
-			case TOKEN_TYPE_HEX:
+			case TokenType::TOKEN_TYPE_HEX:
 				result = this->parseHexNumber(token);
 				break;
-			case TOKEN_TYPE_INT:
+			case TokenType::TOKEN_TYPE_INT:
 				this->currentLine->push(new ValueToken(new Int(
 					std::stoi(token->getStringValue()), token->getRange(), Value::VALUE_TOKEN)));
 				break;
-			case TOKEN_TYPE_FLOAT:
+			case TokenType::TOKEN_TYPE_FLOAT:
 				this->currentLine->push(new ValueToken(new Float(
 					std::stof(token->getStringValue()), token->getRange(), Value::VALUE_TOKEN)));
 				break;
-			case TOKEN_TYPE_BOOL:
+			case TokenType::TOKEN_TYPE_BOOL:
 				this->currentLine->push(new ValueToken(new Bool(
 					token->getStringValue() == "true", token->getRange(), Value::VALUE_TOKEN)));
 				break;
-			case TOKEN_TYPE_COLON:
+			case TokenType::TOKEN_TYPE_COLON:
 				result = this->parseFunctionCall(token);
 				break;
-			case TOKEN_TYPE_VALUE_TYPE:
+			case TokenType::TOKEN_TYPE_VALUE_TYPE:
 				result = this->parseType(token);
 				break;
-			case TOKEN_TYPE_DOT:
+			case TokenType::TOKEN_TYPE_DOT:
 				return {"Expected literal before '.' character", token->getRange(), this->context};
 				break;
-			case TOKEN_TYPE_ARROW:
+			case TokenType::TOKEN_TYPE_ARROW:
 				result = this->parseStructAccess(token);
 				break;
-			case TOKEN_TYPE_OPERATOR:
-			case TOKEN_TYPE_BOOLEAN_OPERATOR:
+			case TokenType::TOKEN_TYPE_OPERATOR:
+			case TokenType::TOKEN_TYPE_BOOLEAN_OPERATOR:
 				this->currentLine->push(new OperatorToken(token->getRange(), token->getType(),
 														  token->getStringValue()));
 				break;
@@ -235,13 +235,13 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 
 	if (!this->tokens.empty()) {
 		Token const *next = this->tokens.front();
-		if (next->getType() == TOKEN_TYPE_DOT) {
+		if (next->getType() == TokenType::TOKEN_TYPE_DOT) {
 			return this->parsePath(token);
 		}
 	}
 
 	this->currentLine->push(new ValueToken(new Variable(token->getStringValue(), token->getRange()),
-										   TOKEN_TYPE_LITERAL));
+										   TokenType::TOKEN_TYPE_LITERAL));
 	return {};
 }
 
@@ -254,10 +254,10 @@ ExpressionResult Lexer::parseLiteral(Token *token) {
 ExpressionResult Lexer::parsePath(Token const *token) {
 	std::vector<std::string> path{token->getStringValue()};
 	TextRange range = token->getRange();
-	while (!this->tokens.empty() && this->tokens.front()->getType() == TOKEN_TYPE_DOT) {
+	while (!this->tokens.empty() && this->tokens.front()->getType() == TokenType::TOKEN_TYPE_DOT) {
 		delete this->tokens.front();
 		this->tokens.pop_front();
-		if (this->tokens.empty() || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL) {
+		if (this->tokens.empty() || this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 			return {"Invalid path: expected literal after dot", token->getRange(), this->context};
 		}
 		path.push_back(this->tokens.front()->getStringValue());
@@ -265,7 +265,7 @@ ExpressionResult Lexer::parsePath(Token const *token) {
 		delete this->tokens.front();
 		this->tokens.pop_front();
 	}
-	this->currentLine->push(new ValueToken(new Path(path, range), TOKEN_TYPE_PATH));
+	this->currentLine->push(new ValueToken(new Path(path, range), TokenType::TOKEN_TYPE_PATH));
 	return {};
 }
 
@@ -282,13 +282,13 @@ ExpressionResult Lexer::parseStructAccess(Token *token) {
 		return {"Invalid struct access: expected value before arrow", token->getRange(),
 				this->context};
 	}
-	if (this->tokens.front()->getType() == TOKEN_TYPE_VALUE_TYPE ||
-		this->tokens.front()->getType() == TOKEN_TYPE_STRUCT_NAME) {
+	if (this->tokens.front()->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE ||
+		this->tokens.front()->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME) {
 		this->integrated = true;
 		this->currentLine->push(token);
 		return {};
 	}
-	if (this->tokens.front()->getType() != TOKEN_TYPE_LITERAL) {
+	if (this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 		return {"Invalid struct access: expected literal before arrow", token->getRange(),
 				this->context};
 	}
@@ -296,11 +296,11 @@ ExpressionResult Lexer::parseStructAccess(Token *token) {
 	delete this->tokens.front();
 	this->tokens.pop_front();
 	TextRange arrowRange = token->getRange();
-	while (!this->tokens.empty() && this->tokens.front()->getType() == TOKEN_TYPE_ARROW) {
+	while (!this->tokens.empty() && this->tokens.front()->getType() == TokenType::TOKEN_TYPE_ARROW) {
 		arrowRange = this->tokens.front()->getRange();
 		delete this->tokens.front();
 		this->tokens.pop_front();
-		if (this->tokens.empty() || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL) {
+		if (this->tokens.empty() || this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 			return {"Invalid struct access: expected literal after arrow", arrowRange,
 					this->context};
 		}
@@ -311,7 +311,7 @@ ExpressionResult Lexer::parseStructAccess(Token *token) {
 	}
 
 	this->currentLine->push(
-		new ValueToken(new Path(path, range, STRUCT_ACCESS), TOKEN_TYPE_STRUCT_ACCESS));
+		new ValueToken(new Path(path, range, STRUCT_ACCESS), TokenType::TOKEN_TYPE_STRUCT_ACCESS));
 	return {};
 }
 
@@ -406,7 +406,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
  * @return ExpressionResult if the conversion was successful, otherwise an error
  */
 ExpressionResult Lexer::parseFunctionCall(Token const *token) {
-	if (this->tokens.empty() || this->tokens.front()->getType() != TOKEN_TYPE_LITERAL) {
+	if (this->tokens.empty() || this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 		return {"Expected function name after colon token",
 				this->tokens.empty() ? token->getRange()
 									 : token->getRange().merge(this->tokens.front()->getRange()),
@@ -421,15 +421,15 @@ ExpressionResult Lexer::parseFunctionCall(Token const *token) {
 	if (result.error()) {
 		return result;
 	}
-	if (this->currentLine->empty() || (this->currentLine->back()->getType() != TOKEN_TYPE_LITERAL &&
-									   this->currentLine->back()->getType() != TOKEN_TYPE_PATH)) {
+	if (this->currentLine->empty() || (this->currentLine->back()->getType() != TokenType::TOKEN_TYPE_LITERAL &&
+									   this->currentLine->back()->getType() != TokenType::TOKEN_TYPE_PATH)) {
 		return {"Expected function name after colon token", token->getRange().merge(literalRange),
 				this->context};
 	}
-	if (this->currentLine->back()->getType() == TOKEN_TYPE_PATH) {
-		this->currentLine->back()->setType(TOKEN_TYPE_MODULE_FUNCTION_CALL);
+	if (this->currentLine->back()->getType() == TokenType::TOKEN_TYPE_PATH) {
+		this->currentLine->back()->setType(TokenType::TOKEN_TYPE_MODULE_FUNCTION_CALL);
 	} else {
-		this->currentLine->back()->setType(TOKEN_TYPE_FUNCTION_CALL);
+		this->currentLine->back()->setType(TokenType::TOKEN_TYPE_FUNCTION_CALL);
 	}
 
 	return {};
@@ -456,7 +456,7 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
 							 keyword->getRange(), this->context),
 			nullptr);
 	}
-	if (line->top()->getType() != TOKEN_TYPE_LITERAL) {
+	if (line->top()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 		return std::make_pair(ExpressionResult("Expected function name before fun keyword",
 											   line->top()->getRange(), this->context),
 							  nullptr);
@@ -467,12 +467,12 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
 	Token *current = nullptr;
 	RPNFunctionArgs types;
 	std::pair<std::string, RPNValueType> type;
-	while (line->top()->getType() != TOKEN_TYPE_ARROW && line->size() > 2) {
+	while (line->top()->getType() != TokenType::TOKEN_TYPE_ARROW && line->size() > 2) {
 		current = line->pop();
 		if (i % 2 == 0) {
-			if (current->getType() == TOKEN_TYPE_VALUE_TYPE) {
+			if (current->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE) {
 				type.second = dynamic_cast<TypeToken *>(current)->getValueType();
-			} else if (current->getType() == TOKEN_TYPE_STRUCT_NAME) {
+			} else if (current->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME) {
 				type.second = current->getStringValue();
 			} else {
 				return std::make_pair(ExpressionResult("Expected value type or struct name",
@@ -480,7 +480,7 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
 									  nullptr);
 			}
 		} else {
-			if (current->getType() != TOKEN_TYPE_LITERAL) {
+			if (current->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 				return std::make_pair(
 					ExpressionResult("Expected argument name", current->getRange(), this->context),
 					nullptr);
@@ -490,7 +490,7 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
 		}
 		i++;
 	}
-	if (line->top()->getType() != TOKEN_TYPE_ARROW) {
+	if (line->top()->getType() != TokenType::TOKEN_TYPE_ARROW) {
 		return std::make_pair(ExpressionResult("Missing '->' token before return type",
 											   line->top()->getRange(), this->context),
 							  nullptr);
@@ -501,13 +501,13 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
 							  nullptr);
 	}
 	line->pop();
-	if (line->top()->getType() == TOKEN_TYPE_VALUE_TYPE) {
+	if (line->top()->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE) {
 		return std::make_pair(
 			ExpressionResult(),
 			new FunctionBlock(name, types, dynamic_cast<TypeToken *>(line->pop())->getValueType(),
 							  block));
 	}
-	if (line->top()->getType() == TOKEN_TYPE_STRUCT_NAME) {
+	if (line->top()->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME) {
 		return std::make_pair(ExpressionResult(),
 							  new FunctionBlock(name, types, line->pop()->getStringValue(), block));
 	}
@@ -543,7 +543,7 @@ ExpressionResult Lexer::parseStruct(CodeBlock *block) {
 		return {"Expected only struct name before struct block", line->top()->getRange(),
 				this->context};
 	}
-	if (line->top()->getType() != TOKEN_TYPE_STRUCT_NAME) {
+	if (line->top()->getType() != TokenType::TOKEN_TYPE_STRUCT_NAME) {
 		return {"Expected struct name before struct block", line->top()->getRange(), this->context};
 	}
 
@@ -558,16 +558,16 @@ ExpressionResult Lexer::parseStruct(CodeBlock *block) {
 			return {"Struct member definition must be in the form 'name -> type'",
 					!l->empty() ? l->lineRange() : line->top()->getRange(), this->context};
 		}
-		if (l->top()->getType() != TOKEN_TYPE_LITERAL) {
+		if (l->top()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 			return {"Struct member name must be a literal", l->top()->getRange(), this->context};
 		}
 		Token const *nameToken = l->pop();
-		if (l->top()->getType() != TOKEN_TYPE_ARROW) {
+		if (l->top()->getType() != TokenType::TOKEN_TYPE_ARROW) {
 			return {"Struct member definition must be in the form 'name -> type'",
 					l->top()->getRange(), this->context};
 		}
 		l->pop();
-		if (l->top()->getType() != TOKEN_TYPE_VALUE_TYPE) {
+		if (l->top()->getType() != TokenType::TOKEN_TYPE_VALUE_TYPE) {
 			return {"Struct member type must be a value type", l->top()->getRange(), this->context};
 		}
 		def.addMember(nameToken->getStringValue(),
@@ -587,15 +587,15 @@ ExpressionResult Lexer::parseType(const Token *token) {
 		return {"List type require a content type in the form 'list[type]'", token->getRange(),
 				this->context};
 	}
-	if (this->tokens.front()->getType() != TOKEN_TYPE_LEFT_BRACKET) {
+	if (this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LEFT_BRACKET) {
 		return {"Missing opening bracket", this->tokens.front()->getRange(), this->context};
 	}
 	delete this->tokens.front();
 	this->tokens.pop_front();
-	if (this->tokens.front()->getType() == TOKEN_TYPE_STRUCT_NAME) {
+	if (this->tokens.front()->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME) {
 		dynamic_cast<TypeToken *>(this->currentLine->back())
 			->setListType(this->tokens.front()->getStringValue());
-	} else if (this->tokens.front()->getType() == TOKEN_TYPE_VALUE_TYPE) {
+	} else if (this->tokens.front()->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE) {
 		ValueType type = stringToType(this->tokens.front()->getStringValue());
 		if (type == LIST) {
 			return {"List type cannot contain another list", this->tokens.front()->getRange(),
@@ -608,7 +608,7 @@ ExpressionResult Lexer::parseType(const Token *token) {
 	}
 	delete this->tokens.front();
 	this->tokens.pop_front();
-	if (this->tokens.front()->getType() != TOKEN_TYPE_RIGHT_BRACKET) {
+	if (this->tokens.front()->getType() != TokenType::TOKEN_TYPE_RIGHT_BRACKET) {
 		return {"Missing ']' after list type", this->tokens.front()->getRange(), this->context};
 	}
 	this->currentLine->back()->setRange(token->getRange().merge(this->tokens.front()->getRange()));
@@ -644,10 +644,10 @@ ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString,
 				matchSize = result.value().second;
 
 				TokenType const type = std::get<1>(tokenRegexes[i]);
-				if (type == TOKEN_TYPE_COMMENT) {
+				if (type == TokenType::TOKEN_TYPE_COMMENT) {
 					return {};
 				}
-				if (type != TOKEN_TYPE_INDENT) {
+				if (type != TokenType::TOKEN_TYPE_INDENT) {
 					tokens.push_back(new StringToken(lineNumber, column, type, value, matchSize));
 				} else {
 					column += 1;
@@ -671,7 +671,7 @@ ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString,
 		}
 	}
 
-	while (!tokens.empty() && tokens.back()->getType() == TOKEN_TYPE_END_OF_LINE) {
+	while (!tokens.empty() && tokens.back()->getType() == TokenType::TOKEN_TYPE_END_OF_LINE) {
 		delete tokens.back();
 		tokens.pop_back();
 	}

@@ -4,6 +4,7 @@
 #include <string_view>
 #include <vector>
 #include <queue>
+#include <span>
 #include "tokens/tokentypes.hpp"
 #include "tokens/regex.hpp"
 #include "textutilities/textrange.hpp"
@@ -15,7 +16,7 @@ class Token {
 		Token();
 		Token(TokenType type);
 		Token(TextRange range, TokenType type);
-		virtual ~Token(){};
+		virtual ~Token() = default;
 		
 		TokenType getType() const;
 		void setType(TokenType type);

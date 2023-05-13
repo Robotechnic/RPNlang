@@ -5,7 +5,7 @@
 
 class ValueToken : public Token {
 	public:
-		ValueToken(Value *value, TokenType type = TOKEN_TYPE_VALUE);
+		ValueToken(Value *value, TokenType type = TokenType::TOKEN_TYPE_VALUE);
 		~ValueToken() override;
 
 		Value *getValue() const;

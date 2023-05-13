@@ -27,7 +27,8 @@ constexpr auto keywordsRegex = ctre::match<"^("
 	"importAs|"
 	"struct|"
 	"tcurts|"
-	"get"
+	"get|"
+	"funsig"
 ")$">;
 
 enum KeywordEnum {
@@ -51,7 +52,8 @@ enum KeywordEnum {
 	KEYWORD_IMPORTAS,
 	KEYWORD_STRUCT,
 	KEYWORD_TCURTS,
-	KEYWORD_GET
+	KEYWORD_GET,
+	KEYWORD_FUNSIG
 };
 
 const std::unordered_map<KeywordEnum, std::vector<KeywordEnum>> blockOpeners = {
@@ -84,7 +86,8 @@ const std::unordered_map<KeywordEnum, std::vector<KeywordEnum>> parentDependency
 	{KEYWORD_BREAK   , {KEYWORD_WHILE, KEYWORD_FOR}},
 	{KEYWORD_IMPORT  , {}},
 	{KEYWORD_IMPORTAS, {}},
-	{KEYWORD_GET     , {}}
+	{KEYWORD_GET     , {}},
+	{KEYWORD_FUNSIG  , {}}
 };
 
 const std::unordered_map<KeywordEnum, std::vector<RPNValueType>> linePatern = {

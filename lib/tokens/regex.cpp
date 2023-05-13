@@ -104,6 +104,12 @@ matchResult capsLiteralMatch(std::string_view str) {
 	}
 	return std::nullopt;
 }
+matchResult functionSignatureMatch(std::string_view str) {
+	if (auto m = ctre::starts_with<"^(\\$[a-z][a-zA-Z0-9]*)">(str)) {
+		return std::make_pair(m.get<1>().to_view(), m.size());
+	}
+	return std::nullopt;
+}
 matchResult literalMatch(std::string_view str) {
 	if (auto m = ctre::starts_with<"^([a-z][a-zA-Z0-9]*)">(str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
