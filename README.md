@@ -158,7 +158,7 @@ More exemples [here](https://github.com/Robotechnic/RPNlang/tree/master/examples
 
 ## 1.4. How it works?
 This language use a stack to store the things that you type. Each time that you use a function or a math operator, the required arguments are poped from the stack, processed and the result is pushed back to the stack. After each line of instructions, the stack must contain no more than one element (it can be empty), else the program will crash.
-RPNlang is also a strongly typed language, each variable has a type (if you define a variable it will be implicitly typed). All the types can be implicitly converted to each other if they are compatible (for example, a integer can be converted to a float).
+RPNlang is also a strongly typed language, each variable has a type (if you define a variable it will be implicitly typed). All the types can be implicitly casted to another if they are compatible (for instance, an integer can be converted to a float).
 
 ## 1.5. Language keywords
 In this languages there are just a few language specific keywords, everithing else is a literal.
