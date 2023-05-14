@@ -4,6 +4,7 @@
 #include "codeblocks/codeblock.hpp"
 #include "rpnfunctions/typedef.hpp"
 #include "rpnfunctions/userrpnfunction.hpp"
+#include "rpnfunctions/functionsignature.hpp"
 
 class UserRPNFunction;
 
@@ -25,6 +26,8 @@ class FunctionBlock : public BaseBlock {
 	CodeBlock *getBody() const;
 
 	TextRange lastRange() const override;
+
+	FunctionSignature getSignature() const;
 
   private:
 	std::shared_ptr<UserRPNFunction> function;

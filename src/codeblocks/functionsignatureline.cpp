@@ -19,3 +19,7 @@ void FunctionSignatureLine::display() const {
 TextRange FunctionSignatureLine::lastRange() const {
 	return range;
 }
+
+std::string FunctionSignatureLine::getName() const {
+	return name;
+}

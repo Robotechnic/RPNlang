@@ -22,7 +22,7 @@ class BuiltinRPNFunction : public RPNFunction {
 	RPNFunctionResult call(RPNFunctionArgsValue &args, const TextRange &range,
 						   ContextPtr context) const override;
 
-	FunctionSignature getSignature() const override;
+	FunctionSignature getSignature() const;
 
 	static const std::unordered_map<std::string, BuiltinRPNFunction> builtinFunctions;
 

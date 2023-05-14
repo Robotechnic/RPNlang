@@ -194,12 +194,8 @@ void Analyzer::analyze(FunctionBlock *functionBlock) {
 							 functionBlock->lastRange(), this->context);
 		return;
 	}
-	std::vector<RPNValueType> argsTypes;
-	for (const auto &valuesType : functionBlock->getArgs()) {
-		argsTypes.push_back(valuesType.second);
-	}
 
-	functions[functionBlock->getName()] = {argsTypes, functionBlock->getReturnType()};
+	functions[functionBlock->getName()] = functionBlock->getSignature();
 	variables[functionBlock->getName()] = {
 		functionBlock->getName(), functionBlock->lastRange(), false, 0, 0, false, false, true};
 	functionBlocks.push(functionBlock);
@@ -372,12 +368,8 @@ std::optional<FunctionSignature> Analyzer::checkBuiltinFunction(Token *token) {
 	if (function == nullptr) {
 		return std::nullopt;
 	}
-	std::vector<RPNValueType> argsTypes;
-	for (const auto &[_, type] : function->getArgs()) {
-		argsTypes.push_back(type);
-	}
 
-	FunctionSignature const functionValue{argsTypes, function->getReturnType(), builtin};
+	FunctionSignature const functionValue = function->getSignature();
 	this->functions[name] = functionValue;
 	this->variables[name] = {name, TextRange(), false, 0, 0, false, false, true};
 	return functionValue;

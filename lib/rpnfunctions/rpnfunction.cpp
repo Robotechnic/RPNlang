@@ -1,14 +1,8 @@
 #include "rpnfunctions/rpnfunction.hpp"
 
-RPNFunction::RPNFunction(
-	std::string_view name,
-	const RPNFunctionArgs &arguments,
-	const RPNValueType &returnType
-):
-	name(name),
-	arguments(arguments),
-	returnType(returnType)
-{
+RPNFunction::RPNFunction(std::string_view name, const RPNFunctionArgs &arguments,
+						 const RPNValueType &returnType)
+	: name(name), arguments(arguments), returnType(returnType) {
 	if (returnType.index() == 1 && std::get<ValueType>(returnType.getType()) == ANY) {
 		throw std::runtime_error("Function return type cannot be ANY");
 	}
@@ -18,16 +12,13 @@ RPNFunction::~RPNFunction() {}
 
 /**
  * @brief Take the function body and run it, must be overriden
- * 
+ *
  * @param args arguments of the function
  * @param context the parent context
  * @return RPNFunctionResult If the function was executed successfully and value if it is the case
  */
-RPNFunctionResult RPNFunction::call(
-	RPNFunctionArgsValue &args,
-	const TextRange &range,
-	ContextPtr context
-) const {
+RPNFunctionResult RPNFunction::call(RPNFunctionArgsValue &args, const TextRange &range,
+									ContextPtr context) const {
 	TextRange errorRange = range;
 	if (args.size() != 0) {
 		errorRange.merge(args[0]->getRange());
@@ -35,12 +26,9 @@ RPNFunctionResult RPNFunction::call(
 			errorRange.merge(args.back()->getRange());
 		}
 	}
-	ContextPtr functionContext = std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
-	return ExpressionResult(
-		"Function is not callable", 
-		range,
-		functionContext
-	);
+	ContextPtr functionContext =
+		std::make_shared<Context>(this->name, "", context, CONTEXT_TYPE_FUNCTION);
+	return ExpressionResult("Function is not callable", range, functionContext);
 }
 
 size_t RPNFunction::getArgumentsCount() const {
@@ -61,4 +49,12 @@ RPNValueType RPNFunction::getReturnType() const {
 
 RPNFunctionArgs RPNFunction::getArgs() const {
 	return this->arguments;
+}
+
+FunctionSignature RPNFunction::getSignature() const {
+	std::vector<RPNValueType> args;
+	for (const auto &[_, type] : this->arguments) {
+		args.push_back(type);
+	}
+	return FunctionSignature{args, this->returnType, false, true};
 }

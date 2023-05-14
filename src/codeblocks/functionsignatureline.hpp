@@ -1,12 +1,13 @@
 #pragma once
 
+#include "rpnfunctions/functionsignature.hpp"
 #include "codeblocks/baseblock.hpp"
-#include "analyzer/functionsignature.hpp"
 #include "textutilities/textrange.hpp"
 
 class FunctionSignatureLine : public BaseBlock {
-public:
-	FunctionSignatureLine(FunctionSignature signature, const std::string_view &name, const TextRange &range);
+  public:
+	FunctionSignatureLine(FunctionSignature signature, const std::string_view &name,
+						  const TextRange &range);
 	~FunctionSignatureLine() override = default;
 
 	FunctionSignature getSignature() const;
@@ -20,8 +21,9 @@ public:
 	void display() const override;
 
 	TextRange lastRange() const override;
+	std::string getName() const;
 
-private:
+  private:
 	FunctionSignature signature;
 	std::string name;
 	TextRange range;

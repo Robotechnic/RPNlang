@@ -13,9 +13,9 @@ class Path : public Value {
 		bool isNumber() const override;
 
 		Value *to(ValueType type, ValueOwner owner = INTERPRETER) const override;
-		inline Value* copy(ValueOwner owner = INTERPRETER) const override;
+		Value* copy(ValueOwner owner = INTERPRETER) const override;
 
-		inline std::string getStringValue() const;
+		std::string getStringValue() const override;
 		std::vector<std::string> getPath() const;
 		std::string_view at(size_t index) const;
 		std::string ats(size_t index) const;

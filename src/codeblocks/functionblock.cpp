@@ -47,3 +47,7 @@ RPNFunctionArgs FunctionBlock::getArgs() const {
 CodeBlock *FunctionBlock::getBody() const {
 	return this->function->getBody();
 }
+
+FunctionSignature FunctionBlock::getSignature() const {
+	return this->function->getSignature();
+}

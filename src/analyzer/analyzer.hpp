@@ -23,7 +23,7 @@
 #include "codeblocks/functionblock.hpp"
 #include "codeblocks/functionsignatureline.hpp"
 #include "codeblocks/blockqueue.hpp"
-#include "analyzer/functionsignature.hpp"
+#include "rpnfunctions/functionsignature.hpp"
 // clang-format on
 // NOLINTEND
 

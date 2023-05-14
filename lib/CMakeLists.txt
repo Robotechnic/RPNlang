@@ -15,11 +15,11 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/value/valuetypes.cpp
 	${CMAKE_CURRENT_LIST_DIR}/value/value.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/rpnfunction.cpp
+	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinsrpnfunction.cpp
 )
 include(${CMAKE_CURRENT_LIST_DIR}/value/types/CMakeLists.txt)
 
 list(APPEND sources
-	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinsrpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/cppmodule/cppmodule.cpp
 )
 
