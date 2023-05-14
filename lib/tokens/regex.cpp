@@ -1,6 +1,6 @@
 #include "tokens/regex.hpp"
 
-matchResult floatMatch(std::string_view str)  {
+matchResult floatMatch(std::string_view str) {
 	if (auto m = ctre::starts_with<"^((?:[\\-])?(?:[0-9]+)?\\.(?:[0-9]+)?)">(str)) {
 		if (m.size() > 1)
 			return std::make_pair(m.get<1>().to_view(), m.size());
@@ -45,7 +45,9 @@ matchResult fStringMatch(std::string_view str) {
 	return std::nullopt;
 }
 matchResult typeMatch(std::string_view str) {
-	if (auto m = ctre::starts_with<"^(int|float|bool|string|function|none|list)(?=[^0-9a-zA-Z_]|$)">(str)) {
+	if (auto m =
+			ctre::starts_with<"^(int|float|bool|string|function|none|list)(?=[^0-9a-zA-Z_]|$)">(
+				str)) {
 		return std::make_pair(m.get<1>().to_view(), m.size());
 	}
 	return std::nullopt;

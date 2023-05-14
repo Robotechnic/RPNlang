@@ -1,11 +1,11 @@
 #pragma once
 
-#include <vector>
+#include "context/typedef.hpp"
+#include "value/valuetypes.hpp"
 #include <functional>
 #include <memory>
 #include <variant>
-#include "context/typedef.hpp"
-#include "value/valuetypes.hpp"
+#include <vector>
 
 class Value;
 class ExpressionResult;
@@ -16,4 +16,5 @@ using RPNFunctionArgsValue = std::vector<Value *>;
 using RPNFunctionResult = std::variant<ExpressionResult, Value *>;
 using RPNFunctionArgs = std::vector<std::pair<std::string, RPNValueType>>;
 
-using BuiltinRPNFunctionType = std::function<RPNFunctionResult (RPNFunctionArgsValue &, TextRange &, ContextPtr)>;
+using BuiltinRPNFunctionType =
+	std::function<RPNFunctionResult(RPNFunctionArgsValue &, TextRange &, ContextPtr)>;

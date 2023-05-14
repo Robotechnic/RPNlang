@@ -1,19 +1,16 @@
 #include "value/value.hpp"
 
-Value::Value(ValueType type, const TextRange range, ValueOwner owner, const TextRange variableRange) :
-	range(range),
-	type(type),
-	owner(owner) {
-		if (type == ANY) {
-			throw std::runtime_error("ANY type is not allowed in value type");
-		}
-		if (variableRange == TextRange()) {
-			this->variableRange = range;
-		} else {
-			this->variableRange = variableRange;
-		}
+Value::Value(ValueType type, const TextRange range, ValueOwner owner, const TextRange variableRange)
+	: range(range), type(type), owner(owner) {
+	if (type == ANY) {
+		throw std::runtime_error("ANY type is not allowed in value type");
 	}
-
+	if (variableRange == TextRange()) {
+		this->variableRange = range;
+	} else {
+		this->variableRange = variableRange;
+	}
+}
 
 ValueType Value::getType() const {
 	return this->type;
@@ -56,14 +53,16 @@ void Value::concatValueRange(const Token *other) {
 
 /**
  * @brief apply a math operation to the value
- * 
+ *
  * @param other the other value to apply the operation to
  * @param operatorToken the operator token to apply
  * @param variables variables to use in the operation
  * @return ExpressionResult if the operation was successful
  */
-Value* Value::applyOperator(const Value *other, const Token *operatorToken, const ContextPtr &context) {
-	OperatorToken::OperatorTypes op = static_cast<const OperatorToken*>(operatorToken)->getOperatorType();
+Value *Value::applyOperator(const Value *other, const Token *operatorToken,
+							const ContextPtr &context) {
+	OperatorToken::OperatorTypes op =
+		static_cast<const OperatorToken *>(operatorToken)->getOperatorType();
 
 	TextRange range = TextRange::merge(this->getRange(), other->getRange());
 	range.merge(operatorToken->getRange());
@@ -122,11 +121,11 @@ void Value::setOwner(ValueOwner owner, bool overwrite) {
 
 /**
  * @brief delete tthe value in parameters if it is an INterpreter generated value
- * 
+ *
  * @param val the value to delete
  */
 void Value::deleteValue(Value **val, ValueOwner deleter) {
-	if ((*val) == nullptr || (*val)->owner != deleter) 
+	if ((*val) == nullptr || (*val)->owner != deleter)
 		return;
 	delete (*val);
 	(*val) = nullptr;

@@ -28,14 +28,13 @@ inline std::string Function::getStringValue() const {
 	return "<function " + function->getName() + ">";
 }
 
-const RPNFunction* Function::getValue() const {
+const RPNFunction *Function::getValue() const {
 	return this->function;
 }
 
 const RPNFunction *&Function::getValue() {
 	return this->function;
 }
-
 
 Value *Function::opadd(const Value *other, const TextRange &range, const ContextPtr &context) const {
 	throw std::runtime_error("Cannot add value of type " + other->getStringType() + " to a function");

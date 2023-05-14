@@ -1,7 +1,7 @@
 #include "tokens/token.hpp"
 
 Token::Token() : type(TokenType::TOKEN_TYPE_UNKNOWN) {}
-Token::Token(TokenType type) :	type(type) {}
+Token::Token(TokenType type) : type(type) {}
 Token::Token(const TextRange range, TokenType type) : range(range), type(type) {}
 
 TokenType Token::getType() const {
@@ -22,7 +22,7 @@ void Token::setRange(TextRange range) {
 
 /**
  * @brief convert a TokenType to its string representation
- * 
+ *
  * @param type the TokenType to convert
  * @return std::string_view the string representation of the TokenType
  */
@@ -97,20 +97,20 @@ std::string Token::getStringType() const {
 	return Token::stringType(this->type);
 }
 
-
 std::ostream &operator<<(std::ostream &os, const Token *token) {
-	os << "Token(" << escapeCharacters(token->getStringValue()) << ", " << token->getStringType() << ")";
+	os << "Token(" << escapeCharacters(token->getStringValue()) << ", " << token->getStringType()
+	   << ")";
 	return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const std::vector<Token*> &tokens) {
+std::ostream &operator<<(std::ostream &os, const std::vector<Token *> &tokens) {
 	for (const Token *token : tokens) {
 		os << token << " ";
 	}
 	return os;
 }
 
-std::ostream &operator<<(std::ostream &os, std::deque<Token*> tokens) {
+std::ostream &operator<<(std::ostream &os, std::deque<Token *> tokens) {
 	while (!tokens.empty()) {
 		os << tokens.front() << " ";
 		tokens.pop_front();

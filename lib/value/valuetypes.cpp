@@ -2,12 +2,12 @@
 
 /**
  * @brief return the string representation of the ValueType
- * 
+ *
  * @param type the type to convert to a string
  * @return std::string the string representation of the type
  */
 std::string stringType(const ValueType &type) {
-	switch(type) {
+	switch (type) {
 		case INT:
 			return "int";
 		case FLOAT:
@@ -37,7 +37,7 @@ std::string stringType(const ValueType &type) {
 
 /**
  * @brief convert string representation of a value type to a ValueType
- * 
+ *
  * @param type the string representation of the type
  * @return ValueType the type
  */
@@ -56,7 +56,7 @@ ValueType stringToType(std::string_view type) {
 		return NONE;
 	if (type == "list")
 		return LIST;
-	
+
 	throw std::runtime_error("This string type doesn't exist");
 }
 
@@ -108,7 +108,7 @@ std::string RPNValueType::name() const {
 	}
 };
 
- std::string RPNValueType::typeName(const RPNBaseType &type) {
+std::string RPNValueType::typeName(const RPNBaseType &type) {
 	if (type.index() == 0) {
 		return std::get<0>(type);
 	} else if (std::get<1>(type) == ValueType::LIST) {
@@ -152,4 +152,8 @@ RPNBaseType RPNValueType::getType() const {
 
 RPNBaseType RPNValueType::getListType() const {
 	return listType;
+};
+
+void RPNValueType::setListType(const RPNBaseType &type) {
+	this->listType = type;
 };

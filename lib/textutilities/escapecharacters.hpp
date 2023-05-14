@@ -1,11 +1,11 @@
 #pragma once
 
-#include <string>
-#include <tuple>
 #include <array>
-#include <regex>
 #include <iostream>
+#include <regex>
+#include <string>
 #include <string_view>
+#include <tuple>
 
 std::string escapeCharacters(std::string_view str);
 std::string removeEscapeCharacters(std::string_view str);

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <variant>
-#include <string>
 #include <stdexcept>
+#include <string>
+#include <variant>
 
 enum ValueType {
 	INT,
@@ -27,7 +27,7 @@ ValueType stringToType(std::string_view type);
 using RPNBaseType = std::variant<std::string, ValueType>;
 
 class RPNValueType {
-public:
+  public:
 	RPNValueType() = default;
 	RPNValueType(const RPNBaseType &type, const RPNBaseType &listType);
 	RPNValueType(const RPNBaseType &type);
@@ -46,7 +46,7 @@ public:
 	std::string name() const;
 
 	static std::string typeName(const RPNBaseType &type);
-	
+
 	bool operator==(const RPNValueType &other);
 
 	bool operator==(const RPNBaseType &other);
@@ -58,8 +58,9 @@ public:
 	RPNBaseType getType() const;
 
 	RPNBaseType getListType() const;
+	void setListType(const RPNBaseType &type);
 
-private:
+  private:
 	RPNBaseType type;
 	RPNBaseType listType;
 };

@@ -4,7 +4,7 @@ enum class TokenType {
 	// used only for the lexer they will be converted to other types directly
 	TOKEN_TYPE_HEX,
 	TOKEN_TYPE_BIN,
-	
+
 	// this tokens will be converted to a value token
 	TOKEN_TYPE_INT,
 	TOKEN_TYPE_STRING,
@@ -38,7 +38,7 @@ enum class TokenType {
 	TOKEN_TYPE_VALUE_TYPE,
 	TOKEN_TYPE_EXPRESSION_SEPARATOR,
 	TOKEN_TYPE_ASSIGNMENT,
-	
+
 	// this tokens are only used for formatting and will be removed
 	TOKEN_TYPE_END_OF_LINE,
 	TOKEN_TYPE_INDENT,

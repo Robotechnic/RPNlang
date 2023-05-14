@@ -1,36 +1,22 @@
 #include "expressionresult.hpp"
 
+ExpressionResult::ExpressionResult()
+	: resultStatus(SUCCESS), errorMessage(""), errorRange(TextRange()) {}
 
-ExpressionResult::ExpressionResult() : 
-	resultStatus(SUCCESS),
-	errorMessage(""),
-	errorRange(TextRange())
-{}
+ExpressionResult::ExpressionResult(std::string_view errorMessage, TextRange errorRange,
+								   ContextPtr parentContext)
+	: resultStatus(ERROR), errorMessage(errorMessage), errorRange(errorRange),
+	  context(parentContext) {}
 
-ExpressionResult::ExpressionResult(std::string_view errorMessage, TextRange errorRange, ContextPtr parentContext) :
-	resultStatus(ERROR),
-	errorMessage(errorMessage),
-	errorRange(errorRange),
-	context(parentContext)
-{}
+ExpressionResult::ExpressionResult(Status status) : resultStatus(status) {}
 
-ExpressionResult::ExpressionResult(Status status) :
-	resultStatus(status)
-{}
+ExpressionResult::ExpressionResult(const ExpressionResult &other) noexcept
+	: resultStatus(other.resultStatus), errorMessage(other.errorMessage),
+	  errorRange(other.errorRange), context(other.context) {}
 
-ExpressionResult::ExpressionResult(const ExpressionResult &other) noexcept :
-	resultStatus(other.resultStatus),
-	errorMessage(other.errorMessage),
-	errorRange(other.errorRange),
-	context(other.context)
-{}
-
-ExpressionResult::ExpressionResult(ExpressionResult &&other) noexcept :
-	resultStatus(other.resultStatus),
-	errorMessage(other.errorMessage),
-	errorRange(other.errorRange),
-	context(other.context)
-{}
+ExpressionResult::ExpressionResult(ExpressionResult &&other) noexcept
+	: resultStatus(other.resultStatus), errorMessage(other.errorMessage),
+	  errorRange(other.errorRange), context(other.context) {}
 
 void ExpressionResult::operator=(const ExpressionResult &other) noexcept {
 	this->resultStatus = other.resultStatus;
@@ -48,7 +34,7 @@ void ExpressionResult::operator=(ExpressionResult &&other) noexcept {
 
 /**
  * @brief get if the result is an error
- * 
+ *
  * @return true if the result is an error
  */
 bool ExpressionResult::error() const {
@@ -73,7 +59,7 @@ bool ExpressionResult::stopInterpret() const {
 
 /**
  * @brief get if the result is not an error
- * 
+ *
  * @return true if the result is not an error
  */
 bool ExpressionResult::success() const {
@@ -90,18 +76,19 @@ TextRange ExpressionResult::getRange() const {
 
 /**
  * @brief display the error message to the output stream
- * 
+ *
  * @param code lines of code
  */
 void ExpressionResult::displayLineError(std::string_view code) const {
-	std::cout<<std::endl;
-	std::cout<<this->context;
-	
+	std::cout << std::endl;
+	std::cout << this->context;
+
 	TextRange range = this->getRange();
-	std::cout << "Error : " << this->errorMessage<<std::endl;
+	std::cout << "Error : " << this->errorMessage << std::endl;
 
 	if (this->context->getType() == CONTEXT_TYPE_DEFAULT) {
-		std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
+		std::cout << "At line " << range.line << " and column " << range.columnStart << " :"
+				  << std::endl;
 		std::cout << code << std::endl;
 		this->displayArrow(range, code);
 	}
@@ -109,7 +96,7 @@ void ExpressionResult::displayLineError(std::string_view code) const {
 
 /**
  * @brief display error message to the output stream
- * 
+ *
  * @param fileName the file which contains the errored code
 
  */
@@ -120,17 +107,15 @@ void ExpressionResult::display() {
 	// enable cursor
 	std::cout << "\033[?25h";
 
-	std::cout<<this->context;
+	std::cout << this->context;
 
 	TextRange range = this->getRange();
-	std::cout << "Error : " << this->errorMessage<<std::endl;
+	std::cout << "Error : " << this->errorMessage << std::endl;
 
 	if (this->context->hasParentType(CONTEXT_TYPE_BUILTIN_MODULE)) {
-		while (
-			this->context->getType() != CONTEXT_TYPE_FUNCTION &&
-			this->context->getType() != CONTEXT_TYPE_FILE &&
-			this->context->getType() != CONTEXT_TYPE_DEFAULT
-		) {
+		while (this->context->getType() != CONTEXT_TYPE_FUNCTION &&
+			   this->context->getType() != CONTEXT_TYPE_FILE &&
+			   this->context->getType() != CONTEXT_TYPE_DEFAULT) {
 			this->context = this->context->getParent();
 		}
 		std::cout << "Invoked from " << this->context->getTypeName() << std::endl;
@@ -139,12 +124,14 @@ void ExpressionResult::display() {
 	std::ifstream file;
 	std::string errorMessage;
 	if (!openFile(file, this->context->getFilePath(), errorMessage)) {
-		std::cout<<"Error: cannot open file "<<this->context->getFilePath()<<": "<<errorMessage<<std::endl;
+		std::cout << "Error: cannot open file " << this->context->getFilePath() << ": "
+				  << errorMessage << std::endl;
 		return;
 	}
 
-	std::cout << "At line "<< range.line << " and column " << range.columnStart << " :" << std::endl;
-	
+	std::cout << "At line " << range.line << " and column " << range.columnStart << " :"
+			  << std::endl;
+
 	std::string lineString;
 	file.seekg(0);
 	unsigned long int line = 1;
@@ -152,7 +139,7 @@ void ExpressionResult::display() {
 		line++;
 	}
 
-	std::cout<<lineString<<std::endl;
+	std::cout << lineString << std::endl;
 
 	this->displayArrow(range, lineString);
 }

@@ -257,7 +257,8 @@ ExpressionResult Lexer::parsePath(Token const *token) {
 	while (!this->tokens.empty() && this->tokens.front()->getType() == TokenType::TOKEN_TYPE_DOT) {
 		delete this->tokens.front();
 		this->tokens.pop_front();
-		if (this->tokens.empty() || this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
+		if (this->tokens.empty() ||
+			this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 			return {"Invalid path: expected literal after dot", token->getRange(), this->context};
 		}
 		path.push_back(this->tokens.front()->getStringValue());
@@ -296,11 +297,13 @@ ExpressionResult Lexer::parseStructAccess(Token *token) {
 	delete this->tokens.front();
 	this->tokens.pop_front();
 	TextRange arrowRange = token->getRange();
-	while (!this->tokens.empty() && this->tokens.front()->getType() == TokenType::TOKEN_TYPE_ARROW) {
+	while (!this->tokens.empty() &&
+		   this->tokens.front()->getType() == TokenType::TOKEN_TYPE_ARROW) {
 		arrowRange = this->tokens.front()->getRange();
 		delete this->tokens.front();
 		this->tokens.pop_front();
-		if (this->tokens.empty() || this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
+		if (this->tokens.empty() ||
+			this->tokens.front()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 			return {"Invalid struct access: expected literal after arrow", arrowRange,
 					this->context};
 		}
@@ -393,7 +396,7 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 			return {result, token->getRange(), this->context};
 		}
 		if (tokenKeyword == KEYWORD_FUNSIG) {
-			return this->parseFunctionSignature(token);	
+			return this->parseFunctionSignature(token);
 		} else {
 			this->currentLine->push(token);
 			this->integrated = true;
@@ -425,8 +428,9 @@ ExpressionResult Lexer::parseFunctionCall(Token const *token) {
 	if (result.error()) {
 		return result;
 	}
-	if (this->currentLine->empty() || (this->currentLine->back()->getType() != TokenType::TOKEN_TYPE_LITERAL &&
-									   this->currentLine->back()->getType() != TokenType::TOKEN_TYPE_PATH)) {
+	if (this->currentLine->empty() ||
+		(this->currentLine->back()->getType() != TokenType::TOKEN_TYPE_LITERAL &&
+		 this->currentLine->back()->getType() != TokenType::TOKEN_TYPE_PATH)) {
 		return {"Expected function name after colon token", token->getRange().merge(literalRange),
 				this->context};
 	}
@@ -476,7 +480,8 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
 		if (i % 2 == 0) {
 			if (current->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE) {
 				type.second = dynamic_cast<TypeToken *>(current)->getValueType();
-			} else if (current->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME || current->getType() == TokenType::TOKEN_TYPE_FUN_SIGNATURE) {
+			} else if (current->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME ||
+					   current->getType() == TokenType::TOKEN_TYPE_FUN_SIGNATURE) {
 				type.second = current->getStringValue();
 			} else {
 				return std::make_pair(ExpressionResult("Expected value type or struct name",
@@ -526,31 +531,34 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
  * @brief Parse function signature
  * A function signature is a line of the form:
  * name argType1, argType2, ... -> return_type funsig
- * 
+ *
  * @param token the funsig token
  * @return ExpressionResult  if the function signature is correct
  */
 ExpressionResult Lexer::parseFunctionSignature(Token *token) {
 	if (this->currentLine->empty()) {
-		return {"Expected function definition before funsig token", token->getRange(), this->context};
+		return {"Expected function definition before funsig token", token->getRange(),
+				this->context};
 	}
 	if (this->currentLine->top()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
 		return {"Expected function name before funsig token", token->getRange(), this->context};
 	}
 	std::string name = this->currentLine->pop()->getStringValue();
 	std::vector<RPNValueType> types;
-	
+
 	while (this->currentLine->top()->getType() != TokenType::TOKEN_TYPE_ARROW) {
 		if (this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE) {
 			types.emplace_back(dynamic_cast<TypeToken *>(this->currentLine->pop())->getValueType());
-		} else if (this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME || this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_FUN_SIGNATURE) {
+		} else if (this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME ||
+				   this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_FUN_SIGNATURE) {
 			types.emplace_back(this->currentLine->pop()->getStringValue());
 		} else {
 			return {"Expected argument type or struct name before arrow token",
 					this->currentLine->top()->getRange(), this->context};
 		}
 		if (this->currentLine->empty()) {
-			return {"Expected arrow token after function arguments", token->getRange(), this->context};
+			return {"Expected arrow token after function arguments", token->getRange(),
+					this->context};
 		}
 	}
 	this->currentLine->pop();
@@ -566,10 +574,11 @@ ExpressionResult Lexer::parseFunctionSignature(Token *token) {
 		return {"Expected return type after arrow token", token->getRange(), this->context};
 	}
 	if (!this->currentLine->empty()) {
-		return {"Unexpected token after function signature", this->currentLine->top()->getRange(), this->context};
+		return {"Unexpected token after function signature", this->currentLine->top()->getRange(),
+				this->context};
 	}
-	this->codeBlocks.push(
-		new FunctionSignatureLine(FunctionSignature{types, returnType, false, false}, name, token->getRange()));
+	this->codeBlocks.push(new FunctionSignatureLine(
+		FunctionSignature{types, returnType, false, false}, name, token->getRange()));
 	return {};
 }
 

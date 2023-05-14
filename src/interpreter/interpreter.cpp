@@ -33,7 +33,8 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 			result.display();
 			error = true;
 		}
-		tokens.push_back(new StringToken(line, instruction.size(), TokenType::TOKEN_TYPE_END_OF_LINE, "\n"));
+		tokens.push_back(
+			new StringToken(line, instruction.size(), TokenType::TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	file.close();
 
@@ -55,7 +56,7 @@ bool Interpreter::interpretFile(std::string_view fileName, std::string &errorStr
 	}
 	if (this->context->hasValue("main") && this->context->getType() != CONTEXT_TYPE_MODULE &&
 		this->context->getType() != CONTEXT_TYPE_BUILTIN_MODULE) {
-		Function *val = dynamic_cast<Function *>(this->context->getValue("main"));
+		auto *val = dynamic_cast<Function *>(this->context->getValue("main"));
 		TextRange const mainRange = val->getRange();
 		if (val->getType() == FUNCTION) {
 			const RPNFunction *func = val->getValue();
@@ -131,9 +132,11 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 			FunctionBlock const *f = dynamic_cast<FunctionBlock *>(block);
 			this->context->setValue(f->getName(), new Function(f->getFunction(), f->lastRange(),
 															   Value::CONTEXT_VARIABLE));
+		} else if (block->getType() == blockType::FUNCTION_SIGNATURE) {
+			// this block is only used for the analyser ignore it in the interpreter
 		} else {
-			result = ExpressionResult("Lexer didn't to its job corectly ;(",
-									  dynamic_cast<CodeBlock *>(block)->getRange(), this->context);
+			result = ExpressionResult("Lexer didn't to its job corectly ;(", block->lastRange(),
+									  this->context);
 		}
 	}
 	return result;

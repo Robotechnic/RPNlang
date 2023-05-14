@@ -21,6 +21,7 @@
 #include "codeblocks/line.hpp"
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/functionblock.hpp"
+#include "codeblocks/functionsignatureline.hpp"
 #include "codeblocks/blockqueue.hpp"
 #include "analyzer/functionsignature.hpp"
 // clang-format on
@@ -74,13 +75,15 @@ class Analyzer final {
 	std::stack<FunctionBlock *> functionBlocks;
 	AnalyzerSymbolTable variables;
 	AnalyzerSymbolTable functionVariables;
-	std::unordered_map<std::string, FunctionSignature, StringHash> functions;
+	std::unordered_map<std::string, FunctionSignature, StringHash, std::equal_to<>> functions;
 
+	std::optional<AnalyzerValueType> getVariable(std::string const &name);
 	AnalyzerValueType &topVariable();
 	AnalyzerSymbolTable *getVariables();
 	void analyze(Line *line);
 	void analyze(CodeBlock *codeblock);
 	void analyze(FunctionBlock *functionBlock);
+	void analyze(const FunctionSignatureLine *functionSignatureLine);
 	void analyzeFunctionsBody();
 	void checkRemainingCount();
 	void analyzeOperator(const OperatorToken *token);
@@ -99,6 +102,9 @@ class Analyzer final {
 	void analyzePath(Token *path, bool addToStack = true);
 	void analyzeStructAccess(const Token *token);
 	void analyzeGet(const Token *token);
+	bool checkFunctionSignature(const std::string_view &signatureName,
+								const std::string_view &functionnName);
+	std::optional<FunctionSignature> checkBuiltinFunction(Token *token);
 
 	static bool isBinaryOperator(OperatorToken::OperatorTypes operatorType);
 	static bool isComparisonOperator(OperatorToken::OperatorTypes operatorType);

@@ -1,38 +1,37 @@
 #pragma once
 
+#include "textutilities/escapecharacters.hpp"
+#include "textutilities/textrange.hpp"
+#include "tokens/regex.hpp"
+#include "tokens/tokentypes.hpp"
+#include <queue>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
-#include <queue>
-#include <span>
-#include "tokens/tokentypes.hpp"
-#include "tokens/regex.hpp"
-#include "textutilities/textrange.hpp"
-#include "textutilities/escapecharacters.hpp"
-
 
 class Token {
-	public:
-		Token();
-		Token(TokenType type);
-		Token(TextRange range, TokenType type);
-		virtual ~Token() = default;
-		
-		TokenType getType() const;
-		void setType(TokenType type);
-		std::string getStringType() const;
+  public:
+	Token();
+	Token(TokenType type);
+	Token(TextRange range, TokenType type);
+	virtual ~Token() = default;
 
-		virtual std::string getStringValue() const = 0;
+	TokenType getType() const;
+	void setType(TokenType type);
+	std::string getStringType() const;
 
-		TextRange getRange() const;
-		void setRange(TextRange range);
-		static std::string stringType(TokenType type);
+	virtual std::string getStringValue() const = 0;
 
-	protected:
-		TextRange range;
-		TokenType type;
+	TextRange getRange() const;
+	void setRange(TextRange range);
+	static std::string stringType(TokenType type);
+
+  protected:
+	TextRange range;
+	TokenType type;
 };
 
 std::ostream &operator<<(std::ostream &os, const Token *token);
-std::ostream &operator<<(std::ostream &os, const std::vector<Token*> &tokens);
-std::ostream &operator<<(std::ostream &os, std::deque<Token*> tokens);
+std::ostream &operator<<(std::ostream &os, const std::vector<Token *> &tokens);
+std::ostream &operator<<(std::ostream &os, std::deque<Token *> tokens);

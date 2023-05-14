@@ -21,5 +21,5 @@ std::string TypeToken::getStringValue() const {
 void TypeToken::setListType(std::variant<std::string, ValueType> listType) {
 	if (this->valueType.index() != 1 || std::get<ValueType>(this->valueType.getType()) != LIST)
 		throw std::runtime_error("Cannot set list type of non-list type");
-	this->valueType.getListType() = listType;
+	this->valueType.setListType(listType);
 }

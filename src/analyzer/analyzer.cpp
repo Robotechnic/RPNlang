@@ -15,7 +15,8 @@ void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 			if (this->hasErrors()) {
 				continue;
 			}
-			if (it != blocks.end() - (size_t)1 && (*(it + (size_t)1))->getType() == blockType::CODE_BLOCK) {
+			if (it != blocks.end() - (size_t)1 &&
+				(*(it + (size_t)1))->getType() == blockType::CODE_BLOCK) {
 				this->checkKeywordLine(
 					dynamic_cast<CodeBlock *>(*(it + (size_t)1))->getKeywordToken(), false);
 			} else {
@@ -25,6 +26,8 @@ void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 			this->analyze(dynamic_cast<CodeBlock *>(*it));
 		} else if ((*it)->getType() == blockType::FUNCTION_BLOCK) {
 			this->analyze(dynamic_cast<FunctionBlock *>(*it));
+		} else if ((*it)->getType() == blockType::FUNCTION_SIGNATURE) {
+			this->analyze(dynamic_cast<FunctionSignatureLine *>(*it));
 		} else {
 			throw std::invalid_argument("This block type is not supported");
 		}
@@ -139,24 +142,33 @@ void Analyzer::analyze(Line *line) {
 	line->reset();
 }
 
+std::optional<AnalyzerValueType> Analyzer::getVariable(std::string const &name) {
+	AnalyzerSymbolTable *variablesMap = nullptr;
+	if (this->functionVariables.contains(name)) {
+		variablesMap = &this->functionVariables;
+	} else if (this->variables.contains(name)) {
+		variablesMap = &this->variables;
+	} else {
+		return std::nullopt;
+	}
+
+	return {variablesMap->at(name)};
+}
+
 AnalyzerValueType &Analyzer::topVariable() {
 	if (stack.top().isVariable) {
 		AnalyzerValueType top = stack.top();
 		TextRange const range = top.range;
 		stack.pop();
-		AnalyzerSymbolTable *variablesMap = nullptr;
-		if (this->functionVariables.contains(std::get<std::string>(top.type.getType()))) {
-			variablesMap = &this->functionVariables;
-		} else if (this->variables.contains(std::get<std::string>(top.type.getType()))) {
-			variablesMap = &this->variables;
-		} else {
-			this->error = ExpressionResult("Variable " + top.type.name() + " is not defined",
-										   top.range, this->context);
-			this->stack.push(top);
+		auto variable = this->getVariable(std::get<std::string>(top.type.getType()));
+		if (!variable.has_value()) {
+			this->error = ExpressionResult("Variable " + top.type.name() + " is not defined", range,
+										   this->context);
+			stack.push(top);
 			return stack.top();
 		}
-		if (variablesMap->at(std::get<std::string>(top.type.getType())).conditionalLevel >
-			this->conditionalLevel) {
+		AnalyzerValueType &variableValue = variable.value();
+		if (variableValue.conditionalLevel > this->conditionalLevel) {
 			this->error = ExpressionResult("Variable " + top.type.name() +
 											   " has been declared conditionally and cannot be "
 											   "used outside of the condition scope",
@@ -164,7 +176,7 @@ AnalyzerValueType &Analyzer::topVariable() {
 			this->stack.push(top);
 			return stack.top();
 		}
-		this->stack.push(variablesMap->at(std::get<std::string>(top.type.getType())));
+		this->stack.push(variableValue);
 		this->stack.top().isVariable = false;
 		this->stack.top().range = range;
 	}
@@ -188,18 +200,48 @@ void Analyzer::analyze(FunctionBlock *functionBlock) {
 	}
 
 	functions[functionBlock->getName()] = {argsTypes, functionBlock->getReturnType()};
-	variables[functionBlock->getName()] = {functionBlock->getName(), functionBlock->lastRange(),
-										   true, 0, 0, false, false, true};
+	variables[functionBlock->getName()] = {
+		functionBlock->getName(), functionBlock->lastRange(), false, 0, 0, false, false, true};
 	functionBlocks.push(functionBlock);
+}
+
+void Analyzer::analyze(const FunctionSignatureLine *functionSignatureLine) {
+	if (functions.contains(functionSignatureLine->getName())) {
+		this->error =
+			ExpressionResult("Function " + functionSignatureLine->getName() + " is already defined",
+							 functionSignatureLine->lastRange(), this->context);
+		return;
+	}
+
+	functions[functionSignatureLine->getName()] = functionSignatureLine->getSignature();
 }
 
 void Analyzer::analyzeFunctionsBody() {
 	this->inFunctionBlock = true;
 	while (!this->functionBlocks.empty() && !this->hasErrors()) {
 		RPNFunctionArgs const args = this->functionBlocks.top()->getArgs();
-		for (const auto &arg : args) {
-			this->functionVariables[arg.first] = {arg.second,
-												  this->functionBlocks.top()->lastRange(), true, 0};
+		for (const auto &[name, valueType] : args) {
+			if (valueType.index() == 0 && std::get<std::string>(valueType.getType())[0] == '$') {
+				const std::string functionName =
+					std::get<std::string>(valueType.getType()).substr(1);
+				if (!this->functions.contains(functionName)) {
+					this->error =
+						ExpressionResult("Function signature " + functionName + " is not defined",
+										 this->functionBlocks.top()->lastRange(), this->context);
+					return;
+				}
+				this->functionVariables[name] = {functionName,
+												 this->functionBlocks.top()->lastRange(),
+												 false,
+												 0,
+												 0,
+												 false,
+												 false,
+												 true};
+			} else {
+				this->functionVariables[name] = {valueType, this->functionBlocks.top()->lastRange(),
+												 true, 0};
+			}
 		}
 		this->currentFunctionReturnType = this->functionBlocks.top()->getReturnType();
 		this->analyze(this->functionBlocks.top()->getBlocks());
@@ -288,15 +330,20 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 		if (this->hasErrors()) {
 			return;
 		}
-		if (top.isFunction) {
-			type = RPNValueType(FUNCTION);
-		}
-		if ((function.args[i].index() == 0 ||
-			 std::get<ValueType>(function.args[i].getType()) != ANY) &&
-			type != function.args[i]) {
-			const std::string typeName = type.name();
-			this->error = ExpressionResult("Function " + name + " expects value type " +
-											   function.args[i].name() + " but got " + typeName,
+		const std::string typeName = type.name();
+		const std::string argName = function.args[i].name();
+		if (top.isFunction && argName[0] == '$') {
+			if (!this->checkFunctionSignature(std::string_view(argName).substr(1), typeName)) {
+				this->error =
+					ExpressionResult("Function " + name + " expects a function with signature " +
+										 argName + " but got " + typeName,
+									 stack.top().range, this->context);
+			}
+		} else if ((function.args[i].index() == 0 ||
+					std::get<ValueType>(function.args[i].getType()) != ANY) &&
+				   type != function.args[i]) {
+			this->error = ExpressionResult("Function " + name + " expects value type " + argName +
+											   " but got " + typeName,
 										   stack.top().range, this->context);
 			return;
 		}
@@ -306,31 +353,14 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 	this->stack.emplace(function.returnType, range, false);
 }
 
-void Analyzer::analyzeFunctionCall(Token *token) {
-	std::string const name = token->getStringValue();
-	if (functions.contains(name)) {
-		this->analyzeFunctionCall(functions[name], token);
-		return;
-	}
-	if (variables.contains(name)) {
-		AnalyzerValueType const &variable = variables.at(name);
-		if (variable.type.index() != 0 || variable.isFunction != true) {
-			this->error = ExpressionResult("Variable " + name + " is not a function",
-										   token->getRange(), this->context);
-			return;
-		}
-		const std::string functionName = std::get<std::string>(variable.type.getType());
-		if (functions.contains(functionName)) {
-			this->analyzeFunctionCall(functions[functionName], token);
-			return;
-		}
-	}
+std::optional<FunctionSignature> Analyzer::checkBuiltinFunction(Token *token) {
 	const RPNFunction *function = nullptr;
+	const std::string name = token->getStringValue();
 	bool builtin = false;
 	if (token->getType() == TokenType::TOKEN_TYPE_MODULE_FUNCTION_CALL) {
 		this->analyzePath(token, false);
 		if (this->hasErrors()) {
-			return;
+			return std::nullopt;
 		}
 		const Value *path = dynamic_cast<const ValueToken *>(token)->getValue();
 		function = dynamic_cast<const Function *>(Module::getModuleValue(path))->getValue();
@@ -340,9 +370,7 @@ void Analyzer::analyzeFunctionCall(Token *token) {
 		builtin = true;
 	}
 	if (function == nullptr) {
-		this->error = ExpressionResult("Function " + name + " is not defined", token->getRange(),
-									   this->context);
-		return;
+		return std::nullopt;
 	}
 	std::vector<RPNValueType> argsTypes;
 	for (const auto &[_, type] : function->getArgs()) {
@@ -351,7 +379,61 @@ void Analyzer::analyzeFunctionCall(Token *token) {
 
 	FunctionSignature const functionValue{argsTypes, function->getReturnType(), builtin};
 	this->functions[name] = functionValue;
-	this->analyzeFunctionCall(functionValue, token);
+	this->variables[name] = {name, TextRange(), false, 0, 0, false, false, true};
+	return functionValue;
+}
+
+void Analyzer::analyzeFunctionCall(Token *token) {
+	std::string const name = token->getStringValue();
+	if (functions.contains(name)) {
+		this->analyzeFunctionCall(functions[name], token);
+		return;
+	}
+	const auto variable = this->getVariable(name);
+	if (variable.has_value()) {
+		const AnalyzerValueType &variableValue = variable.value();
+		if (variableValue.type.index() != 0 || variableValue.isFunction != true) {
+			this->error = ExpressionResult("Variable " + name + " is not a function",
+										   token->getRange(), this->context);
+			return;
+		}
+		const std::string functionName = std::get<std::string>(variableValue.type.getType());
+		if (functions.contains(functionName)) {
+			this->analyzeFunctionCall(functions[functionName], token);
+			return;
+		}
+	}
+	auto functionValue = this->checkBuiltinFunction(token);
+	if (!functionValue.has_value()) {
+		if (this->hasErrors()) {
+			return;
+		}
+		this->error = ExpressionResult("Function " + name + " is not defined", token->getRange(),
+									   this->context);
+		return;
+	}
+	this->analyzeFunctionCall(functionValue.value(), token);
+}
+
+bool Analyzer::checkFunctionSignature(const std::string_view &signatureName,
+									  const std::string_view &functionnName) {
+	if (signatureName == functionnName) {
+		return true;
+	}
+	const FunctionSignature &expectedSignature = this->functions.at(std::string(signatureName));
+	const FunctionSignature &actualSignature = this->functions.at(std::string(functionnName));
+	if (expectedSignature.returnType.getType() != actualSignature.returnType.getType()) {
+		return false;
+	}
+	if (expectedSignature.args.size() != actualSignature.args.size()) {
+		return false;
+	}
+	for (size_t i = 0; i < expectedSignature.args.size(); i++) {
+		if (expectedSignature.args[i].getType() != actualSignature.args[i].getType()) {
+			return false;
+		}
+	}
+	return true;
 }
 
 void Analyzer::analyzeAssignment(const Token *token) {
@@ -630,7 +712,10 @@ void Analyzer::analyzePath(Token *path, bool addToStack) {
 		return;
 	}
 	Value const *variable = Module::getModuleValue(p);
-	this->stack.push({variable->getType(), p->getRange(), false, 0, 0, false});
+	if (variable->getType() != FUNCTION) {
+		this->stack.emplace(variable->getType(), p->getRange(), false, 0, 0, false);
+	} else if (!this->functions.contains(p->getStringValue())) {
+	}
 }
 
 void Analyzer::checkKeywordLine(const KeywordToken *token, bool restaureStack, bool strict) {
@@ -760,7 +845,8 @@ void Analyzer::analyzeGet(const Token *token) {
 	TextRange const range = this->stack.top().range;
 	this->stack.pop();
 
-	this->stack.emplace(type.getListType(), token->getRange().merge(range), false, 0, 0, false, true);
+	this->stack.emplace(type.getListType(), token->getRange().merge(range), false, 0, 0, false,
+						true);
 }
 
 bool Analyzer::isBinaryOperator(OperatorToken::OperatorTypes operatorType) {
