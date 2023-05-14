@@ -125,7 +125,6 @@ ExpressionResult Lexer::lex() {
 
 	this->pushLine();
 	Analyzer analyzer(this->context);
-	this->codeBlocks.display();
 	analyzer.analyze(this->codeBlocks, true);
 	return analyzer.analyzeErrors();
 };
