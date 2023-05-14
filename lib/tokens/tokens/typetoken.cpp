@@ -9,9 +9,9 @@ RPNValueType TypeToken::getValueType() const {
 }
 
 std::variant<std::string, ValueType> TypeToken::getListType() const {
-	if (this->valueType.index() != 1 || std::get<ValueType>(this->valueType.type) != LIST)
+	if (this->valueType.index() != 1 || std::get<ValueType>(this->valueType.getType()) != LIST)
 		throw std::runtime_error("Cannot get list type of non-list type");
-	return this->valueType.listType;
+	return this->valueType.getListType();
 }
 
 std::string TypeToken::getStringValue() const {
@@ -19,7 +19,7 @@ std::string TypeToken::getStringValue() const {
 }
 
 void TypeToken::setListType(std::variant<std::string, ValueType> listType) {
-	if (this->valueType.index() != 1 || std::get<ValueType>(this->valueType.type) != LIST)
+	if (this->valueType.index() != 1 || std::get<ValueType>(this->valueType.getType()) != LIST)
 		throw std::runtime_error("Cannot set list type of non-list type");
-	this->valueType.listType = listType;
+	this->valueType.getListType() = listType;
 }

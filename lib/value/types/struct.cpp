@@ -97,7 +97,8 @@ ExpressionResult Struct::setMembers(std::vector<Value*> members, ContextPtr cont
 		if (type.index() == 0) {
 			(*this->members)[key] = (*it)->copy(OBJECT_VALUE);
 		} else {
-			(*this->members)[key] = (*it)->to(std::get<ValueType>(type.type), Value::OBJECT_VALUE);
+			(*this->members)[key] =
+				(*it)->to(std::get<ValueType>(type.getType()), Value::OBJECT_VALUE);
 		}
 		it++;
 	}

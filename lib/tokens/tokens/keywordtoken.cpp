@@ -98,6 +98,8 @@ std::string KeywordToken::keywordString(KeywordEnum keyword) {
 			return "importas";
 		case KEYWORD_GET:
 			return "get";
+		case KEYWORD_FUNSIG:
+			return "funsig";
 		default:
 			throw std::runtime_error("Invalid keyword");
 	}

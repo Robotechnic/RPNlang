@@ -22,19 +22,13 @@
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/functionblock.hpp"
 #include "codeblocks/blockqueue.hpp"
+#include "analyzer/functionsignature.hpp"
 // clang-format on
 // NOLINTEND
 
 class FunctionBlock;
 class Line;
 class CodeBlock;
-
-struct FunctionSignature {
-	std::vector<RPNValueType> args;
-	RPNValueType returnType;
-	bool builtin;
-	bool callable = true;
-};
 
 struct AnalyzerValueType {
 	RPNValueType type;
@@ -101,7 +95,6 @@ class Analyzer final {
 	void checkKeywordLine(const KeywordToken *token, bool restaureStack, bool strict = true);
 	void analyzeImport(const KeywordToken *token);
 	void analyzeImportAs(const KeywordToken *token);
-	void analyzeFunctionSignature(const KeywordToken *token);
 	void analyzeReturn(const KeywordToken *token);
 	void analyzePath(Token *path, bool addToStack = true);
 	void analyzeStructAccess(const Token *token);

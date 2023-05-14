@@ -1,6 +1,6 @@
 #include "codeblocks/line.hpp"
 
-Line::Line() : BaseBlock(LINE_BLOCK) {}
+Line::Line() : BaseBlock(blockType::LINE_BLOCK) {}
 
 Line::~Line() {
 	clear();

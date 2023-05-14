@@ -125,6 +125,7 @@ ExpressionResult Lexer::lex() {
 
 	this->pushLine();
 	Analyzer analyzer(this->context);
+	this->codeBlocks.display();
 	analyzer.analyze(this->codeBlocks, true);
 	return analyzer.analyzeErrors();
 };
@@ -392,8 +393,12 @@ ExpressionResult Lexer::parseKeyword(Token *token) {
 			result += " block";
 			return {result, token->getRange(), this->context};
 		}
-		this->currentLine->push(token);
-		this->integrated = true;
+		if (tokenKeyword == KEYWORD_FUNSIG) {
+			return this->parseFunctionSignature(token);	
+		} else {
+			this->currentLine->push(token);
+			this->integrated = true;
+		}
 	}
 
 	return {};
@@ -472,7 +477,7 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
 		if (i % 2 == 0) {
 			if (current->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE) {
 				type.second = dynamic_cast<TypeToken *>(current)->getValueType();
-			} else if (current->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME) {
+			} else if (current->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME || current->getType() == TokenType::TOKEN_TYPE_FUN_SIGNATURE) {
 				type.second = current->getStringValue();
 			} else {
 				return std::make_pair(ExpressionResult("Expected value type or struct name",
@@ -516,6 +521,57 @@ std::pair<ExpressionResult, FunctionBlock *> Lexer::parseFunction(CodeBlock *blo
 											   line->top()->getStringType(),
 										   line->top()->getRange(), this->context),
 						  nullptr);
+}
+
+/**
+ * @brief Parse function signature
+ * A function signature is a line of the form:
+ * name argType1, argType2, ... -> return_type funsig
+ * 
+ * @param token the funsig token
+ * @return ExpressionResult  if the function signature is correct
+ */
+ExpressionResult Lexer::parseFunctionSignature(Token *token) {
+	if (this->currentLine->empty()) {
+		return {"Expected function definition before funsig token", token->getRange(), this->context};
+	}
+	if (this->currentLine->top()->getType() != TokenType::TOKEN_TYPE_LITERAL) {
+		return {"Expected function name before funsig token", token->getRange(), this->context};
+	}
+	std::string name = this->currentLine->pop()->getStringValue();
+	std::vector<RPNValueType> types;
+	
+	while (this->currentLine->top()->getType() != TokenType::TOKEN_TYPE_ARROW) {
+		if (this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE) {
+			types.emplace_back(dynamic_cast<TypeToken *>(this->currentLine->pop())->getValueType());
+		} else if (this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME || this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_FUN_SIGNATURE) {
+			types.emplace_back(this->currentLine->pop()->getStringValue());
+		} else {
+			return {"Expected argument type or struct name before arrow token",
+					this->currentLine->top()->getRange(), this->context};
+		}
+		if (this->currentLine->empty()) {
+			return {"Expected arrow token after function arguments", token->getRange(), this->context};
+		}
+	}
+	this->currentLine->pop();
+	if (this->currentLine->empty()) {
+		return {"Expected return type after arrow token", token->getRange(), this->context};
+	}
+	RPNValueType returnType;
+	if (this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_VALUE_TYPE) {
+		returnType = dynamic_cast<TypeToken *>(this->currentLine->pop())->getValueType();
+	} else if (this->currentLine->top()->getType() == TokenType::TOKEN_TYPE_STRUCT_NAME) {
+		returnType = this->currentLine->pop()->getStringValue();
+	} else {
+		return {"Expected return type after arrow token", token->getRange(), this->context};
+	}
+	if (!this->currentLine->empty()) {
+		return {"Unexpected token after function signature", this->currentLine->top()->getRange(), this->context};
+	}
+	this->codeBlocks.push(
+		new FunctionSignatureLine(FunctionSignature{types, returnType, false, false}, name, token->getRange()));
+	return {};
 }
 
 /**
@@ -580,7 +636,7 @@ ExpressionResult Lexer::parseStruct(CodeBlock *block) {
 ExpressionResult Lexer::parseType(const Token *token) {
 	this->currentLine->push(new TypeToken(token->getRange(), token->getStringValue()));
 	RPNValueType type = dynamic_cast<TypeToken *>(this->currentLine->back())->getValueType();
-	if (std::get<ValueType>(type.type) != LIST) {
+	if (std::get<ValueType>(type.getType()) != LIST) {
 		return {};
 	}
 	if (this->tokens.size() < 3) {

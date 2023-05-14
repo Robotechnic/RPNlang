@@ -120,14 +120,14 @@ ExpressionResult Interpreter::interpret(BlockQueue &blocks) {
 	BlockQueueIterator it = blocks.begin();
 	while (it && !result.stopInterpret()) {
 		BaseBlock *block = *(it++);
-		if (block->getType() == LINE_BLOCK) {
+		if (block->getType() == blockType::LINE_BLOCK) {
 			Line *l = dynamic_cast<Line *>(block);
-			if (it && (*it)->getType() == CODE_BLOCK) {
+			if (it && (*it)->getType() == blockType::CODE_BLOCK) {
 				result = this->interpretBlock(*l, *dynamic_cast<CodeBlock *>(*(it++)));
 			} else {
 				result = interpretLine(*l);
 			}
-		} else if (block->getType() == FUNCTION_BLOCK) {
+		} else if (block->getType() == blockType::FUNCTION_BLOCK) {
 			FunctionBlock const *f = dynamic_cast<FunctionBlock *>(block);
 			this->context->setValue(f->getName(), new Function(f->getFunction(), f->lastRange(),
 															   Value::CONTEXT_VARIABLE));
@@ -290,7 +290,7 @@ ExpressionResult Interpreter::interpretKeyword(const Token *keywordToken) {
 
 ExpressionResult Interpreter::interpretValueType(const Token *typeToken) {
 	ValueType const type =
-		std::get<ValueType>(dynamic_cast<const TypeToken *>(typeToken)->getValueType().type);
+		std::get<ValueType>(dynamic_cast<const TypeToken *>(typeToken)->getValueType().getType());
 	if (type == LIST && !RPNValueType::isCastableTo(this->memory.top()->getType(), LIST)) {
 		return this->interpretList(typeToken);
 	}

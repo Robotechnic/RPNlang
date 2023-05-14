@@ -116,6 +116,29 @@ divide nb float -> float fun
 nuf
 ```
 
+You can also define functions signatures to allow to pass them as function arguments:
+
+```RPNlang
+# define a function signature
+process float -> float funsig
+
+# define a function that take a function as argument
+map list[int] listToMap $process mapFunction -> list[int] fun
+	newList 0 list[int] =
+	0 newList :len 1 for
+		newList listToMap i get :mapFunction :append
+	rof
+	newList return
+nuf
+
+addOne int number -> int fun
+	number 1 + return
+nuf
+
+a 1 2 3 4 5 6 7 8 9 10 list[int] =
+a addOne :map f"{}\n" :print
+```
+
 **Functions call**:
 
 ```RPNlang

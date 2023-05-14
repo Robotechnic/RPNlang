@@ -10,20 +10,20 @@ Analyzer::Analyzer(ContextPtr context) : context(context) {
 
 void Analyzer::analyze(BlockQueue &blocks, bool entryPoint) {
 	for (auto it = blocks.begin(); it != blocks.end() && !this->hasErrors(); it++) {
-		if ((*it)->getType() == LINE_BLOCK) {
+		if ((*it)->getType() == blockType::LINE_BLOCK) {
 			this->analyze(dynamic_cast<Line *>(*it));
 			if (this->hasErrors()) {
 				continue;
 			}
-			if (it != blocks.end() - (size_t)1 && (*(it + (size_t)1))->getType() == CODE_BLOCK) {
+			if (it != blocks.end() - (size_t)1 && (*(it + (size_t)1))->getType() == blockType::CODE_BLOCK) {
 				this->checkKeywordLine(
 					dynamic_cast<CodeBlock *>(*(it + (size_t)1))->getKeywordToken(), false);
 			} else {
 				this->checkRemainingCount();
 			}
-		} else if ((*it)->getType() == CODE_BLOCK) {
+		} else if ((*it)->getType() == blockType::CODE_BLOCK) {
 			this->analyze(dynamic_cast<CodeBlock *>(*it));
-		} else if ((*it)->getType() == FUNCTION_BLOCK) {
+		} else if ((*it)->getType() == blockType::FUNCTION_BLOCK) {
 			this->analyze(dynamic_cast<FunctionBlock *>(*it));
 		} else {
 			throw std::invalid_argument("This block type is not supported");
@@ -144,10 +144,10 @@ AnalyzerValueType &Analyzer::topVariable() {
 		AnalyzerValueType top = stack.top();
 		TextRange const range = top.range;
 		stack.pop();
-		AnalyzerSymbolTable *variablesMap = nullptr; 
-		if (this->functionVariables.contains(std::get<std::string>(top.type.type))) {
+		AnalyzerSymbolTable *variablesMap = nullptr;
+		if (this->functionVariables.contains(std::get<std::string>(top.type.getType()))) {
 			variablesMap = &this->functionVariables;
-		} else if (this->variables.contains(std::get<std::string>(top.type.type))) {
+		} else if (this->variables.contains(std::get<std::string>(top.type.getType()))) {
 			variablesMap = &this->variables;
 		} else {
 			this->error = ExpressionResult("Variable " + top.type.name() + " is not defined",
@@ -155,7 +155,7 @@ AnalyzerValueType &Analyzer::topVariable() {
 			this->stack.push(top);
 			return stack.top();
 		}
-		if (variablesMap->at(std::get<std::string>(top.type.type)).conditionalLevel >
+		if (variablesMap->at(std::get<std::string>(top.type.getType())).conditionalLevel >
 			this->conditionalLevel) {
 			this->error = ExpressionResult("Variable " + top.type.name() +
 											   " has been declared conditionally and cannot be "
@@ -164,7 +164,7 @@ AnalyzerValueType &Analyzer::topVariable() {
 			this->stack.push(top);
 			return stack.top();
 		}
-		this->stack.push(variablesMap->at(std::get<std::string>(top.type.type)));
+		this->stack.push(variablesMap->at(std::get<std::string>(top.type.getType())));
 		this->stack.top().isVariable = false;
 		this->stack.top().range = range;
 	}
@@ -238,7 +238,7 @@ void Analyzer::analyzeOperator(const OperatorToken *token) {
 	}
 	stack.pop();
 	std::optional<ValueType> resultType = Analyzer::getOperatorType(
-		std::get<ValueType>(left.type.type), std::get<ValueType>(right.type.type), token);
+		std::get<ValueType>(left.type.getType()), std::get<ValueType>(right.type.getType()), token);
 	if (resultType.has_value()) {
 		stack.emplace(resultType.value(),
 					  TextRange::merge(left.range, right.range).merge(token->getRange()), false);
@@ -291,7 +291,8 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 		if (top.isFunction) {
 			type = RPNValueType(FUNCTION);
 		}
-		if ((function.args[i].index() == 0 || std::get<ValueType>(function.args[i].type) != ANY) &&
+		if ((function.args[i].index() == 0 ||
+			 std::get<ValueType>(function.args[i].getType()) != ANY) &&
 			type != function.args[i]) {
 			const std::string typeName = type.name();
 			this->error = ExpressionResult("Function " + name + " expects value type " +
@@ -310,14 +311,15 @@ void Analyzer::analyzeFunctionCall(Token *token) {
 	if (functions.contains(name)) {
 		this->analyzeFunctionCall(functions[name], token);
 		return;
-	} else if (variables.contains(name)) {
+	}
+	if (variables.contains(name)) {
 		AnalyzerValueType const &variable = variables.at(name);
 		if (variable.type.index() != 0 || variable.isFunction != true) {
 			this->error = ExpressionResult("Variable " + name + " is not a function",
 										   token->getRange(), this->context);
 			return;
 		}
-		const std::string &functionName = std::get<std::string>(variable.type.type);
+		const std::string functionName = std::get<std::string>(variable.type.getType());
 		if (functions.contains(functionName)) {
 			this->analyzeFunctionCall(functions[functionName], token);
 			return;
@@ -387,7 +389,7 @@ void Analyzer::analyzeAssignment(const Token *token) {
 		return;
 	}
 	AnalyzerSymbolTable *variables = this->getVariables();
-	std::string const name = std::get<std::string>(variable.type.type);
+	std::string const name = std::get<std::string>(variable.type.getType());
 	if (this->conditionalLevel > 0 && variables->contains(name)) {
 		// check if the type is the same or equivalent
 		AnalyzerValueType holdVariable = variables->at(name);
@@ -426,8 +428,8 @@ void Analyzer::analyzeTypeCast(const TypeToken *token) {
 	if (this->hasErrors()) {
 		return;
 	}
-	if (std::get<ValueType>(token->getValueType().type) == LIST && type.type.index() == 1 &&
-		std::get<ValueType>(type.type.type) == INT) {
+	if (std::get<ValueType>(token->getValueType().getType()) == LIST && type.type.index() == 1 &&
+		std::get<ValueType>(type.type.getType()) == INT) {
 		return this->analyzeListCreation(token);
 	}
 
@@ -437,11 +439,11 @@ void Analyzer::analyzeTypeCast(const TypeToken *token) {
 							 token->getRange(), this->context);
 		return;
 	}
-	stack.push({token->getValueType(), TextRange::merge(token->getRange(), type.range)});
+	stack.emplace(token->getValueType(), TextRange::merge(token->getRange(), type.range));
 }
 
 void Analyzer::analyzeListCreation(const TypeToken *token) {
-	int const size =
+	int64_t const size =
 		dynamic_cast<const Int *>(dynamic_cast<ValueToken *>(this->currentLine->last())->getValue())
 			->getValue();
 	if (size < 0) {
@@ -471,7 +473,7 @@ void Analyzer::analyzeListCreation(const TypeToken *token) {
 		}
 		stack.pop();
 	}
-	stack.push({RPNValueType(LIST, listType), range, false});
+	stack.emplace(RPNValueType(LIST, listType), range, false);
 }
 
 void Analyzer::analyzeStructCreation(const Token *token) {
@@ -544,9 +546,6 @@ void Analyzer::analyzeKeyword(const KeywordToken *token) {
 			}
 			this->analyzeGet(token);
 			break;
-		case KEYWORD_FUNSIG:
-
-			break;
 		default:
 			throw std::runtime_error("The keyword " + token->getStringValue() +
 									 " is not implemented");
@@ -590,10 +589,6 @@ void Analyzer::analyzeImportAs(const KeywordToken *token) {
 		return;
 	}
 	this->error = Module::addModule(path, name, this->currentLine->last()->getRange(), context);
-}
-
-void Analyzer::analyzeFunctionSignature(const KeywordToken *token) {
-
 }
 
 void Analyzer::analyzeReturn(const KeywordToken *token) {
@@ -661,8 +656,8 @@ void Analyzer::checkKeywordLine(const KeywordToken *token, bool restaureStack, b
 											   stack.top().range, this->context);
 				return;
 			}
-			if (std::get<std::string>(types[i].type) !=
-				std::get<std::string>(stack.top().type.type)) {
+			if (std::get<std::string>(types[i].getType()) !=
+				std::get<std::string>(stack.top().type.getType())) {
 				this->error = ExpressionResult("Keyword " + token->getStringValue() +
 												   " require a value of type " + types[i].name() +
 												   " but got " + stack.top().name(),
@@ -670,7 +665,7 @@ void Analyzer::checkKeywordLine(const KeywordToken *token, bool restaureStack, b
 				return;
 			}
 		} else {
-			if (std::get<ValueType>(types[i].type) == VARIABLE) {
+			if (std::get<ValueType>(types[i].getType()) == VARIABLE) {
 				if (stack.top().type.index() != 0) {
 					this->error = ExpressionResult(
 						"Keyword " + token->getStringValue() + " require a value of type " +
@@ -685,7 +680,7 @@ void Analyzer::checkKeywordLine(const KeywordToken *token, bool restaureStack, b
 						stack.top().range, this->context);
 					return;
 				}
-				this->variables[std::get<std::string>(stack.top().type.type)] = {
+				this->variables[std::get<std::string>(stack.top().type.getType())] = {
 					INT, stack.top().range, false, 0, 0, false};
 				continue;
 			}
@@ -732,13 +727,13 @@ void Analyzer::analyzeStructAccess(const Token *token) {
 									   token->getRange(), this->context);
 		return;
 	}
-	if (!Struct::structExists(std::get<std::string>(structType.type.type))) {
+	if (!Struct::structExists(std::get<std::string>(structType.type.getType()))) {
 		this->error = ExpressionResult("Struct " + structType.name() + " does not exist",
 									   token->getRange(), this->context);
 		return;
 	}
 	StructDefinition const definition =
-		Struct::getStructDefinition(std::get<std::string>(structType.type.type));
+		Struct::getStructDefinition(std::get<std::string>(structType.type.getType()));
 	RPNValueType type;
 	for (size_t i = 0; i < path.size(); i++) {
 		if (!definition.hasMember(path.at(i))) {
@@ -749,7 +744,7 @@ void Analyzer::analyzeStructAccess(const Token *token) {
 		}
 		type = definition.getMemberType(path.at(i));
 		if (i < path.size() - 1 &&
-			(type.index() != 0 || std::get<ValueType>(type.type) != STRUCT)) {
+			(type.index() != 0 || std::get<ValueType>(type.getType()) != STRUCT)) {
 			this->error = ExpressionResult("Member " + path.at(i) + " of struct " +
 											   structType.name() + " is not a struct",
 										   token->getRange(), this->context);
@@ -765,7 +760,7 @@ void Analyzer::analyzeGet(const Token *token) {
 	TextRange const range = this->stack.top().range;
 	this->stack.pop();
 
-	this->stack.push({type.listType, token->getRange().merge(range), false, 0, 0, false, true});
+	this->stack.emplace(type.getListType(), token->getRange().merge(range), false, 0, 0, false, true);
 }
 
 bool Analyzer::isBinaryOperator(OperatorToken::OperatorTypes operatorType) {

@@ -11,6 +11,7 @@
 #include "codeblocks/codeblock.hpp"
 #include "codeblocks/functionblock.hpp"
 #include "codeblocks/line.hpp"
+#include "codeblocks/functionsignatureline.hpp"
 #include "expressionresult/expressionresult.hpp"
 #include "textutilities/escapecharacters.hpp"
 #include "tokens/keywords.hpp"
@@ -49,6 +50,7 @@ class Lexer {
 	ExpressionResult parseStructAccess(Token *token);
 	ExpressionResult parseKeyword(Token *token);
 	std::pair<ExpressionResult, FunctionBlock *> parseFunction(CodeBlock *block);
+	ExpressionResult parseFunctionSignature(Token *token);
 	ExpressionResult parseStruct(CodeBlock *block);
 	ExpressionResult parseFunctionCall(const Token *token);
 	ExpressionResult parseType(Token const *token);

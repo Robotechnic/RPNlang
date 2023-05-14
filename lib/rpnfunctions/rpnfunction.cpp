@@ -9,7 +9,7 @@ RPNFunction::RPNFunction(
 	arguments(arguments),
 	returnType(returnType)
 {
-	if (returnType.index() == 1 && std::get<ValueType>(returnType.type) == ANY) {
+	if (returnType.index() == 1 && std::get<ValueType>(returnType.getType()) == ANY) {
 		throw std::runtime_error("Function return type cannot be ANY");
 	}
 }

@@ -25,7 +25,7 @@ RPNFunctionResult UserRPNFunction::call(RPNFunctionArgsValue &args, const TextRa
 		} else {
 			functionContext->setValue(
 				this->arguments.at(i).first,
-				args[i]->to(std::get<ValueType>(this->arguments.at(i).second.type),
+				args[i]->to(std::get<ValueType>(this->arguments.at(i).second.getType()),
 							Value::CONTEXT_VARIABLE));
 		}
 	}
@@ -39,7 +39,8 @@ RPNFunctionResult UserRPNFunction::call(RPNFunctionArgsValue &args, const TextRa
 	// check the return type
 	if (!result.returnValue()) {
 		if (this->returnType.index() == 0 ||
-			(this->returnType.index() == 1 && std::get<ValueType>(this->returnType.type) != NONE)) {
+			(this->returnType.index() == 1 &&
+			 std::get<ValueType>(this->returnType.getType()) != NONE)) {
 			return ExpressionResult("Function " + this->name + " expected a return value of type " +
 										this->returnType.name() + ", but no return value was found",
 									this->body->lastRange(), context);
@@ -57,7 +58,7 @@ RPNFunctionResult UserRPNFunction::call(RPNFunctionArgsValue &args, const TextRa
 									returnValue->getRange(), context);
 		}
 
-		if (std::get<std::string>(this->returnType.type) !=
+		if (std::get<std::string>(this->returnType.getType()) !=
 			dynamic_cast<Struct *>(returnValue)->getStructName()) {
 			return ExpressionResult(
 				"Return type must be struct of type " + this->returnType.name() + " but got " +
@@ -68,19 +69,19 @@ RPNFunctionResult UserRPNFunction::call(RPNFunctionArgsValue &args, const TextRa
 		return returnValue->copy();
 	}
 
-	if (std::get<ValueType>(this->returnType.type) == NONE) {
+	if (std::get<ValueType>(this->returnType.getType()) == NONE) {
 		return ExpressionResult("Function " + this->name + " does not return any value",
 								this->body->lastRange(), context);
 	}
 
 	if (!RPNValueType::isCastableTo(returnValue->getType(),
-									std::get<ValueType>(this->returnType.type))) {
+									std::get<ValueType>(this->returnType.getType()))) {
 		return ExpressionResult("Return type must be " + this->returnType.name() + " but got " +
 									stringType(returnValue->getType()),
 								returnValue->getRange(), context);
 	}
 
-	return returnValue->to(std::get<ValueType>(this->returnType.type));
+	return returnValue->to(std::get<ValueType>(this->returnType.getType()));
 }
 
 std::shared_ptr<UserRPNFunction> UserRPNFunction::addFunction(const std::string &name,

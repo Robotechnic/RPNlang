@@ -1,7 +1,7 @@
 #include "codeblocks/codeblock.hpp"
 
 CodeBlock::CodeBlock(KeywordToken *keyword)
-	: BaseBlock(CODE_BLOCK), keyword(keyword), next(nullptr) {}
+	: BaseBlock(blockType::CODE_BLOCK), keyword(keyword), next(nullptr) {}
 
 CodeBlock::~CodeBlock() {
 	this->clear();

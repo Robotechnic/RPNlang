@@ -1,3 +1,3 @@
 #pragma once
 
-enum blockType { CODE_BLOCK, LINE_BLOCK, FUNCTION_BLOCK };
+enum class blockType { CODE_BLOCK, LINE_BLOCK, FUNCTION_BLOCK, FUNCTION_SIGNATURE };

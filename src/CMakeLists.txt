@@ -8,6 +8,7 @@ list(APPEND sources
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/line.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/blockqueue.cpp
 	${CMAKE_CURRENT_LIST_DIR}/codeblocks/functionblock.cpp
+	${CMAKE_CURRENT_LIST_DIR}/codeblocks/functionsignatureline.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/builtinmap.cpp
 	${CMAKE_CURRENT_LIST_DIR}/rpnfunctions/userrpnfunction.cpp
 	${CMAKE_CURRENT_LIST_DIR}/modules/module.cpp

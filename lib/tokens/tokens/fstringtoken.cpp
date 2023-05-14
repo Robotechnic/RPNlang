@@ -3,7 +3,7 @@
 FStringToken::FStringToken(const TextRange range, std::vector<std::string> parts) : Token(range, TokenType::TOKEN_TYPE_FSTRING), parts(parts) {
 	this->stringValue = "";
 	std::accumulate(this->parts.begin(), this->parts.end(), this->stringValue, [](const std::string &a, const std::string &b) {
-		return std::move(a) + std::move(b);
+		return a + b;
 	});
 }
 
