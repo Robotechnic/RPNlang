@@ -142,12 +142,18 @@ void Analyzer::analyze(Line *line) {
 	line->reset();
 }
 
-std::optional<AnalyzerValueType> Analyzer::getVariable(std::string const &name) {
+std::optional<AnalyzerValueType> Analyzer::getVariable(const std::string &name) {
 	AnalyzerSymbolTable *variablesMap = nullptr;
 	if (this->functionVariables.contains(name)) {
 		variablesMap = &this->functionVariables;
 	} else if (this->variables.contains(name)) {
 		variablesMap = &this->variables;
+	} else if (builtins::builtinFunctions.contains(name)) {
+		BuiltinRPNFunction const &builtinFunction = builtins::builtinFunctions.at(name);
+		this->functions[name] = builtinFunction.getSignature();
+		AnalyzerValueType type = {name, TextRange(), false, 0, 0, false, false, true};
+		this->variables[name] = type;
+		return type;
 	} else {
 		return std::nullopt;
 	}
@@ -352,7 +358,6 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 std::optional<FunctionSignature> Analyzer::checkBuiltinFunction(Token *token) {
 	const RPNFunction *function = nullptr;
 	const std::string name = token->getStringValue();
-	bool builtin = false;
 	if (token->getType() == TokenType::TOKEN_TYPE_MODULE_FUNCTION_CALL) {
 		this->analyzePath(token, false);
 		if (this->hasErrors()) {
@@ -360,10 +365,8 @@ std::optional<FunctionSignature> Analyzer::checkBuiltinFunction(Token *token) {
 		}
 		const Value *path = dynamic_cast<const ValueToken *>(token)->getValue();
 		function = dynamic_cast<const Function *>(Module::getModuleValue(path))->getValue();
-		builtin = path->getType() == BUILTIN_PATH;
 	} else if (builtins::builtinFunctions.contains(name)) {
 		function = &builtins::builtinFunctions.at(name);
-		builtin = true;
 	}
 	if (function == nullptr) {
 		return std::nullopt;
