@@ -120,7 +120,7 @@ You can also define functions signatures to allow to pass them as function argum
 
 ```RPNlang
 # define a function signature
-process float -> float funsig
+process int -> int funsig
 
 # define a function that take a function as argument
 map list[int] listToMap $process mapFunction -> list[int] fun
