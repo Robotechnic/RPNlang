@@ -139,6 +139,13 @@ void Analyzer::analyze(Line *line) {
 			case TokenType::TOKEN_TYPE_STRUCT_ACCESS:
 				this->analyzeStructAccess(token);
 				break;
+			case TokenType::TOKEN_TYPE_FUN_SIGNATURE:
+				this->error = {
+					"Function signature can't be used in this context",
+					token->getRange(),
+					this->context
+				};
+				break;
 			default:
 				throw std::runtime_error("Lexer didn't create a valid token : " +
 										 Token::stringType(token->getType()));

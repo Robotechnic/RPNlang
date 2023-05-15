@@ -484,14 +484,6 @@ ExpressionResult Interpreter::interpretTry(Line &line, CodeBlock &block) {
 		return result;
 	}
 
-	// catch
-	if (block.getNext()->getKeyword() != KEYWORD_CATCH) {
-		if (block.getNext()->getKeyword() == KEYWORD_FINALLY) {
-			return this->interpret(block.getNext()->getBlocks());
-		}
-		return {};
-	}
-
 	this->context->setValue(
 		line.top()->getStringValue(),
 		new String(result.getErrorMessage(), line.top()->getRange(), Value::CONTEXT_VARIABLE));
