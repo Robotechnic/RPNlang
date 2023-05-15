@@ -35,7 +35,7 @@ class Lexer {
 
 	BlockQueue &getBlocks();
 
-	static ExpressionResult tokenize(int lineNumber, std::string_view lineString,
+	static ExpressionResult tokenize(unsigned int lineNumber, std::string_view lineString,
 									 std::deque<Token *> &tokens, const ContextPtr &context);
 
   private:

@@ -58,6 +58,40 @@ ExpressionResult getMultilineInput(std::deque<Token *> &tokens, const ContextPtr
 	return result;
 }
 
+void displayInterpreterResult(const ExpressionResult &result, const Value *lastValue,
+							  unsigned int lineNumber, std::string_view instruction, char lastChar) {
+	if (result.error()) {
+		if (result.getRange().line != lineNumber) {
+			instruction = rpnShell.at(rpnShell.getHistorySize() - lineNumber);
+		}
+		result.displayLineError(instruction);
+	} else if (lastValue == nullptr) {
+		rpnShell << RED << "NONE" << DEFAULT << std::endl;
+	} else {
+		if (lastChar != '\n' && lastChar != '\r') {
+			rpnShell << std::endl;
+		}
+		switch (lastValue->getType()) {
+			case INT:
+			case FLOAT:
+				rpnShell << MAGENTA;
+				break;
+			case STRING:
+				rpnShell << YELLOW;
+				break;
+			case BOOL:
+				rpnShell << GREEN;
+				break;
+			case NONE:
+				rpnShell << RED;
+				break;
+			default:
+				break;
+		}
+		rpnShell << lastValue->getStringValue() << DEFAULT << std::endl;
+	}
+}
+
 void shellInput() {
 	// setup lastChar buffer
 	std::streambuf *hold = std::cout.rdbuf();
@@ -92,39 +126,15 @@ void shellInput() {
 			Value::deleteValue(&i.getLastValue(), Value::INTERPRETER);
 			result = i.interpret(lexer.getBlocks());
 			ctx->copyTokenValues();
-			if (result.error()) {
-				if (result.getRange().line != lineNumber) {
-					instruction = rpnShell.at(rpnShell.getHistorySize() - lineNumber);
-				}
-				result.displayLineError(instruction);
-			} else {
-				if (lastCharBuffer.getLastChar() != '\n' && lastCharBuffer.getLastChar() != '\r') {
-					rpnShell << std::endl;
-				}
-				switch (i.getLastValue()->getType()) {
-					case INT:
-					case FLOAT:
-						rpnShell << MAGENTA;
-						break;
-					case STRING:
-						rpnShell << YELLOW;
-						break;
-					case BOOL:
-						rpnShell << GREEN;
-						break;
-					case NONE:
-						rpnShell << RED;
-						break;
-					default:
-						break;
-				}
-				rpnShell << i.getLastValue()->getStringValue() << DEFAULT << std::endl;
-			}
+			displayInterpreterResult(result, i.getLastValue(), lineNumber, instruction,
+									 lastCharBuffer.getLastChar());
 			i.clearMemory();
 		}
 		tokens.clear();
 		rpnShell >> instruction;
-		lineNumber += !instruction.empty();
+		if (instruction.empty()) {
+			lineNumber++;
+		}
 	}
 	// restaure hold buffer
 	std::cout.rdbuf(hold);
@@ -132,7 +142,7 @@ void shellInput() {
 
 int interpretPipe() {
 	std::cout << "Interpret pipe" << std::endl;
-	ContextPtr ctx = std::make_shared<Context>("main", "<stdin>");
+	auto ctx = std::make_shared<Context>("main", "<stdin>");
 	// display the stdin content
 	std::string instruction;
 	std::deque<Token *> tokens;
@@ -165,7 +175,7 @@ int interpretPipe() {
 	return 0;
 }
 
-void setWorkingDirectory(std::string path) {
+void setWorkingDirectory(const std::string_view &path) {
 	try {
 		std::string extractedPath = extractFilePath(path);
 		if (extractedPath[0] == '/') {

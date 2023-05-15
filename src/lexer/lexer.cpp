@@ -689,7 +689,7 @@ ExpressionResult Lexer::parseType(const Token *token) {
  * @param tokens the vector of tokens to fill
  * @return ExpressionResult if the line is a valid expression
  */
-ExpressionResult Lexer::tokenize(int lineNumber, std::string_view lineString,
+ExpressionResult Lexer::tokenize(unsigned int lineNumber, std::string_view lineString,
 								 std::deque<Token *> &tokens, const ContextPtr &context) {
 	unsigned int column = 0;
 	std::string_view value;

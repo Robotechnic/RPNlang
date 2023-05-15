@@ -5,6 +5,9 @@ Analyzer::Analyzer(ContextPtr context) : context(context) {
 	for (const auto &[name, variable] : context->getSymbols()) {
 		this->variables[name] = {
 			variable->getType(), variable->getRange(), false, 0, 0, false, false};
+		if (variable->getType() == FUNCTION) {
+			this->functions[name] = dynamic_cast<Function *>(variable)->getValue()->getSignature();
+		}
 	}
 }
 
