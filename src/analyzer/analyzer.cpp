@@ -384,6 +384,7 @@ void Analyzer::analyzeFunctionCall(FunctionSignature function, Token *token) {
 std::optional<FunctionSignature> Analyzer::checkBuiltinFunction(Token *token) {
 	const RPNFunction *function = nullptr;
 	const std::string name = token->getStringValue();
+	bool builtin = false;
 	if (token->getType() == TokenType::TOKEN_TYPE_MODULE_FUNCTION_CALL) {
 		this->analyzePath(token, false);
 		if (this->hasErrors()) {
@@ -391,15 +392,17 @@ std::optional<FunctionSignature> Analyzer::checkBuiltinFunction(Token *token) {
 		}
 		const Value *path = dynamic_cast<const ValueToken *>(token)->getValue();
 		function = dynamic_cast<const Function *>(Module::getModuleValue(path))->getValue();
+		builtin = path->getType() == BUILTIN_PATH;
 	} else if (builtins::builtinFunctions.contains(name)) {
 		function = &builtins::builtinFunctions.at(name);
+		builtin = true;
 	}
 	if (function == nullptr) {
 		return std::nullopt;
 	}
 
 	FunctionSignature functionValue = function->getSignature();
-	functionValue.builtin = true;
+	functionValue.builtin = builtin;
 	this->functions[name] = functionValue;
 	this->variables[name] = {name, TextRange(), false, 0, 0, false, false, true};
 	return functionValue;
