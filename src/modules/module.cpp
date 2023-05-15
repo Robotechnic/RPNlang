@@ -117,15 +117,17 @@ ExpressionResult Module::checkPath(const Path *path, const ContextPtr &parentCon
  * @return ExpressionResult if the value exists
  */
 Value *&Module::getModuleValue(const Value *valuePath) {
-	auto const path = dynamic_cast<const Path *>(valuePath);
+	const auto *path = dynamic_cast<const Path *>(valuePath);
 
 	if (path->getType() == PATH) {
 		return Module::modules.at(path->ats(0))->getModuleContext()->getValue(path->ats(1));
 	}
-	if (path->getType() == BUILTIN_PATH)
+	
+	if (path->getType() == BUILTIN_PATH) {
 		return Module::builtinModules.at(path->ats(0)).getModuleContext()->getValue(path->ats(1));
-	else
-		throw std::invalid_argument("This path is not a module path");
+	}
+	
+	throw std::invalid_argument("This path is not a module path");
 }
 
 /**

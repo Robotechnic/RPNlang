@@ -131,7 +131,7 @@ bool RPNValueType::operator==(const RPNValueType &other) {
 											   std::get<1>(other.listType)))));
 };
 
-bool RPNValueType::operator==(const RPNBaseType &other) {
+bool RPNValueType::operator==(RPNBaseType other) {
 	return this->type.index() == other.index() &&
 		   (this->type.index() == 0
 				? std::get<0>(this->type) == std::get<0>(other)

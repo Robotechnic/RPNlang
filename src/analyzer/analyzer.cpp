@@ -113,6 +113,9 @@ void Analyzer::analyze(Line *line) {
 				this->analyzeFunctionCall(token);
 				break;
 			case TokenType::TOKEN_TYPE_LITERAL:
+				if (builtins::builtinFunctions.contains(token->getStringValue())) {
+					dynamic_cast<ValueToken *>(token)->getValue()->setType(BUILTIN_VARIABLE);
+				}
 				this->stack.emplace(token->getStringValue(), token->getRange(), true, 0, 0, false);
 				break;
 			case TokenType::TOKEN_TYPE_ASSIGNMENT:
@@ -284,14 +287,37 @@ void Analyzer::analyzeOperator(const OperatorToken *token) {
 	std::optional<ValueType> resultType = Analyzer::getOperatorType(
 		std::get<ValueType>(left.type.getType()), std::get<ValueType>(right.type.getType()), token);
 	if (resultType.has_value()) {
+		if (std::get<ValueType>(left.type.getType()) == LIST &&
+			std::get<ValueType>(right.type.getType()) == LIST) {
+			std::optional<ValueType> listType =
+				Analyzer::getOperatorType(std::get<ValueType>(left.type.getListType()),
+										  std::get<ValueType>(right.type.getListType()), token);
+			if (listType.has_value()) {
+				stack.emplace(RPNValueType{LIST, listType.value()},
+							  TextRange::merge(left.range, right.range).merge(token->getRange()),
+							  false);
+				return;
+			}
+		} else if (std::get<ValueType>(left.type.getType()) == LIST) {
+			stack.emplace(RPNValueType{LIST, std::get<ValueType>(left.type.getListType())},
+						  TextRange::merge(left.range, right.range).merge(token->getRange()),
+						  false);
+			return;
+		} else if (std::get<ValueType>(right.type.getType()) == LIST) {
+			stack.emplace(RPNValueType{LIST, std::get<ValueType>(right.type.getListType())},
+						  TextRange::merge(left.range, right.range).merge(token->getRange()),
+						  false);
+			return;
+		}
 		stack.emplace(resultType.value(),
 					  TextRange::merge(left.range, right.range).merge(token->getRange()), false);
-	} else {
-		this->error =
-			ExpressionResult("Can't apply operator " + token->getStringValue() + " to types " +
-								 left.type.name() + " and " + right.type.name(),
-							 token->getRange(), this->context);
+		return;
 	}
+
+	this->error =
+		ExpressionResult("Can't apply operator " + token->getStringValue() + " to types " +
+							 left.type.name() + " and " + right.type.name(),
+						 token->getRange(), this->context);
 }
 
 void Analyzer::analyzeFString(const FStringToken *token) {
@@ -372,7 +398,8 @@ std::optional<FunctionSignature> Analyzer::checkBuiltinFunction(Token *token) {
 		return std::nullopt;
 	}
 
-	FunctionSignature const functionValue = function->getSignature();
+	FunctionSignature functionValue = function->getSignature();
+	functionValue.builtin = true;
 	this->functions[name] = functionValue;
 	this->variables[name] = {name, TextRange(), false, 0, 0, false, false, true};
 	return functionValue;
@@ -467,27 +494,33 @@ void Analyzer::analyzeAssignment(const Token *token) {
 	}
 	AnalyzerSymbolTable *variables = this->getVariables();
 	std::string const name = std::get<std::string>(variable.type.getType());
-	if (this->conditionalLevel > 0 && variables->contains(name)) {
-		// check if the type is the same or equivalent
-		AnalyzerValueType holdVariable = variables->at(name);
+	auto holdVariableVariant = getVariable(name);
+	if (holdVariableVariant.has_value()) {
+		AnalyzerValueType holdVariable = holdVariableVariant.value();
 		if (holdVariable.type != type || type != holdVariable.type) {
-			this->error = ExpressionResult("Can't conditionally assign value of type " +
-											   type.name() + " to variable " + name + " of type " +
-											   holdVariable.type.name(),
+			std::string typeName = holdVariable.type.name();
+			if (holdVariable.isFunction) {
+				typeName = "FUNCTION";
+			}
+			this->error = ExpressionResult("Can't assign value of type " + type.name() +
+											   " to variable " + name + " of type " + typeName,
 										   variable.range, this->context);
 			return;
 		}
-		if (this->conditionalLevel > holdVariable.conditionalLevel) {
+		if (this->conditionalLevel > 0) {
+			// check if the type is the same or equivalent
+			if (this->conditionalLevel > holdVariable.conditionalLevel) {
+				(*variables)[name] = {type, variable.range, true, holdVariable.conditionalLevel,
+									  holdVariable.conditionalNextLevel};
+				return;
+			}
 			(*variables)[name] = {type, variable.range, true, holdVariable.conditionalLevel,
-								  holdVariable.conditionalNextLevel};
+								  this->nextConditionalLevel.at(this->conditionalLevel) - 1 ==
+										  holdVariable.conditionalNextLevel
+									  ? holdVariable.conditionalNextLevel + 1
+									  : holdVariable.conditionalNextLevel};
 			return;
 		}
-		(*variables)[name] = {type, variable.range, true, holdVariable.conditionalLevel,
-							  this->nextConditionalLevel.at(this->conditionalLevel) - 1 ==
-									  holdVariable.conditionalNextLevel
-								  ? holdVariable.conditionalNextLevel + 1
-								  : holdVariable.conditionalNextLevel};
-		return;
 	}
 	(*variables)[name] = {type, variable.range, false, this->conditionalLevel,
 						  this->nextConditionalLevel.at(this->conditionalLevel) == 1 ? 1U : 0U};

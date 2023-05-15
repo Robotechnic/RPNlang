@@ -65,9 +65,3 @@ RPNFunctionResult BuiltinRPNFunction::call(RPNFunctionArgsValue &args, const Tex
 
 	return callResult;
 }
-
-FunctionSignature BuiltinRPNFunction::getSignature() const {
-	FunctionSignature signature = RPNFunction::getSignature();
-	signature.builtin = true;
-	return signature;
-}

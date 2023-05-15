@@ -18,32 +18,36 @@ Value *&Memory::pop() {
 	return value;
 }
 
-Value *&Memory::popVariableValue(const ContextPtr &context) {
+Value *Memory::popVariableValue(const ContextPtr &context) {
 	ExpressionResult const result;
-	Value **value = nullptr;
-	Value **name = &this->stack.top();
+	Value *value = nullptr;
+	Value *name = this->stack.top();
 	this->stack.pop();
-	switch ((*name)->getType()) {
+	switch (name->getType()) {
 		case VARIABLE:
-			value = &context->getValue(*name);
+			value = context->getValue(name);
+			break;
+		case BUILTIN_VARIABLE:
+			value = new Function(&builtins::builtinFunctions.at(name->getStringValue()),
+									name->getRange(), Value::INTERPRETER);
 			break;
 		case PATH:
 		case BUILTIN_PATH:
-			value = &Module::getModuleValue(*name);
+			value = Module::getModuleValue(name);
 			break;
 		case STRUCT_ACCESS:
-			value = &this->getStructureValue(*name, context);
+			value = this->getStructureValue(name, context);
 			break;
 		case LIST_ELEMENT:
-			value = &dynamic_cast<ListElement *>(*name)->get();
+			value = dynamic_cast<ListElement *>(name)->get();
 			break;
 		default:
-			return *name;
+			return name;
 	}
-	TextRange const range = (*name)->getRange();
-	Value::deleteValue(name, Value::INTERPRETER);
-	(*value)->setVariableRange(range);
-	return *value;
+	TextRange const range = name->getRange();
+	Value::deleteValue(&name, Value::INTERPRETER);
+	value->setVariableRange(range);
+	return value;
 }
 
 Value *&Memory::getStructureValue(Value *pathValue, const ContextPtr &context) {

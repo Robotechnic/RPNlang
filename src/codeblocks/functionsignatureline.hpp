@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rpnfunctions/functionsignature.hpp"
 #include "codeblocks/baseblock.hpp"
+#include "rpnfunctions/functionsignature.hpp"
 #include "textutilities/textrange.hpp"
 
 class FunctionSignatureLine : public BaseBlock {

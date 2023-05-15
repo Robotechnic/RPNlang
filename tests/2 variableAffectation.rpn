@@ -1,7 +1,7 @@
 "check variable affectation (for memory leak)\n" :print
 # test affectation with each types
 a 2 =
-b "bdule" =
+b -9 =
 c 7.9 =
 d true =
 e false =

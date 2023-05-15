@@ -21,11 +21,11 @@ a b + f"{}\n" :print
 a b / f"{}\n" :print
 
 "check string concatenation\n" :print
-a "cou" =
-a a a + =
-a f"{}\n" :print
-a "NaN" 10 * =
-a f"{} Batman !\n" :print
+stringA "cou" =
+stringA stringA stringA + =
+stringA f"{}\n" :print
+stringA "NaN" 10 * =
+stringA f"{} Batman !\n" :print
 
 "check boolean expressions\n" :print
 a 2 =
@@ -44,16 +44,16 @@ a b * 7 - 4 == a b + 5 == :or :assert
 a b * 7 - 4 != a b + 5 == :or :assert
 
 "test ord and chr\n" :print
-a "a" =
-a :ord f"{}\n" :print
-a :ord 97 == :assert
+stringA "a" =
+stringA :ord f"{}\n" :print
+stringA :ord 97 == :assert
 97 :chr f"{}\n" :print
 97 :chr "a" == :assert
 
 "test string length\n" :print
-a "coucou" =
-a :len f"{}\n" :print
-a :len 6 == :assert
+stringA "coucou" =
+stringA :len f"{}\n" :print
+stringA :len 6 == :assert
 
 "test to string\n" :print
 12.5 :toString f"{}\n" :print

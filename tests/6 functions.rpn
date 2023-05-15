@@ -103,10 +103,10 @@ main -> none fun
 	test f"{}\n" :print
 
 	"Test function with for loop\n" :print
-	test 1 :forLoopFunction =
-	test 1 == :assert
-	test f"forLoopFunction ok: {}\n" :print
-	test 10 :forLoopFunction =
-	test 55 == :assert
-	test f"forLoopFunction ok: {}\n" :print
+	test1 1 :forLoopFunction =
+	test1 1 == :assert
+	test1 f"forLoopFunction ok: {}\n" :print
+	test1 10 :forLoopFunction =
+	test1 55 == :assert
+	test1 f"forLoopFunction ok: {}\n" :print
 nuf

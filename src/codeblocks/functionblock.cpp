@@ -15,8 +15,8 @@ void FunctionBlock::clear() {
 }
 
 void FunctionBlock::display() const {
-	std::cout << "FunctionBlock" << std::endl;
-	std::cout << this->function << std::endl;
+	std::cout << "FunctionBlock (" << function->getName() << ")" << std::endl;
+	this->function->getBody()->display();
 	std::cout << "End of FunctionBlock" << std::endl;
 }
 

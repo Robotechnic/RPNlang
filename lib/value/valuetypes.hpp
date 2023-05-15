@@ -9,6 +9,7 @@ enum ValueType {
 	FLOAT,
 	STRING,
 	VARIABLE,
+	BUILTIN_VARIABLE,
 	FUNCTION,
 	BOOL,
 	PATH,
@@ -49,7 +50,7 @@ class RPNValueType {
 
 	bool operator==(const RPNValueType &other);
 
-	bool operator==(const RPNBaseType &other);
+	bool operator==(RPNBaseType other);
 
 	bool operator!=(const RPNValueType &other);
 

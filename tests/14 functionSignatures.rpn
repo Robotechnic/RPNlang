@@ -1,0 +1,31 @@
+# define a function signature
+process int -> int funsig
+
+# define a function that take a function as argument
+map list[int] listToMap $process mapFunction -> list[int] fun
+	newList 0 list[int] =
+	i 0 listToMap :len 1 for
+		newList listToMap i get :mapFunction :push
+	rof
+	newList return
+nuf
+
+addOne int number -> int fun
+	number 1 + return
+nuf
+
+# we can use existing function as a signature type
+printList list[int] listToPrint $print printFunction -> none fun
+	i 0 listToPrint :len 1 for
+		listToPrint i get :printFunction
+	rof
+nuf
+
+spetialPrint string toPrint -> none fun
+	toPrint f"Spetial print: {}\n" :print
+nuf
+
+a 1 2 3 4 5 6 7 8 9 9 list[int] =
+a addOne :map f"{}\n" :print
+a print :printList
+a spetialPrint :printList
