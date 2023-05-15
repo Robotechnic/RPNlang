@@ -10,11 +10,11 @@ height :isNumber :not if
 	1 :exit
 fi
 
-height height :toInt =
-width width :toInt =
+heightNum height :toInt =
+widthNum width :toInt =
 
-x 0 height 1 for
-	y 0 width 1 for
+x 0 heightNum 1 for
+	y 0 widthNum 1 for
 		"*" :print
 	rof
 	"\n" :print
