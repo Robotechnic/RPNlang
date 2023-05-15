@@ -107,7 +107,7 @@ void shellInput() {
 	std::deque<Token *> tokens;
 	unsigned int lineNumber = 1;
 	ExpressionResult result;
-	while (instruction != "exit" && !result.error() && !std::cin.eof()) {
+	while (instruction != "exit" && !std::cin.eof()) {
 		result = Lexer::tokenize(lineNumber, instruction, tokens, ctx);
 		if (result.error()) {
 			result.displayLineError(instruction);
