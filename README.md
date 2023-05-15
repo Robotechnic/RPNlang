@@ -99,14 +99,15 @@ nuf
 ```
 
 ```RPNlang
-pow a float b int -> float fun
+pow float a int b -> float fun
 	b 0 == if
 		1 return
 	fi
-	0 b 1 for
-		a a * =
+	result a =
+	i 0 b 1 for
+		b b a * =
 	rof
-	a return
+	b return
 nuf
 ```
 
