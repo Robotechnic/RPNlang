@@ -34,7 +34,7 @@ ExpressionResult getMultilineInput(std::deque<Token *> &tokens, const ContextPtr
 								   unsigned int &lineNumber) {
 	std::string instruction{""};
 	ExpressionResult result;
-	if (!tokens.empty() && tokens.back()->getType() == TOKEN_TYPE_LITERAL &&
+	if (!tokens.empty() && tokens.back()->getType() == TokenType::TOKEN_TYPE_LITERAL &&
 		multilineKeyword(tokens.back()->getStringValue())) {
 		rpnShell.setPrompt("... ");
 		rpnShell >> instruction;
@@ -47,7 +47,7 @@ ExpressionResult getMultilineInput(std::deque<Token *> &tokens, const ContextPtr
 					return result;
 				}
 				tokens.push_back(new StringToken(TextRange(lineNumber, instruction.size(), 1),
-												 TOKEN_TYPE_END_OF_LINE, "\n"));
+												 TokenType::TOKEN_TYPE_END_OF_LINE, "\n"));
 			}
 			rpnShell >> instruction;
 			lineNumber += !instruction.empty();
@@ -148,7 +148,7 @@ int interpretPipe() {
 			return 1;
 		}
 		tokens.push_back(new StringToken(TextRange(lineNumber, instruction.size(), 1),
-										 TOKEN_TYPE_END_OF_LINE, "\n"));
+										 TokenType::TOKEN_TYPE_END_OF_LINE, "\n"));
 	}
 	Lexer lexer(tokens, ctx);
 	result = lexer.lex();
